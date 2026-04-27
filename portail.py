@@ -2,8 +2,15 @@
 Portail LREGE — Lanceur unifié des outils CREGE Grand Est
 """
 
-import os, sys, subprocess, threading, webbrowser, time
+import os, sys, subprocess, threading, webbrowser, time, json, tempfile
 from flask import Flask, render_template_string, jsonify
+try:
+    import urllib.request as urlreq
+except ImportError:
+    urlreq = None
+
+VERSION_LOCALE = "1.1.0"
+VERSION_JSON_URL = "https://drive.google.com/uc?export=download&id=19uHR_WR3V1z7eqEFODsafLr_YCcef1Wo"
 
 app = Flask(__name__)
 
@@ -62,7 +69,43 @@ def python_pour(oid):
     return sys.executable
 
 
-def outil_disponible(oid):
+def verifier_maj():
+    """Vérifie si une MAJ est disponible sur Drive au démarrage."""
+    try:
+        with urlreq.urlopen(VERSION_JSON_URL, timeout=5) as r:
+            data = json.loads(r.read().decode())
+        version_distante = data.get("version", "0.0.0")
+        url_exe = data.get("url", "")
+
+        def _comparer(v):
+            return tuple(int(x) for x in v.split("."))
+
+        if _comparer(version_distante) > _comparer(VERSION_LOCALE) and url_exe:
+            # Télécharger et lancer l'installeur dans un thread
+            threading.Thread(target=_telecharger_et_installer, args=(url_exe, version_distante), daemon=True).start()
+            return {"maj_disponible": True, "version": version_distante}
+    except Exception:
+        pass
+    return {"maj_disponible": False, "version": VERSION_LOCALE}
+
+
+def _telecharger_et_installer(url, version):
+    try:
+        tmp = tempfile.mktemp(suffix=".exe", prefix=f"PortailLREGE_Setup_v{version}_")
+        urlreq.urlretrieve(url, tmp)
+        subprocess.Popen([tmp], shell=True)
+        time.sleep(2)
+        os.kill(os.getpid(), 9)  # Ferme le portail après lancement installeur
+    except Exception:
+        pass
+
+
+@app.route("/api/maj")
+def api_maj():
+    return jsonify(verifier_maj())
+
+
+
     return os.path.isfile(OUTILS[oid]["script"])
 
 
@@ -171,6 +214,9 @@ HTML_PORTAIL = """<!DOCTYPE html>
   .btn-arreter { background: rgba(192,57,43,.18); color: #e8877f; border: 1px solid rgba(192,57,43,.3); flex: 0 0 auto; padding: 10px 14px; }
   .btn-arreter:hover:not(:disabled) { background: rgba(192,57,43,.3); }
   .badge-indispo { font-size: .72rem; font-family: 'DM Mono', monospace; color: var(--gris); background: rgba(255,255,255,.05); border: 1px solid rgba(255,255,255,.08); padding: 6px 12px; border-radius: 8px; text-align: center; width: 100%; }
+  .bandeau-maj { display: none; background: linear-gradient(90deg, #e67e22, #d35400); color: #fff; padding: 12px 48px; font-size: .82rem; font-family: 'DM Mono', monospace; align-items: center; gap: 12px; }
+  .bandeau-maj.visible { display: flex; }
+  .bandeau-maj a { color: #fff; font-weight: 600; text-decoration: underline; cursor: pointer; }
   footer { padding: 16px 48px; border-top: 1px solid rgba(255,255,255,.06); display: flex; align-items: center; justify-content: space-between; font-size: .72rem; color: var(--gris); font-family: 'DM Mono', monospace; }
   .dot-live { width: 6px; height: 6px; border-radius: 50%; background: var(--ok); display: inline-block; margin-right: 6px; animation: pulse 2s infinite; }
 </style>
@@ -183,6 +229,10 @@ HTML_PORTAIL = """<!DOCTYPE html>
     <p>CREGE Grand Est — Outils de gestion</p>
   </div>
 </header>
+<div class="bandeau-maj" id="bandeau-maj">
+  ⬆️ Une nouvelle version est disponible — <a onclick="installerMaj()">Installer maintenant</a>
+  <span id="maj-version"></span>
+</div>
 <main>
   {% for oid, cfg in outils.items() %}
   <div class="card" id="card-{{ oid }}" style="--accent: {{ cfg.couleur }}">
@@ -250,6 +300,24 @@ async function arreter(oid) {
 
 fetchStatut();
 setInterval(fetchStatut, 4000);
+
+// Vérification MAJ au démarrage
+async function verifierMaj() {
+  try {
+    const data = await (await fetch('/api/maj')).json();
+    if (data.maj_disponible) {
+      document.getElementById('bandeau-maj').classList.add('visible');
+      document.getElementById('maj-version').textContent = `(v${data.version})`;
+    }
+  } catch(e) {}
+}
+
+async function installerMaj() {
+  if (!confirm('Installer la mise à jour ? Le portail va se fermer.')) return;
+  await fetch('/api/maj');  // Relance le téléchargement
+}
+
+setTimeout(verifierMaj, 4000);
 </script>
 </body>
 </html>"""
@@ -258,6 +326,11 @@ def ouvrir_portail():
     time.sleep(1.2)
     webbrowser.open("http://localhost:5000")
 
+def verifier_maj_demarrage():
+    time.sleep(3)  # Laisser le portail démarrer
+    verifier_maj()
+
 if __name__ == "__main__":
     threading.Thread(target=ouvrir_portail, daemon=True).start()
+    threading.Thread(target=verifier_maj_demarrage, daemon=True).start()
     app.run(port=5000, debug=False)
