@@ -1,0 +1,36 @@
+==============================================
+ EscriTools v1.1 - LREGE Grand Est
+==============================================
+
+UTILISATION
+-----------
+Double-cliquer sur LANCER.bat
+
+Au premier lancement, les dependances sont
+installees automatiquement (necessite Internet).
+Les lancements suivants sont instantanes.
+
+PREREQUIS
+---------
+Python installe sur le poste :
+  https://python.org
+  (cocher "Add Python to PATH" a l'installation)
+
+FONCTIONNALITES
+---------------
+Onglet 1 : BellePoule -> FFF
+  Convertit un PDF BellePoule en fichier .fff
+  compatible WIN (FFE).
+  CSV optionnel pour les dates de naissance :
+    format : licence,date_naissance
+    ex     : 304977,15/06/2013
+
+Onglet 2 : PDF -> Markdown
+  Convertit un ou plusieurs PDFs en .md structures.
+  Option : fusionner plusieurs PDFs en un seul fichier.
+
+Onglet 3 : Markdown -> PDF
+  Convertit un ou plusieurs .md en PDF soigne.
+  Gere : titres H1/H2/H3, listes, tableaux,
+         gras, italique, separateurs, code.
+  Option : fusionner plusieurs .md en un seul PDF.

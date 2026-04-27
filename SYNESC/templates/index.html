@@ -1,0 +1,1708 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>{{ app_name }} v{{ version }}</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Mono:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --navy:   #0F2340;
+  --blue:   #1A3A6B;
+  --accent: #C8941A;
+  --gold:   #E8A820;
+  --ice:    #EBF2FF;
+  --fog:    #F4F7FB;
+  --mist:   #E2E9F4;
+  --text:   #0F1B2D;
+  --sub:    #4A5E7A;
+  --white:  #FFFFFF;
+  --red:    #D13A3A;
+  --green:  #2A7D4F;
+  --radius: 12px;
+  --shadow: 0 4px 24px rgba(15,35,64,.10);
+  --shadow-lg: 0 8px 48px rgba(15,35,64,.16);
+}
+
+html { scroll-behavior: smooth; }
+
+body {
+  font-family: 'Syne', sans-serif;
+  background: var(--fog);
+  color: var(--text);
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+/* ── Header ── */
+header {
+  background: var(--navy);
+  padding: 0 2rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 64px;
+  flex-shrink: 0;
+  z-index: 100;
+  box-shadow: 0 2px 16px rgba(0,0,0,.25);
+}
+
+.logo {
+  display: flex;
+  align-items: center;
+  gap: .75rem;
+  text-decoration: none;
+}
+
+.logo-sword {
+  font-size: 1.5rem;
+  line-height: 1;
+  filter: drop-shadow(0 0 8px rgba(200,148,26,.5));
+}
+
+.logo-text {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.1;
+}
+
+.logo-title {
+  font-size: 1rem;
+  font-weight: 800;
+  color: var(--white);
+  letter-spacing: .02em;
+}
+
+.logo-sub {
+  font-size: .65rem;
+  font-weight: 400;
+  color: var(--gold);
+  letter-spacing: .12em;
+  text-transform: uppercase;
+  font-family: 'DM Mono', monospace;
+}
+
+.header-version {
+  font-family: 'DM Mono', monospace;
+  font-size: .7rem;
+  color: rgba(255,255,255,.45);
+  letter-spacing: .06em;
+}
+
+.header-badge {
+  font-family: 'DM Mono', monospace;
+  font-size: .7rem;
+  color: var(--gold);
+  border: 1px solid rgba(200,148,26,.4);
+  padding: .25rem .7rem;
+  border-radius: 20px;
+  letter-spacing: .08em;
+}
+
+/* ── Layout ── */
+.app {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+}
+
+/* ── Barre d'actions (ancienne sidebar) ── */
+.sidebar {
+  background: var(--white);
+  border-bottom: 1px solid var(--mist);
+  display: grid;
+  grid-template-columns: auto 1fr auto auto;
+  align-items: start;
+  gap: 1.5rem;
+  padding: 1.25rem 2rem;
+}
+
+/* Blocs internes de la sidebar */
+.sidebar > div,
+.sidebar > .divider {
+  min-width: 0;
+}
+
+/* Colonne type compétition */
+.sidebar-col-type   { grid-column: 1; }
+/* Colonne fichiers XML + liste */
+.sidebar-col-files  { grid-column: 2; }
+/* Colonne paramètres + programme */
+.sidebar-col-params { grid-column: 3; min-width: 220px; }
+/* Colonne boutons */
+.sidebar-col-btns   { grid-column: 4; display: flex; flex-direction: column; gap: .5rem; align-self: center; }
+
+.section-label {
+  font-family: 'DM Mono', monospace;
+  font-size: .65rem;
+  letter-spacing: .15em;
+  text-transform: uppercase;
+  color: var(--sub);
+  margin-bottom: .5rem;
+}
+
+/* ── Sélecteur type compétition ── */
+.comp-type-group {
+  display: flex;
+  gap: .4rem;
+}
+
+.comp-type-btn {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: .25rem;
+  padding: .6rem .3rem;
+  border: 2px solid var(--mist);
+  border-radius: 8px;
+  background: var(--fog);
+  cursor: pointer;
+  transition: all .15s ease;
+  position: relative;
+  font-family: 'Syne', sans-serif;
+}
+
+.comp-type-btn:hover:not(:disabled) {
+  border-color: var(--accent);
+  background: #FFFBF0;
+}
+
+.comp-type-btn.active {
+  border-color: var(--accent);
+  background: #FFF8EC;
+  box-shadow: 0 0 0 3px rgba(200,148,26,.15);
+}
+
+.comp-type-btn:disabled {
+  opacity: .55;
+  cursor: not-allowed;
+}
+
+.comp-type-icon {
+  font-size: 1.2rem;
+  line-height: 1;
+}
+
+.comp-type-label {
+  font-size: .72rem;
+  font-weight: 700;
+  color: var(--navy);
+  text-align: center;
+  line-height: 1.2;
+}
+
+.comp-type-badge {
+  font-family: 'DM Mono', monospace;
+  font-size: .55rem;
+  background: var(--mist);
+  color: var(--sub);
+  padding: .1rem .35rem;
+  border-radius: 20px;
+  letter-spacing: .06em;
+  text-transform: uppercase;
+}
+
+.comp-type-btn.active .comp-type-label { color: var(--accent); }
+
+/* ── Sélecteur type compétition ── */
+.dropzone {
+  border: 2px dashed var(--mist);
+  border-radius: var(--radius);
+  padding: 1rem;
+  text-align: center;
+  cursor: pointer;
+  transition: all .2s ease;
+  background: var(--fog);
+  position: relative;
+}
+
+.dropzone:hover, .dropzone.drag-over {
+  border-color: var(--accent);
+  background: #FFF8EC;
+}
+
+.dropzone input[type="file"] {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  cursor: pointer;
+}
+
+.dz-icon {
+  font-size: 1.4rem;
+  margin-bottom: .3rem;
+  display: block;
+}
+
+.dz-title {
+  font-weight: 700;
+  font-size: .8rem;
+  color: var(--navy);
+  margin-bottom: .15rem;
+}
+
+.dz-sub {
+  font-size: .7rem;
+  color: var(--sub);
+  font-family: 'DM Mono', monospace;
+}
+
+/* File list */
+.file-list {
+  display: flex;
+  flex-direction: column;
+  gap: .4rem;
+  max-height: 180px;
+  overflow-y: auto;
+}
+
+.file-item {
+  background: var(--fog);
+  border: 1px solid var(--mist);
+  border-radius: 8px;
+  padding: .6rem .8rem;
+  display: flex;
+  align-items: center;
+  gap: .6rem;
+  animation: slideIn .2s ease;
+}
+
+@keyframes slideIn {
+  from { opacity: 0; transform: translateY(-6px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.file-badge {
+  font-family: 'DM Mono', monospace;
+  font-size: .65rem;
+  font-weight: 500;
+  padding: .2rem .5rem;
+  border-radius: 4px;
+  flex-shrink: 0;
+}
+
+.badge-F { background: #E3EDFF; color: #1A3A6B; }
+.badge-E { background: #FFF0D4; color: #8B5A00; }
+.badge-S { background: #FFE3E3; color: #8B0000; }
+.badge-I { background: #E3F5EC; color: #1A6B3A; }
+.badge-Q { background: #F0E3FF; color: #4A1A8B; }
+
+.file-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.file-name {
+  font-size: .8rem;
+  font-weight: 600;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.file-meta {
+  font-size: .68rem;
+  color: var(--sub);
+  font-family: 'DM Mono', monospace;
+}
+
+.file-remove {
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: var(--sub);
+  font-size: .9rem;
+  padding: .2rem;
+  border-radius: 4px;
+  transition: color .15s, background .15s;
+  flex-shrink: 0;
+}
+
+.file-remove:hover {
+  color: var(--red);
+  background: #FFF0F0;
+}
+
+.empty-state {
+  text-align: center;
+  color: var(--sub);
+  font-size: .8rem;
+  padding: 1rem;
+  font-family: 'DM Mono', monospace;
+}
+
+/* Boutons action */
+.btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: .5rem;
+  padding: .75rem 1rem;
+  border-radius: 8px;
+  border: none;
+  font-family: 'Syne', sans-serif;
+  font-weight: 700;
+  font-size: .85rem;
+  cursor: pointer;
+  transition: all .15s ease;
+  width: 100%;
+  letter-spacing: .02em;
+}
+
+.btn-pdf-arb {
+  display: block; width: 100%; padding: .55rem .5rem;
+  background: #3D6B4F; color: #fff; border: none; border-radius: 8px;
+  font-size: .82rem; font-weight: 600; cursor: pointer; text-align: center;
+  transition: background .15s;
+}
+.btn-pdf-arb:hover { background: #2D5A3E; }
+.pdf-arb-zone { width: 100%; }
+
+.btn-excel-arb {
+  display: block; width: 100%; padding: .55rem .5rem;
+  background: #5B4A8A; color: #fff; border: none; border-radius: 8px;
+  font-size: .82rem; font-weight: 600; cursor: pointer; text-align: center;
+  transition: background .15s;
+}
+.btn-excel-arb:hover { background: #4A3A70; }
+
+.btn-clear { 
+  background: var(--fog);
+  color: var(--sub);
+  border: 1px solid var(--mist);
+}
+
+.btn-clear:hover { background: var(--mist); color: var(--red); }
+
+.btn-generate {
+  background: linear-gradient(135deg, var(--accent), var(--gold));
+  color: var(--white);
+  box-shadow: 0 4px 16px rgba(200,148,26,.35);
+}
+
+.btn-generate:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 6px 24px rgba(200,148,26,.45);
+}
+
+.btn-generate:disabled {
+  opacity: .5;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.btn-mail {
+  background: #1F4E79;
+  color: #fff;
+  border: none;
+}
+.btn-mail:hover:not(:disabled) { background: #2E6099; }
+.btn-mail:disabled { opacity: .45; cursor: not-allowed; }
+
+.btn-gmail {
+  background: #B23121;
+  color: #fff;
+  border: none;
+}
+.btn-gmail:hover:not(:disabled) { background: #C0392B; }
+.btn-gmail:disabled { opacity: .45; cursor: not-allowed; }
+
+/* Input titre */
+.input-group {
+  display: flex;
+  flex-direction: column;
+  gap: .4rem;
+}
+
+.input-label {
+  font-size: .78rem;
+  font-weight: 600;
+  color: var(--navy);
+}
+
+.input-field {
+  width: 100%;
+  padding: .65rem .9rem;
+  border: 1.5px solid var(--mist);
+  border-radius: 8px;
+  font-family: 'Syne', sans-serif;
+  font-size: .85rem;
+  color: var(--text);
+  background: var(--fog);
+  outline: none;
+  transition: border-color .15s;
+}
+
+.input-field:focus {
+  border-color: var(--accent);
+  background: var(--white);
+}
+
+/* Stats mini */
+.stats-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: .5rem;
+}
+
+.stat-card {
+  background: var(--fog);
+  border: 1px solid var(--mist);
+  border-radius: 8px;
+  padding: .6rem;
+  text-align: center;
+}
+
+.stat-value {
+  font-size: 1.4rem;
+  font-weight: 800;
+  color: var(--navy);
+  line-height: 1;
+}
+
+.stat-label {
+  font-size: .62rem;
+  color: var(--sub);
+  font-family: 'DM Mono', monospace;
+  margin-top: .2rem;
+  text-transform: uppercase;
+  letter-spacing: .08em;
+}
+
+/* Divider */
+.divider {
+  height: 1px;
+  background: var(--mist);
+}
+
+/* ── Main panel ── */
+.main-panel {
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  background: var(--fog);
+}
+
+.info-tabs {
+  display: flex;
+  gap: 0;
+  background: var(--white);
+  border-bottom: 2px solid var(--mist);
+  padding: 0 2rem;
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+
+.info-tab {
+  padding: .85rem 1.25rem;
+  font-size: .82rem;
+  font-weight: 700;
+  font-family: 'Syne', sans-serif;
+  color: var(--sub);
+  background: none;
+  border: none;
+  border-bottom: 2px solid transparent;
+  margin-bottom: -2px;
+  cursor: pointer;
+  transition: all .15s;
+  white-space: nowrap;
+}
+.info-tab:hover { color: var(--navy); }
+.info-tab.active { color: var(--accent); border-bottom-color: var(--accent); }
+
+.info-section {
+  display: none;
+  padding: 2rem;
+}
+.info-section.active { display: block; }
+
+.info-divider { height: 1.5rem; }
+
+/* ── Preview table ── */
+.preview-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 1rem;
+}
+
+.preview-title {
+  font-size: 1.1rem;
+  font-weight: 800;
+  color: var(--navy);
+}
+
+.preview-sub {
+  font-size: .78rem;
+  color: var(--sub);
+  font-family: 'DM Mono', monospace;
+}
+
+.table-wrapper {
+  overflow-x: auto;
+  border-radius: var(--radius);
+  border: 1px solid var(--mist);
+  box-shadow: var(--shadow);
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: .82rem;
+  background: var(--white);
+}
+
+thead th {
+  background: var(--navy);
+  color: var(--white);
+  font-weight: 700;
+  padding: .65rem .8rem;
+  text-align: center;
+  white-space: nowrap;
+  position: sticky;
+  top: 0;
+}
+
+thead th:first-child {
+  text-align: left;
+  min-width: 180px;
+}
+
+.th-cat {
+  background: #162d58;
+  font-size: .7rem;
+  letter-spacing: .05em;
+  text-transform: uppercase;
+  font-family: 'DM Mono', monospace;
+}
+
+thead tr:last-child th {
+  font-size: .7rem;
+  font-family: 'DM Mono', monospace;
+  padding: .4rem .6rem;
+}
+
+.th-h { background: #1A3A6B; }
+.th-d { background: #2E1A5E; }
+.th-total { background: var(--accent); }
+
+tbody tr {
+  border-bottom: 1px solid var(--mist);
+  transition: background .1s;
+}
+
+tbody tr:hover { background: var(--ice); }
+
+tbody tr:last-child { border-bottom: none; }
+
+tbody td {
+  padding: .55rem .8rem;
+  text-align: center;
+  font-family: 'DM Mono', monospace;
+}
+
+tbody td:first-child {
+  text-align: left;
+  font-family: 'Syne', sans-serif;
+  font-weight: 600;
+  color: var(--navy);
+}
+
+.cell-h { color: #1A3A6B; font-weight: 600; }
+.cell-d { color: #4A1A8B; font-weight: 600; }
+.cell-empty { color: var(--mist); }
+.cell-total {
+  background: #FFF8EC;
+  color: var(--accent);
+  font-weight: 700;
+  font-size: .9rem;
+}
+
+.tfoot td {
+  background: var(--navy);
+  color: var(--white);
+  font-weight: 700;
+  padding: .65rem .8rem;
+  text-align: center;
+  font-family: 'DM Mono', monospace;
+}
+
+.tfoot td:first-child {
+  text-align: left;
+  font-family: 'Syne', sans-serif;
+}
+
+/* ── Messages toast ── */
+#toast-container {
+  position: fixed;
+  bottom: 1.5rem;
+  right: 1.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: .5rem;
+  z-index: 1000;
+}
+
+.toast {
+  background: var(--navy);
+  color: var(--white);
+  padding: .75rem 1.2rem;
+  border-radius: 8px;
+  font-size: .82rem;
+  box-shadow: var(--shadow-lg);
+  animation: toastIn .25s ease;
+  display: flex;
+  align-items: center;
+  gap: .6rem;
+  max-width: 320px;
+}
+
+.toast.success { border-left: 3px solid var(--green); }
+.toast.error   { border-left: 3px solid var(--red); }
+.toast.info    { border-left: 3px solid var(--accent); }
+
+@keyframes toastIn {
+  from { opacity: 0; transform: translateX(20px); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+
+/* ── Loader ── */
+.loader {
+  display: inline-block;
+  width: 16px;
+  height: 16px;
+  border: 2px solid rgba(255,255,255,.3);
+  border-top-color: white;
+  border-radius: 50%;
+  animation: spin .6s linear infinite;
+}
+
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* ── Empty preview ── */
+.empty-preview {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 300px;
+  gap: 1rem;
+  color: var(--sub);
+}
+
+.empty-preview-icon {
+  font-size: 3rem;
+  opacity: .3;
+}
+
+.empty-preview-text {
+  font-size: .9rem;
+  text-align: center;
+  max-width: 280px;
+  line-height: 1.6;
+}
+
+/* ── Errors list ── */
+.error-list {
+  background: #FFF5F5;
+  border: 1px solid #FECACA;
+  border-radius: 8px;
+  padding: .75rem 1rem;
+  font-size: .8rem;
+  color: var(--red);
+  font-family: 'DM Mono', monospace;
+  margin-top: .5rem;
+}
+
+/* ── About tab ── */
+.about-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+  margin-top: 1rem;
+}
+
+.about-card {
+  background: var(--white);
+  border: 1px solid var(--mist);
+  border-radius: var(--radius);
+  padding: 1.25rem;
+}
+
+.about-card-title {
+  font-weight: 700;
+  font-size: .9rem;
+  color: var(--navy);
+  margin-bottom: .5rem;
+  display: flex;
+  align-items: center;
+  gap: .4rem;
+}
+
+.about-card-body {
+  font-size: .8rem;
+  color: var(--sub);
+  line-height: 1.7;
+}
+
+.about-card-body ul {
+  padding-left: 1rem;
+  margin-top: .4rem;
+}
+
+/* ── Changelog ── */
+.input-group + .input-group { margin-top: .6rem; }
+
+.titre-preview {
+  margin-top: .6rem;
+  padding: .5rem .75rem;
+  background: var(--ice);
+  border: 1px solid var(--mist);
+  border-radius: 6px;
+  font-size: .78rem;
+  line-height: 1.5;
+  color: var(--navy);
+}
+
+.titre-preview-label {
+  font-family: 'DM Mono', monospace;
+  font-size: .65rem;
+  text-transform: uppercase;
+  letter-spacing: .1em;
+  color: var(--sub);
+  display: block;
+  margin-bottom: .2rem;
+}
+
+#titre-preview-val {
+  font-weight: 700;
+  word-break: break-word;
+}
+
+.input-field.auto-filled {
+  border-color: var(--accent);
+  background: #FFFBF0;
+}
+
+.cl-loading {
+  color: var(--sub);
+  font-family: 'DM Mono', monospace;
+  font-size: .82rem;
+  padding: 2rem;
+}
+
+.cl-entry {
+  background: var(--white);
+  border: 1px solid var(--mist);
+  border-radius: var(--radius);
+  padding: 1.5rem;
+  margin-bottom: 1rem;
+  position: relative;
+  overflow: hidden;
+}
+
+.cl-entry::before {
+  content: '';
+  position: absolute;
+  left: 0; top: 0; bottom: 0;
+  width: 4px;
+  background: linear-gradient(180deg, var(--accent), var(--gold));
+}
+
+.cl-entry-header {
+  display: flex;
+  align-items: center;
+  gap: .75rem;
+  margin-bottom: 1rem;
+}
+
+.cl-version-badge {
+  background: linear-gradient(135deg, var(--navy), var(--blue));
+  color: var(--white);
+  font-family: 'DM Mono', monospace;
+  font-size: .85rem;
+  font-weight: 600;
+  padding: .35rem .8rem;
+  border-radius: 6px;
+  letter-spacing: .04em;
+}
+
+.cl-label {
+  font-weight: 700;
+  font-size: 1rem;
+  color: var(--navy);
+}
+
+.cl-date {
+  font-family: 'DM Mono', monospace;
+  font-size: .72rem;
+  color: var(--sub);
+  margin-left: auto;
+}
+
+.cl-latest-tag {
+  font-family: 'DM Mono', monospace;
+  font-size: .65rem;
+  background: #E6F4EA;
+  color: var(--green);
+  border: 1px solid #B7DFC4;
+  padding: .2rem .55rem;
+  border-radius: 20px;
+  letter-spacing: .06em;
+}
+
+.cl-notes {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: .5rem;
+}
+
+.cl-note {
+  display: flex;
+  align-items: flex-start;
+  gap: .6rem;
+  font-size: .84rem;
+  color: var(--text);
+  line-height: 1.5;
+}
+
+.cl-note::before {
+  content: '✦';
+  color: var(--accent);
+  font-size: .6rem;
+  margin-top: .35rem;
+  flex-shrink: 0;
+}
+
+/* Responsive */
+@media (max-width: 900px) {
+  .app { grid-template-columns: 1fr; }
+  .sidebar { border-right: none; border-bottom: 1px solid var(--mist); }
+  .about-grid { grid-template-columns: 1fr; }
+}
+</style>
+</head>
+<body>
+
+<header>
+  <a class="logo" href="/">
+    <img src="/static/logo_lrege.png"
+         alt="Escrime Grand Est"
+         style="height:48px;width:auto;object-fit:contain;">
+    <span class="logo-text">
+      <span class="logo-title">SYNESC</span>
+      <span class="logo-sub">LREGE · v{{ version }}</span>
+    </span>
+  </a>
+  <span class="header-badge">Saison 2025–2026</span>
+</header>
+
+<div class="app">
+
+  <!-- ── Barre d'actions ── -->
+  <aside class="sidebar">
+
+    <!-- Col 1 : Type de compétition -->
+    <div class="sidebar-col-type">
+      <div class="section-label">Type de compétition</div>
+      <div class="comp-type-group" id="comp-type-group">
+        <button class="comp-type-btn active" data-type="grand_est" onclick="selectCompType(this)">
+          <span class="comp-type-icon">🥇</span>
+          <span class="comp-type-label">Grand Est</span>
+        </button>
+        <button class="comp-type-btn" data-type="alsace" onclick="selectCompType(this)">
+          <span class="comp-type-icon">🛡</span>
+          <span class="comp-type-label">Alsace</span>
+        </button>
+        <button class="comp-type-btn" data-type="lorraine" onclick="selectCompType(this)">
+          <span class="comp-type-icon">⚜</span>
+          <span class="comp-type-label">Coupe de<br>Lorraine</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- Col 2 : Fichiers XML + liste + stats -->
+    <div class="sidebar-col-files">
+      <div class="section-label">Fichiers XML Engarde</div>
+      <div class="dropzone" id="dropzone">
+        <input type="file" id="file-input" multiple accept=".xml,.zip">
+        <span class="dz-icon">📂</span>
+        <div class="dz-title">Glisser les fichiers XML ou ZIP ici</div>
+        <div class="dz-sub">ou cliquer pour sélectionner · .xml et .zip acceptés</div>
+      </div>
+      <div style="margin-top:.8rem;">
+        <div class="section-label">Fichiers chargés</div>
+        <div class="file-list" id="file-list">
+          <div class="empty-state">Aucun fichier chargé</div>
+        </div>
+        <div class="stats-row" style="margin-top:.6rem;">
+          <div class="stat-card">
+            <div class="stat-value" id="stat-files">0</div>
+            <div class="stat-label">Fichiers</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-value" id="stat-tireurs">0</div>
+            <div class="stat-label">Tireurs</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-value" id="stat-clubs">0</div>
+            <div class="stat-label">Clubs</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Col 3 : Paramètres + Programme PDF -->
+    <div class="sidebar-col-params">
+      <div class="section-label">Paramètres export</div>
+      <div class="input-group">
+        <label class="input-label" for="titre-long-input">Titre de la compétition</label>
+        <input class="input-field" id="titre-long-input" type="text" value=""
+               placeholder="Rempli automatiquement depuis le XML">
+      </div>
+      <div class="input-group" style="margin-top:.6rem;">
+        <label class="input-label" for="lieu-input">Lieu</label>
+        <input class="input-field" id="lieu-input" type="text" value=""
+               placeholder="Ex : Strasbourg, Nancy...">
+      </div>
+      <div class="titre-preview" id="titre-preview" style="display:none;">
+        <span class="titre-preview-label">Titre final :</span>
+        <span id="titre-preview-val"></span>
+      </div>
+
+      <div style="margin-top:1rem;">
+        <div class="section-label">Programme PDF <span style="font-size:.7rem;color:#8a93b0;text-transform:none;letter-spacing:0;">(optionnel — horaires)</span></div>
+        <div id="programme-zone" style="border:1.5px dashed #2a3050;border-radius:8px;padding:.7rem;transition:border-color .15s;" ondragover="event.preventDefault();this.style.borderColor='#C8941A'" ondragleave="this.style.borderColor=''" ondrop="dropPdf(event)">
+          <input type="file" id="pdf-input" accept=".pdf" style="display:none" onchange="uploadPdf(this.files[0])">
+          <div id="programme-empty" style="display:flex;align-items:center;gap:.6rem;color:#5a6380;font-size:.75rem;">
+            <span style="font-size:1rem;">📋</span>
+            <span style="flex:1;">Glisser le PDF programme</span>
+            <button onclick="document.getElementById('pdf-input').click()" style="background:#2a3050;color:#BDD7EE;border:none;border-radius:6px;padding:.3rem .7rem;font-size:.7rem;cursor:pointer;font-family:inherit;white-space:nowrap;">
+              Choisir
+            </button>
+          </div>
+          <div id="programme-loaded" style="display:none;font-size:.75rem;">
+            <div style="display:flex;align-items:center;gap:.5rem;">
+              <span style="color:#C6EFCE;">✓</span>
+              <div style="flex:1;min-width:0;">
+                <div id="programme-lieu" style="font-weight:700;color:#e8eaf0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;"></div>
+                <div id="programme-cats" style="color:#8a93b0;font-size:.7rem;margin-top:.1rem;"></div>
+              </div>
+              <button onclick="clearProgramme()" style="background:none;border:none;color:#8a93b0;cursor:pointer;font-size:.9rem;" title="Supprimer">✕</button>
+            </div>
+          </div>
+          <div id="programme-loading" style="display:none;font-size:.75rem;color:#8a93b0;">
+            <span class="loader" style="display:inline-block;margin-right:.4rem;"></span>Extraction…
+          </div>
+          <div id="programme-error" style="display:none;font-size:.72rem;color:#FFC7CE;margin-top:.4rem;padding:.3rem .5rem;background:rgba(255,100,100,.1);border-radius:5px;"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Col 4 : Boutons d'action -->
+    <div class="sidebar-col-btns">
+      <button class="btn btn-generate" id="btn-generate" disabled onclick="generer()">
+        <span>📊</span> Générer Excel
+      </button>
+      <button class="btn btn-mail" id="btn-mail" disabled onclick="genererMail()">
+        <span>✉️</span> Mail (.eml)
+      </button>
+      <button class="btn btn-gmail" id="btn-gmail" disabled onclick="ouvrirGmail()">
+        <span>📧</span> Gmail
+      </button>
+      <div class="pdf-arb-zone" id="pdf-arb-zone" title="Charger l'Excel SYNESC modifié (avec statuts Retenu/Libéré) pour générer le PDF arbitres">
+        <label for="pdf-arb-input" class="btn btn-pdf-arb">
+          <span>📋</span> PDF Arbitres
+        </label>
+        <input type="file" id="pdf-arb-input" accept=".xlsx,.xlsm" style="display:none"
+               onchange="genererPdfArbitres(this.files[0])">
+        <div id="pdf-arb-info" style="font-size:0.7rem;color:#8892a8;text-align:center;margin-top:3px;">
+          Charger l'Excel modifié
+        </div>
+      </div>
+      <div class="pdf-arb-zone" id="excel-arb-zone" title="Charger l'Excel SYNESC modifié pour que le mail reflète les statuts Retenu/Libéré réels">
+        <label for="excel-arb-input" class="btn btn-excel-arb">
+          <span>📊</span> Excel → Mail
+        </label>
+        <input type="file" id="excel-arb-input" accept=".xlsx,.xlsm" style="display:none"
+               onchange="chargerExcelArbitresMail(this.files[0])">
+        <div id="excel-arb-info" style="font-size:0.7rem;color:#8892a8;text-align:center;margin-top:3px;">
+          Charger pour bilan précis
+        </div>
+      </div>
+      <button class="btn btn-clear" onclick="clearAll()">
+        🧹 Tout effacer
+      </button>
+    </div>
+
+  </aside>
+
+  <!-- ── Modale corps mail ── -->
+  <div id="mail-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:1000;align-items:center;justify-content:center;">
+    <div style="background:#1e2438;border-radius:12px;padding:1.5rem;max-width:720px;width:95%;max-height:90vh;display:flex;flex-direction:column;gap:1rem;box-shadow:0 8px 40px rgba(0,0,0,.5);">
+      <div style="display:flex;justify-content:space-between;align-items:center;">
+        <div>
+          <div style="font-weight:700;font-size:1rem;color:#e8eaf0;">📧 Gmail — Corps du mail</div>
+          <div style="font-size:.75rem;color:#8a93b0;margin-top:.2rem;">Gmail est ouvert dans un nouvel onglet. Copiez le corps ci-dessous et collez-le dans Gmail.</div>
+        </div>
+        <button onclick="fermerModal()" style="background:none;border:none;color:#8a93b0;font-size:1.3rem;cursor:pointer;padding:.3rem;">✕</button>
+      </div>
+      <div style="display:flex;gap:.5rem;">
+        <input id="modal-sujet" type="text" readonly style="flex:1;background:#141824;border:1px solid #2a3050;border-radius:6px;padding:.5rem .8rem;color:#e8eaf0;font-size:.8rem;" placeholder="Sujet">
+        <button onclick="copierSujet()" style="background:#2E6099;color:#fff;border:none;border-radius:6px;padding:.5rem .9rem;cursor:pointer;font-size:.8rem;white-space:nowrap;">Copier sujet</button>
+      </div>
+      <!-- Aperçu HTML avec liens cliquables -->
+      <div id="modal-corps-preview" style="flex:1;min-height:320px;max-height:50vh;overflow-y:auto;background:#f8f9fa;border:1px solid #2a3050;border-radius:6px;padding:.8rem;color:#1a1a2e;font-size:.78rem;font-family:'DM Mono',Consolas,monospace;line-height:1.5;white-space:pre-wrap;"></div>
+      <!-- Champ texte brut caché pour copie -->
+      <textarea id="modal-corps" readonly style="display:none;"></textarea>
+      <div style="display:flex;gap:.5rem;justify-content:flex-end;flex-wrap:wrap;">
+        <button onclick="copierCorpsHtml()" style="background:#C8941A;color:#fff;border:none;border-radius:8px;padding:.6rem 1.2rem;cursor:pointer;font-weight:700;">📋 Copier pour Gmail</button>
+        <button onclick="copierCorps()" style="background:#3D6B4F;color:#fff;border:none;border-radius:8px;padding:.6rem 1rem;cursor:pointer;font-size:.8rem;">📄 Copier texte brut</button>
+        <button onclick="fermerModal()" style="background:#2a3050;color:#8a93b0;border:none;border-radius:8px;padding:.6rem 1.2rem;cursor:pointer;">Fermer</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Main panel ── -->
+  <main class="main-panel">
+
+    <nav class="info-tabs">
+      <button class="info-tab active" onclick="switchInfoTab('about', this)">ℹ️ À propos</button>
+      <button class="info-tab" onclick="switchInfoTab('changelog', this)">🔖 Changelog</button>
+    </nav>
+
+    <!-- À propos -->
+    <section class="info-section active" id="info-about">
+      <div class="about-grid">
+        <div class="about-card">
+          <div class="about-card-title">⚙️ Fonctionnement</div>
+          <div class="about-card-body">
+            L'outil lit les fichiers XML exportés depuis <strong>Engarde</strong> pour chaque épreuve, puis génère automatiquement le fichier Excel EGESC au format LREGE standard.
+            <ul>
+              <li>Glisser-déposer de fichiers XML ou ZIP</li>
+              <li>Individuel et équipes sur feuilles séparées</li>
+              <li>Colonnes groupées par jour de compétition</li>
+              <li>Calcul automatique des besoins arbitres</li>
+              <li>Contrôle des quotas arbitrage par club</li>
+              <li>Détection des arbitres-tireurs par licence</li>
+            </ul>
+          </div>
+        </div>
+        <div class="about-card">
+          <div class="about-card-title">📄 Feuilles générées</div>
+          <div class="about-card-body">
+            <strong>Grand Est / Alsace :</strong>
+            <ul>
+              <li><strong>Bilan Financier</strong> — recettes, dépenses, solde par jour</li>
+              <li><strong>Épreuve Individuelle</strong> — engagements + besoin arb. + statut quota</li>
+              <li><strong>Épreuve Équipe</strong> — Eq.H / Tir.H / Eq.D / Tir.D + statut quota</li>
+              <li><strong>Indiv / Equipe Extranet</strong> — liste tireurs par catégorie</li>
+              <li><strong>Arbitres</strong> — barème LREGE + arbitres-tireurs détectés</li>
+            </ul>
+            <strong>Coupe de Lorraine :</strong>
+            <ul>
+              <li>Bilan Financier · Indiv Fleuret / Épée / Sabre · Extranet · Arbitres</li>
+            </ul>
+          </div>
+        </div>
+        <div class="about-card">
+          <div class="about-card-title">✉️ Génération de mail</div>
+          <div class="about-card-body">
+            <ul>
+              <li><strong>Mail (.eml)</strong> — Outlook/Thunderbird avec Excel en pièce jointe</li>
+              <li><strong>Gmail</strong> — sujet pré-rempli + modale copier-coller du corps</li>
+            </ul>
+            Glissez le <strong>PDF programme</strong> pour extraire automatiquement les horaires par catégorie.
+          </div>
+        </div>
+        <div class="about-card">
+          <div class="about-card-title">🏆 Types de compétition</div>
+          <div class="about-card-body">
+            <strong>🥇 Grand Est</strong> — M13 à V4, indiv + équipes<br><br>
+            <strong>🛡 Alsace</strong> — Grand Est + M9/M11/M13<br><br>
+            <strong>⚜ Coupe de Lorraine</strong> — M9-M15, 3 armes séparées
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Changelog -->
+    <section class="info-section" id="info-changelog">
+      <div id="changelog-area"><div class="cl-loading">Chargement…</div></div>
+    </section>
+
+  </main>
+</div>
+
+<div id="toast-container"></div>
+
+<script>
+// ── State
+let state = {
+  files: [],
+  compType: 'grand_est',
+  stats: { files: 0, tireurs: 0, clubs: 0 }
+};
+
+// ── Sélecteur type compétition
+function selectCompType(btn) {
+  document.querySelectorAll('.comp-type-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  state.compType = btn.dataset.type;
+}
+
+// ── Drop zone
+const dz    = document.getElementById('dropzone');
+const input = document.getElementById('file-input');
+
+dz.addEventListener('dragover', e => { e.preventDefault(); dz.classList.add('drag-over'); });
+dz.addEventListener('dragleave', () => dz.classList.remove('drag-over'));
+dz.addEventListener('drop', e => {
+  e.preventDefault();
+  dz.classList.remove('drag-over');
+  uploadFiles(e.dataTransfer.files);
+});
+input.addEventListener('change', () => uploadFiles(input.files));
+
+// ── Upload
+async function uploadFiles(fileList) {
+  if (!fileList.length) return;
+  const fd = new FormData();
+  for (const f of fileList) fd.append('files', f);
+
+  const titreInput  = document.getElementById('titre-long-input');
+  const champVide   = titreInput.value.trim() === '';
+
+  try {
+    const res  = await fetch('/api/upload', { method: 'POST', body: fd });
+    const data = await res.json();
+
+    if (data.added.length) {
+      state.files.push(...data.added);
+      toast(`✅ ${data.added.length} fichier(s) ajouté(s)`, 'success');
+
+      // Auto-remplir le titre si le champ était vide avant l'import
+      if (champVide && data.added[0].titre_long) {
+        titreInput.value = data.added[0].titre_long;
+        titreInput.classList.add('auto-filled');
+        updateTitrePreview();
+      }
+    }
+    if (data.errors.length) {
+      data.errors.forEach(e => toast(`⚠ ${e}`, 'error'));
+    }
+
+    renderFileList();
+
+  } catch(e) {
+    toast('Erreur lors de l\'envoi', 'error');
+  }
+  input.value = '';
+}
+
+// ── Titre preview
+function updateTitrePreview() {
+  const titreLong = document.getElementById('titre-long-input').value.trim();
+  const lieu      = document.getElementById('lieu-input').value.trim();
+  const preview   = document.getElementById('titre-preview');
+  const val       = document.getElementById('titre-preview-val');
+
+  let titre = '';
+  if (titreLong && lieu)   titre = `${titreLong} - ${lieu}`;
+  else if (titreLong)      titre = titreLong;
+  else if (lieu)           titre = lieu;
+
+  if (titre) {
+    val.textContent = titre;
+    preview.style.display = 'block';
+  } else {
+    preview.style.display = 'none';
+  }
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+  document.getElementById('titre-long-input').addEventListener('input', () => {
+    document.getElementById('titre-long-input').classList.remove('auto-filled');
+    updateTitrePreview();
+  });
+  document.getElementById('lieu-input').addEventListener('input', updateTitrePreview);
+});
+
+// ── File list
+function renderFileList() {
+  const list = document.getElementById('file-list');
+
+  if (!state.files.length) {
+    list.innerHTML = '<div class="empty-state">Aucun fichier chargé</div>';
+    updateStats(0, 0, 0);
+    document.getElementById('btn-generate').disabled = true;
+    document.getElementById('btn-mail').disabled = true;
+    document.getElementById('btn-gmail').disabled = true;
+    return;
+  }
+
+  let totalTireurs = 0;
+  list.innerHTML = state.files.map(f => {
+    totalTireurs += f.nb_tireurs;
+    const armeClass = `badge-${f.arme === 'Fleuret' ? 'F' : f.arme === 'Épée' ? 'E' : 'S'}`;
+    const typeClass = `badge-${f.type === 'Individuel' ? 'I' : 'Q'}`;
+    return `
+      <div class="file-item">
+        <span class="file-badge ${armeClass}">${f.arme[0]}</span>
+        <span class="file-badge ${typeClass}">${f.type[0]}</span>
+        <div class="file-info">
+          <div class="file-name">${f.categorie} ${f.sexe}</div>
+          <div class="file-meta">${f.nb_tireurs} tireurs · ${f.date}</div>
+        </div>
+        <button class="file-remove" onclick="removeFile('${f.uid}')" title="Supprimer">✕</button>
+      </div>`;
+  }).join('');
+
+  // Récupérer le nombre de clubs depuis l'aperçu
+  fetch('/api/preview').then(r => r.json()).then(data => {
+    updateStats(state.files.length, totalTireurs, data.clubs ? data.clubs.length : 0);
+  }).catch(() => {
+    updateStats(state.files.length, totalTireurs, 0);
+  });
+  document.getElementById('btn-generate').disabled = false;
+  document.getElementById('btn-mail').disabled = false;
+  document.getElementById('btn-gmail').disabled = false;
+}
+
+function updateStats(files, tireurs, clubs) {
+  document.getElementById('stat-files').textContent   = files;
+  document.getElementById('stat-tireurs').textContent = tireurs;
+  document.getElementById('stat-clubs').textContent   = clubs;
+}
+
+// ── Remove
+async function removeFile(uid) {
+  try {
+    const res  = await fetch('/api/remove', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ uid })
+    });
+    const data = await res.json();
+    if (data.removed === 0) {
+      toast('⚠ Fichier introuvable sur le serveur', 'error');
+    }
+  } catch(e) {
+    toast('Erreur de connexion au serveur', 'error');
+  }
+  // Resynchroniser avec le serveur (source de vérité)
+  await syncFromServer();
+}
+
+// ── Clear all
+async function clearAll() {
+  if (!state.files.length) return;
+  try {
+    await fetch('/api/clear', { method: 'POST' });
+    await fetch('/api/clear_excel_arbitres', { method: 'POST' });
+  } catch(e) {
+    toast('Erreur de connexion au serveur', 'error');
+    return;
+  }
+  state.files = [];
+  renderFileList();
+  updateStats(0, 0, 0);
+  // Réinitialiser le bouton Excel → Mail
+  const info = document.getElementById('excel-arb-info');
+  const lbl  = document.querySelector('.btn-excel-arb');
+  if (info) { info.textContent = 'Charger pour bilan précis'; info.style.color = '#8892a8'; }
+  if (lbl)  { lbl.style.background = '#5B4A8A'; lbl.textContent = '📊 Excel → Mail'; }
+  toast('Liste vidée', 'info');
+}
+
+// ── Synchronisation depuis le serveur
+async function syncFromServer() {
+  try {
+    const res  = await fetch('/api/files');
+    const data = await res.json();
+    state.files = data;
+    renderFileList();
+  } catch(e) {
+    console.error('Erreur sync serveur:', e);
+  }
+}
+
+// ── Preview
+// ── Generate
+async function generer() {
+  const btn       = document.getElementById('btn-generate');
+  const titreLong = document.getElementById('titre-long-input').value.trim();
+  const lieu      = document.getElementById('lieu-input').value.trim();
+
+  btn.disabled = true;
+  btn.innerHTML = '<span class="loader"></span> Génération…';
+
+  try {
+    const res = await fetch('/api/generate', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ titre_long: titreLong, lieu: lieu, comp_type: state.compType })
+    });
+
+    if (!res.ok) {
+      const err = await res.json();
+      toast(`Erreur : ${err.error}`, 'error');
+      return;
+    }
+
+    const blob     = await res.blob();
+    const url      = URL.createObjectURL(blob);
+    const a        = document.createElement('a');
+    const filename = res.headers.get('Content-Disposition')?.match(/filename="?([^"]+)"?/)?.[1]
+                     || 'EGESC.xlsx';
+    a.href = url; a.download = filename;
+    document.body.appendChild(a); a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+    toast('✅ Fichier Excel téléchargé !', 'success');
+  } catch(e) {
+    toast('Erreur lors de la génération', 'error');
+  } finally {
+    btn.disabled = false;
+    btn.innerHTML = '<span>📊</span> Générer le fichier Excel';
+  }
+}
+
+// ── Programme PDF
+async function uploadPdf(file) {
+  if (!file || !file.name.toLowerCase().endsWith('.pdf')) {
+    toast('Veuillez sélectionner un fichier PDF', 'error'); return;
+  }
+  document.getElementById('programme-empty').style.display   = 'none';
+  document.getElementById('programme-loaded').style.display  = 'none';
+  document.getElementById('programme-error').style.display   = 'none';
+  document.getElementById('programme-loading').style.display = 'block';
+  document.getElementById('programme-zone').style.borderColor = '';
+
+  const fd = new FormData();
+  fd.append('pdf', file);
+
+  try {
+    const res  = await fetch('/api/upload_programme', { method: 'POST', body: fd });
+    let data;
+    try {
+      data = await res.json();
+    } catch(parseErr) {
+      throw new Error('Réponse serveur invalide (non-JSON)');
+    }
+    if (!res.ok || data.error) {
+      const errEl = document.getElementById('programme-error');
+      errEl.textContent = `⚠ ${data.error || 'Extraction échouée'}`;
+      errEl.style.display = 'block';
+      document.getElementById('programme-empty').style.display = 'block';
+      return;
+    }
+    document.getElementById('programme-lieu').textContent =
+      data.lieu || 'Programme chargé';
+    document.getElementById('programme-cats').textContent =
+      (data.categories || []).map(c => c.cat).join(' · ');
+    document.getElementById('programme-loaded').style.display = 'block';
+    document.getElementById('programme-zone').style.borderColor = '#C8941A';
+    toast(`✅ ${(data.categories||[]).length} catégorie(s) extraite(s)`, 'success');
+  } catch(e) {
+    const errEl = document.getElementById('programme-error');
+    errEl.textContent = `⚠ ${e.message || 'Erreur de connexion'}`;
+    errEl.style.display = 'block';
+    document.getElementById('programme-empty').style.display = 'block';
+  } finally {
+    document.getElementById('programme-loading').style.display = 'none';
+  }
+}
+
+function dropPdf(e) {
+  e.preventDefault();
+  document.getElementById('programme-zone').style.borderColor = '';
+  const file = e.dataTransfer.files[0];
+  if (file) uploadPdf(file);
+}
+
+async function clearProgramme() {
+  await fetch('/api/clear_programme', { method: 'POST' });
+  document.getElementById('programme-loaded').style.display = 'none';
+  document.getElementById('programme-empty').style.display  = 'block';
+  document.getElementById('programme-zone').style.borderColor = '';
+  document.getElementById('pdf-input').value = '';
+  toast('Programme supprimé', 'info');
+}
+
+async function ouvrirGmail() {
+  const btn       = document.getElementById('btn-gmail');
+  const titreLong = document.getElementById('titre-long-input').value.trim();
+  const lieu      = document.getElementById('lieu-input').value.trim();
+
+  btn.disabled = true;
+  btn.innerHTML = '<span class="loader"></span>';
+
+  try {
+    const res = await fetch('/api/mail_body', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ titre_long: titreLong, lieu: lieu, comp_type: state.compType })
+    });
+    if (!res.ok) {
+      let msg = `Erreur ${res.status}`;
+      try { const j = await res.json(); msg = j.error || msg; } catch(_) {}
+      toast(`⚠ ${msg}`, 'error');
+      return;
+    }
+    const { sujet, corps, corps_html } = await res.json();
+
+    // Ouvrir Gmail avec le sujet pré-rempli
+    const gmailUrl = 'https://mail.google.com/mail/?view=cm&fs=1&su='
+                   + encodeURIComponent(sujet);
+    window.open(gmailUrl, '_blank');
+
+    // Afficher la modale avec aperçu HTML (liens cliquables) + texte brut caché
+    document.getElementById('modal-sujet').value = sujet;
+    document.getElementById('modal-corps').value = corps;
+    // Afficher le HTML dans le div preview
+    const preview = document.getElementById('modal-corps-preview');
+    if (corps_html) {
+      preview.innerHTML = corps_html;
+    } else {
+      preview.textContent = corps;
+    }
+    document.getElementById('mail-modal').style.display = 'flex';
+    toast('Gmail ouvert — copiez le corps depuis la fenêtre ci-dessous', 'info');
+  } catch(e) {
+    toast('Erreur lors de l\'ouverture Gmail', 'error');
+  } finally {
+    btn.disabled = false;
+    btn.innerHTML = '<span>📧</span> Gmail';
+  }
+}
+
+function fermerModal() {
+  document.getElementById('mail-modal').style.display = 'none';
+}
+
+async function copierCorps() {
+  try {
+    await navigator.clipboard.writeText(document.getElementById('modal-corps').value);
+    toast('✅ Corps copié (texte brut) !', 'success');
+  } catch(e) {
+    toast('Impossible de copier — sélectionnez manuellement', 'error');
+  }
+}
+
+async function copierCorpsHtml() {
+  // Copie le contenu HTML formaté (avec liens) pour coller dans Gmail en mode HTML
+  try {
+    const preview = document.getElementById('modal-corps-preview');
+    const blob = new Blob([preview.innerHTML], { type: 'text/html' });
+    const blobPlain = new Blob([document.getElementById('modal-corps').value], { type: 'text/plain' });
+    await navigator.clipboard.write([
+      new ClipboardItem({ 'text/html': blob, 'text/plain': blobPlain })
+    ]);
+    toast('✅ Corps copié avec liens — collez dans Gmail !', 'success');
+  } catch(e) {
+    // Fallback texte brut si ClipboardItem non supporté
+    try {
+      await navigator.clipboard.writeText(document.getElementById('modal-corps').value);
+      toast('✅ Corps copié (texte brut) !', 'success');
+    } catch(_) {
+      toast('Impossible de copier — sélectionnez manuellement', 'error');
+    }
+  }
+}
+
+async function copierSujet() {
+  try {
+    await navigator.clipboard.writeText(document.getElementById('modal-sujet').value);
+    toast('✅ Sujet copié !', 'success');
+  } catch(e) { toast('Impossible de copier', 'error'); }
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+  document.getElementById('mail-modal').addEventListener('click', function(e) {
+    if (e.target === this) fermerModal();
+  });
+});
+
+async function chargerExcelArbitresMail(file) {
+  if (!file) return;
+  const info = document.getElementById('excel-arb-info');
+  const lbl  = document.querySelector('.btn-excel-arb');
+  info.textContent = '⏳ Lecture…';
+  lbl.style.opacity = '0.6';
+  try {
+    const fd = new FormData();
+    fd.append('excel', file);
+    const res = await fetch('/api/charger_excel_arbitres', { method: 'POST', body: fd });
+    const j = await res.json();
+    if (!res.ok || j.error) {
+      info.textContent = `❌ ${j.error || 'Erreur'}`;
+      info.style.color = '#e57373';
+      return;
+    }
+    const { nb_retenus, nb_liberes, cout_retenus } = j;
+    info.textContent = `✅ ${nb_retenus} retenus · ${nb_liberes} libérés · ${cout_retenus.toFixed(0)} €`;
+    info.style.color = '#66bb6a';
+    lbl.style.background = '#4A3A70';
+    lbl.textContent = '✅ Excel chargé';
+  } catch (err) {
+    info.textContent = `❌ ${err.message}`;
+    info.style.color = '#e57373';
+  } finally {
+    lbl.style.opacity = '1';
+    document.getElementById('excel-arb-input').value = '';
+  }
+}
+
+async function genererPdfArbitres(file) {
+  if (!file) return;
+  const info = document.getElementById('pdf-arb-info');
+  const lbl  = document.querySelector('.btn-pdf-arb');
+
+  info.textContent = '⏳ Génération en cours…';
+  lbl.style.opacity = '0.6';
+
+  try {
+    const fd = new FormData();
+    fd.append('excel', file);
+
+    const res = await fetch('/api/pdf_arbitres', { method: 'POST', body: fd });
+
+    if (!res.ok) {
+      const j = await res.json().catch(() => ({}));
+      const msg = j.error || `Erreur ${res.status}`;
+      info.textContent = `❌ ${msg}`;
+      info.style.color = '#e57373';
+      return;
+    }
+
+    // Déclencher le téléchargement
+    const blob = await res.blob();
+    const url  = URL.createObjectURL(blob);
+    const a    = document.createElement('a');
+    const disp = res.headers.get('Content-Disposition') || '';
+    const match = disp.match(/filename="?([^"]+)"?/);
+    a.download = match ? match[1] : 'arbitres.pdf';
+    a.href = url;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+
+    info.textContent = '✅ PDF téléchargé';
+    info.style.color = '#66bb6a';
+    setTimeout(() => {
+      info.textContent = 'Charger l\'Excel modifié';
+      info.style.color = '#8892a8';
+    }, 3000);
+
+  } catch (err) {
+    info.textContent = `❌ ${err.message}`;
+    info.style.color = '#e57373';
+  } finally {
+    lbl.style.opacity = '1';
+    // Réinitialiser l'input pour permettre un nouveau chargement
+    document.getElementById('pdf-arb-input').value = '';
+  }
+}
+
+async function genererMail() {
+  const btn       = document.getElementById('btn-mail');
+  const titreLong = document.getElementById('titre-long-input').value.trim();
+  const lieu      = document.getElementById('lieu-input').value.trim();
+
+  btn.disabled = true;
+  btn.innerHTML = '<span class="loader"></span> Génération…';
+
+  try {
+    const res = await fetch('/api/generate_mail', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        titre_long: titreLong,
+        lieu: lieu,
+        comp_type: state.compType,
+        destinataires: '',
+      })
+    });
+
+    if (!res.ok) {
+      let msg = `Erreur ${res.status}`;
+      try { const j = await res.json(); msg = j.error || msg; } catch(_) {}
+      toast(`⚠ ${msg}`, 'error');
+      return;
+    }
+
+    const blob     = await res.blob();
+    const url      = URL.createObjectURL(blob);
+    const a        = document.createElement('a');
+    const filename = res.headers.get('Content-Disposition')?.match(/filename="?([^"]+)"?/)?.[1]
+                     || 'synthese.eml';
+    a.href = url; a.download = filename;
+    document.body.appendChild(a); a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+    toast('✅ Mail .eml téléchargé — ouvrez-le dans Outlook ou Thunderbird', 'success');
+  } catch(e) {
+    toast(`⚠ Erreur : ${e.message || 'connexion au serveur échouée'}`, 'error');
+  } finally {
+    btn.disabled = false;
+    btn.innerHTML = '<span>✉️</span> Mail (.eml)';
+  }
+}
+async function loadChangelog() {
+  const area = document.getElementById('changelog-area');
+  try {
+    const res  = await fetch('/api/version');
+    const data = await res.json();
+    area.innerHTML = data.changelog.map((entry, idx) => `
+      <div class="cl-entry">
+        <div class="cl-entry-header">
+          <span class="cl-version-badge">v${entry.version}</span>
+          <span class="cl-label">${entry.label}</span>
+          ${idx === 0 ? '<span class="cl-latest-tag">LATEST</span>' : ''}
+          <span class="cl-date">${entry.date}</span>
+        </div>
+        <ul class="cl-notes">
+          ${entry.notes.map(n => `<li class="cl-note">${n}</li>`).join('')}
+        </ul>
+      </div>`).join('');
+  } catch(e) {
+    area.innerHTML = '<p style="color:var(--red);padding:1rem;">Impossible de charger le changelog.</p>';
+  }
+}
+
+
+// ── Onglets info
+function switchInfoTab(name, el) {
+  document.querySelectorAll('.info-tab').forEach(b => b.classList.remove('active'));
+  document.querySelectorAll('.info-section').forEach(s => s.classList.remove('active'));
+  el.classList.add('active');
+  document.getElementById('info-' + name).classList.add('active');
+  if (name === 'changelog') loadChangelog();
+}
+
+// ── Toast
+function toast(msg, type = 'info') {
+  const container = document.getElementById('toast-container');
+  const el = document.createElement('div');
+  el.className = `toast ${type}`;
+  el.textContent = msg;
+  container.appendChild(el);
+  setTimeout(() => el.remove(), 3500);
+}
+
+// ── Init
+(async () => {
+  await syncFromServer();
+})();
+</script>
+</body>
+</html>
