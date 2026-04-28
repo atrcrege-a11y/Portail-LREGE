@@ -1113,13 +1113,12 @@ def mail_body():
             lignes.append("")
             if solde > 200:
                 lignes.append(
-                    "Cette marge positive permet d'envisager un ajustement du nombre "
-                    "d'arbitres si nécessaire pour couvrir les besoins de la compétition."
+                    "Cette marge positive permet d'envisager un ajustement du nombre d'arbitres pour le bon déroulement de la compétition."
                 )
             elif solde >= 0:
                 lignes.append(
                     "La balance est équilibrée. Tout désistement d'arbitre devra être "
-                    "traité avec attention pour ne pas dégrader le solde."
+                    "traité avec attention."
                 )
             else:
                 lignes.append(
@@ -1136,6 +1135,11 @@ def mail_body():
     lignes.append('  Inscriptions hors délai majorées — <a href="https://tinyurl.com/hdlrege">https://tinyurl.com/hdlrege</a>')
     lignes.append('• Dérogations au niveau d\'arbitrage : contacter la Présidente de la CRA, Auxane Cholley — <a href="mailto:auxane.cholley@hotmail.fr">auxane.cholley@hotmail.fr</a>')
     lignes.append('• Fichiers résultats (*.cotcot, PDF, FFF) à transmettre à <a href="mailto:atrcrege@gmail.com">atrcrege@gmail.com</a>')
+    lignes.append("")
+    if comp_type == "grand_est":
+        lignes.append("• Les fichiers sont normalement téléchargeables depuis l'extranet dans la partie « gestion des compétitions » à partir de mercredi, sur chaque fin de ligne dernier bouton « télécharger les inscrits ». Les classements sont intégrés dans les fichiers. Les tireurs étrangers seront à rajouter à la main dans le logiciel.")
+    else:
+        lignes.append('• Les fichiers sont normalement téléchargeables depuis l\'extranet dans la partie « gestion des compétitions » à partir de mercredi, sur chaque fin de ligne dernier bouton « télécharger les inscrits ». Les classements sont à télécharger sur <a href="https://crege.fr/menu-classements-quotas">https://crege.fr/menu-classements-quotas</a>. Les tireurs extérieurs seront à rajouter à la main dans le logiciel.')
     lignes += ["", "Cordialement,", "La Ligue Régionale d'Escrime Grand Est"]
 
     sujet = f"{titre} — Synthèse engagements et arbitrage"
@@ -1363,6 +1367,11 @@ def generate_mail():
     lignes.append('  Inscriptions hors délai majorées — <a href="https://tinyurl.com/hdlrege">https://tinyurl.com/hdlrege</a>')
     lignes.append('• Dérogations au niveau d\'arbitrage : contacter la Présidente de la CRA, Auxane Cholley — <a href="mailto:auxane.cholley@hotmail.fr">auxane.cholley@hotmail.fr</a>')
     lignes.append('• Fichiers résultats (*.cotcot, PDF, FFF) à transmettre à <a href="mailto:atrcrege@gmail.com">atrcrege@gmail.com</a>')
+    lignes.append("")
+    if comp_type == "grand_est":
+        lignes.append("• Les fichiers sont normalement téléchargeables depuis l'extranet dans la partie « gestion des compétitions » à partir de mercredi, sur chaque fin de ligne dernier bouton « télécharger les inscrits ». Les classements sont intégrés dans les fichiers. Les tireurs étrangers seront à rajouter à la main dans le logiciel.")
+    else:
+        lignes.append('• Les fichiers sont normalement téléchargeables depuis l\'extranet dans la partie « gestion des compétitions » à partir de mercredi, sur chaque fin de ligne dernier bouton « télécharger les inscrits ». Les classements sont à télécharger sur <a href="https://crege.fr/menu-classements-quotas">https://crege.fr/menu-classements-quotas</a>. Les tireurs extérieurs seront à rajouter à la main dans le logiciel.')
     lignes.append("")
     lignes.append("Cordialement,")
     lignes.append("La Ligue Régionale d'Escrime Grand Est")
