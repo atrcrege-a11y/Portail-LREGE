@@ -589,6 +589,67 @@ def upload_programme():
                         "equipe_info":  "à l'issue des épreuves individuelles",
                     })
 
+        # ── FORMAT 4 : tableau texte avec jours en en-tête et 3 colonnes horaires
+        # Ex: "Samedi 2 mai   appel   scratch   assauts"
+        #     "M13 Sabre Hommes   14h45   15h   15h15"
+        # Tenté EN PREMIER ou si FORMAT 1 donne peu de résultats (< 5)
+        MOIS = {"janvier":"01","février":"02","mars":"03","avril":"04",
+                "mai":"05","juin":"06","juillet":"07","août":"08",
+                "septembre":"09","octobre":"10","novembre":"11","décembre":"12"}
+        JOURS_FR = ["lundi","mardi","mercredi","jeudi","vendredi","samedi","dimanche"]
+
+        LINE4_RE = _re.compile(
+            r'^(.+?)\s+'
+            r'(\d{1,2}[hH]\d{0,2})\s+'
+            r'(\d{1,2}[hH]\d{0,2})\s+'
+            r'(\d{1,2}[hH]\d{0,2})\s*$'
+        )
+        JOUR_ENTETE_RE = _re.compile(
+            r'^(' + '|'.join(JOURS_FR) + r')\s+(\d{1,2})\s+(' +
+            '|'.join(MOIS.keys()) + r')(?:\s+(\d{4}))?',
+            _re.IGNORECASE
+        )
+
+        annee_m = _re.search(r'\b(202\d)\b', full_text)
+        annee = annee_m.group(1) if annee_m else "2026"
+
+        categories_f4 = []
+        current_date_f4 = date_globale or ""
+
+        for line in full_text.splitlines():
+            line = line.strip()
+            if not line: continue
+            jm = JOUR_ENTETE_RE.match(line)
+            if jm:
+                jour_fr = jm.group(1).lower()
+                dd      = jm.group(2).zfill(2)
+                mois_fr = jm.group(3).lower()
+                mois_n  = MOIS.get(mois_fr, "01")
+                an      = jm.group(4) or annee
+                current_date_f4 = f"{jour_fr} {dd}.{mois_n}.{an}"
+                continue
+            if any(k in line.lower() for k in ["appel","scratch","assaut","début","merci"]):
+                continue
+            m4 = LINE4_RE.match(line)
+            if not m4: continue
+            cat_raw  = m4.group(1).strip()
+            cat_norm = normaliser_cat(cat_raw)
+            if not cat_norm or cat_norm in ["None", ""]: continue
+            categories_f4.append({
+                "cat":          cat_norm,
+                "date":         current_date_f4,
+                "appel":        extraire_heure(m4.group(2)),
+                "scratch":      extraire_heure(m4.group(3)),
+                "debut":        extraire_heure(m4.group(4)),
+                "equipe_appel": None,
+                "equipe_debut": None,
+                "equipe_info":  "à l'issue des épreuves individuelles",
+            })
+
+        # Préférer FORMAT 4 s'il donne plus de résultats que l'actuel
+        if len(categories_f4) > len(categories):
+            categories = categories_f4
+
         if not categories:
             if not full_text.strip():
                 return jsonify({"error": "PDF image (scanné) — l'extraction automatique n'est pas possible. Renseignez les horaires manuellement dans le mail."}), 400
@@ -1461,4 +1522,4 @@ def clear_excel_arbitres():
 
 
 if __name__ == "__main__":
-    app.run(debug=False, port=5002)
+    app.run(debug=True, port=5002)
