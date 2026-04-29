@@ -5,7 +5,7 @@
 ; ================================================================
 
 #define AppName    "Portail LREGE"
-#define AppVersion "1.3.0"
+#define AppVersion "1.3.1"
 #define AppPublisher "Escrime Grand Est"
 #define AppURL     "https://www.lrege.fr"
 
@@ -50,6 +50,7 @@ Name: "{autodesktop}\{#AppName}"; Filename: "{app}\LANCER_PORTAIL.bat"; WorkingD
 
 [Run]
 Filename: "{app}\PREMIER_LANCEMENT.bat"; Description: "Installer les dependances (recommande)"; Flags: postinstall runasoriginaluser shellexec; Check: PremierLancement
+Filename: "{app}\LANCER_PORTAIL.bat"; Description: "Relancer le Portail LREGE"; Flags: postinstall runasoriginaluser shellexec nowait; WorkingDir: "{app}"
 
 [Code]
 function PremierLancement(): Boolean;

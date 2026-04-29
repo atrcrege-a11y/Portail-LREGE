@@ -5,8 +5,8 @@ import os, sys, subprocess, threading, webbrowser, time, json, tempfile
 import urllib.request as urlreq
 from flask import Flask, render_template_string, jsonify
 
-VERSION_LOCALE = "1.3.0"
-VERSION_JSON_URL = "https://drive.google.com/uc?export=download&id=19uHR_WR3V1z7eqEFODsafLr_YCcef1Wo"
+VERSION_LOCALE = 1.3.0
+VERSION_JSON_URL = "https://raw.githubusercontent.com/atrcrege-a11y/Portail-LREGE/main/version.json"
 
 app = Flask(__name__)
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
