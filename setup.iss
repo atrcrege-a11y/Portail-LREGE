@@ -5,7 +5,7 @@
 ; ================================================================
 
 #define AppName    "Portail LREGE"
-#define AppVersion "1.4.1"
+#define AppVersion "1.4.2"
 #define AppPublisher "Escrime Grand Est"
 #define AppURL     "https://www.lrege.fr"
 
