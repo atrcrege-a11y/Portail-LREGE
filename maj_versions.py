@@ -3,17 +3,29 @@ import re, json, sys
 v = sys.argv[1]
 
 # portail.py
-c = open('portail.py', encoding='utf-8').read()
-c = re.sub(r'VERSION_LOCALE = "[^"]*"', 'VERSION_LOCALE = "' + v + '"', c)
-open('portail.py', 'w', encoding='utf-8').write(c)
+with open('portail.py', encoding='utf-8') as f:
+    c = f.read()
+c = re.sub(r'VERSION_LOCALE = ["\']?[\d.]+["\']?', 'VERSION_LOCALE = "' + v + '"', c)
+with open('portail.py', 'w', encoding='utf-8') as f:
+    f.write(c)
 
 # setup.iss
-c = open('setup.iss', encoding='utf-8').read()
-c = re.sub(r'#define AppVersion "[^"]*"', '#define AppVersion "' + v + '"', c)
-open('setup.iss', 'w', encoding='utf-8').write(c)
+with open('setup.iss', encoding='utf-8') as f:
+    c = f.read()
+c = re.sub(r'#define AppVersion ["\']?[\d.]+["\']?', '#define AppVersion "' + v + '"', c)
+with open('setup.iss', 'w', encoding='utf-8') as f:
+    f.write(c)
 
 # version.json
 url = 'https://github.com/atrcrege-a11y/Portail-LREGE/releases/download/v' + v + '/PortailLREGE_Setup_v' + v + '.exe'
-json.dump({'version': v, 'url': url}, open('version.json', 'w'), indent=2)
+with open('version.json', 'w') as f:
+    json.dump({'version': v, 'url': url}, f, indent=2)
 
-print('OK')
+# Vérification
+with open('portail.py', encoding='utf-8') as f:
+    check = f.read()
+if 'VERSION_LOCALE = "' + v + '"' in check:
+    print('OK')
+else:
+    print('ERREUR: VERSION_LOCALE mal ecrite')
+    sys.exit(1)
