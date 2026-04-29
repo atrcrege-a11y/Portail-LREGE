@@ -381,6 +381,12 @@ class GrandEst(CompetitionBase):
 
         # ── TOTAL GÉNÉRAL
         tot_row = DATA_START + len(tous_clubs)
+        # Helper : retourne la formule SUM ou 0 si pas de données
+        def _sum_or_zero(cl):
+            if tot_row > DATA_START:
+                return f"=SUM({cl}{DATA_START}:{cl}{tot_row-1})"
+            return 0
+
         ws.merge_cells(start_row=tot_row, start_column=1,
                        end_row=tot_row, end_column=2)
         sc(ws.cell(row=tot_row, column=1, value="TOTAL GÉNÉRAL"),
@@ -392,8 +398,7 @@ class GrandEst(CompetitionBase):
                         if is_equipe else [cp["col_h"], cp["col_d"]])
                 for ci in cols:
                     cl = gcl(ci)
-                    c = ws.cell(row=tot_row, column=ci,
-                                value=f"=SUM({cl}{DATA_START}:{cl}{tot_row-1})")
+                    c = ws.cell(row=tot_row, column=ci, value=_sum_or_zero(cl))
                     c.font = mk_font(bold=True, color=COLORS["white"])
                     c.fill = mk_fill(COLORS["navy"])
                     c.alignment = mk_align(); c.border = border_all()
@@ -404,8 +409,7 @@ class GrandEst(CompetitionBase):
                 (dp["col_fournis"], "D9E8F5", "1F4E79"),
             ]:
                 cl = gcl(ci)
-                c = ws.cell(row=tot_row, column=ci,
-                            value=f"=SUM({cl}{DATA_START}:{cl}{tot_row-1})")
+                c = ws.cell(row=tot_row, column=ci, value=_sum_or_zero(cl))
                 c.font = mk_font(bold=True, color=fg)
                 c.fill = mk_fill(bg); c.alignment = mk_align(); c.border = border_all()
             # Cellule statut global vide en total
@@ -414,8 +418,7 @@ class GrandEst(CompetitionBase):
 
         for ci in [col_tot_h, col_tot_d, col_tot_clb]:
             cl = gcl(ci)
-            c = ws.cell(row=tot_row, column=ci,
-                        value=f"=SUM({cl}{DATA_START}:{cl}{tot_row-1})")
+            c = ws.cell(row=tot_row, column=ci, value=_sum_or_zero(cl))
             c.font = mk_font(bold=True, color=COLORS["white"])
             c.fill = mk_fill(COLORS["accent"])
             c.alignment = mk_align(); c.border = border_all()

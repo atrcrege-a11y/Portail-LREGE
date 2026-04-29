@@ -681,27 +681,21 @@ def clear_programme():
 
 
 
-@app.route("/api/mail_body", methods=["POST"])
-def mail_body():
-    """Retourne le sujet et le corps du mail en JSON (pour Gmail)."""
-    from core.parser import construire_donnees
+def _generer_corps_mail(titre_long, lieu, comp_type, fichiers_list, arbitres_statuts=None):
+    """
+    Génère le corps du mail (sujet, HTML, texte brut).
+    Retourne (corps_html, sujet).
+    Utilisé par mail_body() ET generate_mail() pour garantir l'identité.
+    """
+    from core.parser import construire_donnees, date_avec_jour as _daj
     from core.config import BAREME_ARBITRES
     from collections import defaultdict as _dd
-    from core.parser import date_avec_jour as _daj
-
-    store = get_store()
-    if not store:
-        return jsonify({"error": "Aucun fichier chargé"}), 400
-
-    data       = request.get_json() or {}
-    titre_long = data.get("titre_long", "").strip()
-    lieu       = data.get("lieu", "").strip()
-    comp_type  = data.get("comp_type", "grand_est")
+    import html as _html
+    import re as _re
 
     titre = (f"{titre_long} - {lieu}" if titre_long and lieu
              else titre_long or lieu or "SYNESC")
 
-    fichiers_list = [(m, t, a) for m, t, a in store]
     comp_obj = get_competition(comp_type)
     (groupes_indiv, groupes_equipe, arbitres_all,
      _, _, plage_dates, dates_ordonnees) = construire_donnees(
@@ -725,8 +719,7 @@ def mail_body():
     for meta, tireurs, _ in fichiers_list:
         for t in tireurs:
             lic = t.get("licence", "").strip()
-            if lic:
-                licences_tireurs[lic] = t
+            if lic: licences_tireurs[lic] = t
     licences_arbitres = {a.get("licence","").strip(): a
                          for a in arbitres_all if a.get("licence","").strip()}
     arb_tireurs = [(lic, licences_tireurs[lic], licences_arbitres[lic])
@@ -734,295 +727,82 @@ def mail_body():
 
     SEP = "─" * 50
 
-    # Horaires depuis le programme PDF (si chargé)
-    programme = session.get("programme", {})
-    horaires_index = {}   # {(cat_norm, date_norm): {appel, scratch, debut}}
-    for h in programme.get("categories", []):
-        cat_norm  = h.get("cat", "").strip().upper()
-        date_norm = h.get("date", "").strip().lower()
-        horaires_index[(cat_norm, date_norm)] = h
-
-    # Alias pour retrouver les horaires : V1/V2/V3/V4 → chercher aussi "VÉTÉRANS"
-    VET_ALIASES = {"V1","V2","V3","V4","V1/V2","V3/V4","VETERAN","VETERANS"}
-    SEN_ALIASES = {"SENIOR"}
-
-    def _horaire(cat_key, cat_lbl, date_str, arme_code=None):
-        """Retourne la ligne horaire si disponible, sinon chaîne vide."""
-        date_label = _daj(date_str).lower()
-        # Construire les clés à tester
-        keys = [cat_lbl.upper(), cat_key.upper()]
-        # Si arme connue, chercher d'abord la clé précise cat|arme
-        if arme_code:
-            keys = [f"{cat_key.upper()}|{arme_code}", f"{cat_lbl.upper()}|{arme_code}"] + keys
-        # Fallback Vétérans / Seniors
-        if cat_key.upper() in VET_ALIASES or cat_lbl.upper() in VET_ALIASES:
-            keys += ["VÉTÉRANS", "VETERANS", "VÉTÉRAN"]
-            if arme_code:
-                keys += [f"VÉTÉRANS|{arme_code}"]
-        if cat_key.upper() in SEN_ALIASES or cat_lbl.upper() in SEN_ALIASES:
-            keys += ["SENIORS"]
-        # Fallback : chercher cat|* (toutes armes) si rien trouvé
-        keys += [k for k in set(k for k,_ in horaires_index.keys())
-                 if k.startswith(f"{cat_key.upper()}|") or k.startswith(f"{cat_lbl.upper()}|")]
-        for key in keys:
-            h = horaires_index.get((key, date_label))
-            if h:
-                parts = []
-                if h.get("appel"):   parts.append(f"Appel {h['appel']}")
-                if h.get("scratch"): parts.append(f"Scratch {h['scratch']}")
-                if h.get("debut"):   parts.append(f"Début {h['debut']}")
-                return f" ({' · '.join(parts)})" if parts else ""
-        return ""
-
     lignes = []
     lignes.append("Bonjour,")
     lignes.append("")
-    lignes.append(f"Veuillez trouver ci-joint le tableau de synthèse SYNESC ainsi que le récapitulatif des inscriptions et de la situation arbitrale pour {titre}.")
-    if programme.get("lieu"):
-        lignes.append(f"Lieu : {programme['lieu']}")
+    lignes.append(f"Veuillez trouver en pièce jointe le tableau de synthèse SYNESC ainsi que le récapitulatif des inscriptions et de la situation arbitrale pour {titre}.")
     lignes.append("")
 
-    def _decomposer_poules(nb, taille_min=5, taille_max=8):
-        """
-        Décompose nb tireurs en poules de taille_min à taille_max.
-        Préfère les poules de 7, sinon cherche la combinaison la plus homogène.
-        Retourne une liste de tailles de poules, ou None si impossible.
-        """
-        if nb < taille_min:
-            return None
-        # Essayer toutes les combinaisons de taille_ref de 7 à 5
-        for ref in [7, 6, 8, 5]:
-            nb_p = nb // ref
-            reste = nb % ref
-            if nb_p == 0:
-                continue
-            if reste == 0:
-                return [ref] * nb_p
-            # Distribuer le reste en augmentant certaines poules
-            if reste > 0:
-                # Peut-on absorber le reste en augmentant nb_p poules de 1 ?
-                if ref + 1 <= taille_max:
-                    # reste poules de (ref+1), nb_p-reste poules de ref
-                    if reste <= nb_p:
-                        poules = [ref + 1] * reste + [ref] * (nb_p - reste)
-                        if all(taille_min <= t <= taille_max for t in poules):
-                            return sorted(poules, reverse=True)
-                # Peut-on ajouter une poule de plus avec les restes ?
-                nb_p2 = nb_p + 1
-                taille = nb // nb_p2
-                reste2 = nb % nb_p2
-                if taille >= taille_min:
-                    poules = [taille + 1] * reste2 + [taille] * (nb_p2 - reste2)
-                    if all(taille_min <= t <= taille_max for t in poules):
-                        return sorted(poules, reverse=True)
-        return None
-
-    def _desc_poules(poules):
-        """Décrit les poules de façon compacte ex: '2×7 + 1×8' ou '4×6'."""
-        from collections import Counter
-        c = Counter(poules)
-        parts = [f"{v}×{k}" for k, v in sorted(c.items(), reverse=True)]
-        return " + ".join(parts)
-
-    def _formule(nb, is_equipe=False):
-        """Propose une formule poules + TED selon l'effectif (sans rappel DT)."""
-        if nb <= 0: return ""
-        if is_equipe:
-            if nb == 1: return f"    ↳ Formule proposée : 1 seule équipe — pas de compétition possible"
-            elif nb == 2: return f"    ↳ Formule proposée : finale directe"
-            elif nb <= 4: return f"    ↳ Formule proposée : 1 poule de {nb} + finale"
-            else:
-                ted = 4
-                while ted < nb: ted *= 2
-                return f"    ↳ Formule proposée : poule(s) + TED{ted}"
-        else:
-            if nb == 1: return "    ↳ Formule proposée : 1 seul tireur — titre attribué sans assaut"
-            elif nb == 2: return f"    ↳ Formule proposée : finale directe pour le titre"
-            elif nb <= 4: return f"    ↳ Formule proposée : 1 poule de {nb} + TED4"
-            elif nb <= 9:
-                ted = 4
-                while ted < nb: ted *= 2
-                return f"    ↳ Formule proposée : 1 poule de {nb} + TED{ted}"
-            else:
-                ted = 4
-                while ted < nb: ted *= 2
-                poules = _decomposer_poules(nb)
-                if poules:
-                    desc = _desc_poules(poules)
-                    return f"    ↳ Formule proposée : {desc} ({len(poules)} poule{'s' if len(poules)>1 else ''}) + TED{ted}"
-                else:
-                    nb_p = 2 if nb <= 10 else round(nb / 7)
-                    t = nb // nb_p; r = nb % nb_p
-                    desc = (f"{r}×{t+1} + {nb_p-r}×{t}" if r else f"{nb_p}×{t}")
-                    return f"    ↳ Formule proposée : {desc} ({nb_p} poules) + TED{ted}"
-
-    # ── Chemin spécifique LORRAINE
-    if comp_type == "lorraine":
-        from competitions.lorraine import Lorraine as _Lorraine
-        lorraine_obj = _Lorraine()
-        groupes_arme = lorraine_obj._grouper_par_arme(fichiers_list)
-        dates_lorraine = sorted({
-            date_str
-            for arme_data in groupes_arme.values()
-            for date_str in arme_data
-        })
-        ARME_LBL = {"F": "Fleuret", "E": "Épée", "S": "Sabre"}
-
-        for date_str in dates_lorraine:
-            label = _daj(date_str).capitalize()
-            lignes += [SEP, f"  {label.upper()}", SEP, ""]
-            lignes.append("ÉPREUVES INDIVIDUELLES")
-
-            total_t_lor = 0
-            for arme_code in ["F", "E", "S"]:
-                arme_data = groupes_arme.get(arme_code, {}).get(date_str, {})
-                if not arme_data: continue
-                arme_lbl = ARME_LBL.get(arme_code, arme_code)
-                lignes.append(f"\n  [{arme_lbl}]")
-                for cat, clubs in arme_data.items():
-                    nb_h = sum(v.get("H", 0) for v in clubs.values())
-                    nb_d = sum(v.get("D", 0) for v in clubs.values())
-                    lbl  = CAT_LBL_I.get(cat, cat)
-                    hor  = _horaire(cat, lbl, date_str, arme_code=arme_code)
-                    total_t_lor += nb_h + nb_d
-                    if nb_h:
-                        lignes.append(f"    • {lbl} H — {nb_h} tireur(s){hor}")
-                        lignes.append(_formule(nb_h))
-                    if nb_d:
-                        lignes.append(f"    • {lbl} D — {nb_d} tireur(s){hor}")
-                        lignes.append(_formule(nb_d))
-            lignes.append("")
-            lignes.append("  ℹ Le DT reste libre de modifier les formules en fonction des effectifs.")
-            lignes.append("")
-
-            arb_jour = arb_par_date.get(date_str, [])
-            nb_arb   = len(arb_jour)
-            b_i      = 0 if total_t_lor < 4 else (1 if total_t_lor <= 8 else 2)
-            lignes.append(f"ARBITRES INSCRITS — {nb_arb} / BESOIN ESTIMÉ — {b_i}")
-            if nb_arb >= b_i:
-                lignes.append(f"Situation : quota couvert ({nb_arb}/{b_i}).")
-            else:
-                lignes.append(f"⚠ Situation : il manque {b_i - nb_arb} arbitre(s).")
-
-            clubs_all_lor = set()
-            for arme_data in groupes_arme.values():
-                for cat_data in arme_data.get(date_str, {}).values():
-                    clubs_all_lor |= set(cat_data.keys())
-            arb_par_club_lor = _dd(int)
-            for a in arb_jour:
-                arb_par_club_lor[a.get("club","").strip()] += 1
-            deficit = []
-            for club in sorted(clubs_all_lor):
-                nb_t = sum(
-                    v.get("H",0) + v.get("D",0)
-                    for arme_data in groupes_arme.values()
-                    for cat_data in arme_data.get(date_str, {}).values()
-                    for c, v in cat_data.items() if c == club
-                )
-                bi = 0 if nb_t < 4 else (1 if nb_t <= 8 else 2)
-                f  = arb_par_club_lor.get(club, 0)
-                if bi > 0 and f < bi:
-                    deficit.append((club, bi, f))
-            if deficit:
-                lignes.append("")
-                lignes.append("⚠ Clubs en déficit d'arbitrage :")
-                for club, b, f in deficit:
-                    lignes.append(f"  • {club} — besoin : {b}, fournis : {f}, manque : {b-f}")
-            lignes.append("")
-
-    # ── Chemin standard GRAND EST / ALSACE
-    else:
-      for date_str in dates_ordonnees:
+    for date_str in dates_ordonnees:
         label = _daj(date_str).capitalize()
         lignes += [SEP, f"  {label.upper()}", SEP, ""]
 
         cats_indiv = groupes_indiv.get(date_str, {})
         if cats_indiv:
-            lignes.append("ÉPREUVES INDIVIDUELLES")
-            for cat, clubs in cats_indiv.items():
-                nb_h = sum(v.get("H", 0) for v in clubs.values())
-                nb_d = sum(v.get("D", 0) for v in clubs.values())
-                lbl  = CAT_LBL_I.get(cat, cat)
-                hor  = _horaire(cat, lbl, date_str)
-                if nb_h:
-                    lignes.append(f"  • {lbl} H — {nb_h} tireur(s){hor}")
-                    lignes.append(_formule(nb_h))
-                if nb_d:
-                    lignes.append(f"  • {lbl} D — {nb_d} tireur(s){hor}")
-                    lignes.append(_formule(nb_d))
-            lignes.append("")
-            lignes.append("  ℹ Le DT reste libre de modifier les formules en fonction des effectifs.")
-            lignes.append("")
+            if comp_type == "lorraine":
+                armes_presentes = {}
+                for cat_key, clubs in cats_indiv.items():
+                    arme = cat_key.split("|")[1] if "|" in cat_key else ""
+                    armes_presentes.setdefault(arme, {})[cat_key] = clubs
+                for arme_code, cats_arme in sorted(armes_presentes.items()):
+                    ARME_LBL = {"F": "── Fleuret ──", "E": "── Épée ──", "S": "── Sabre ──"}
+                    lignes.append(f"ÉPREUVES INDIVIDUELLES {ARME_LBL.get(arme_code,'')}")
+                    for cat_key, clubs in cats_arme.items():
+                        cat_base = cat_key.split("|")[0]
+                        nb_h = sum(v.get("H",0) for v in clubs.values())
+                        nb_d = sum(v.get("D",0) for v in clubs.values())
+                        lbl = CAT_LBL_I.get(cat_base, cat_base)
+                        if nb_h: lignes.append(f"  • {lbl} H — {nb_h} tireur(s)")
+                        if nb_d: lignes.append(f"  • {lbl} D — {nb_d} tireur(s)")
+                    lignes.append("")
+            else:
+                lignes.append("ÉPREUVES INDIVIDUELLES")
+                for cat, clubs in cats_indiv.items():
+                    nb_h = sum(v.get("H",0) for v in clubs.values())
+                    nb_d = sum(v.get("D",0) for v in clubs.values())
+                    lbl  = CAT_LBL_I.get(cat, cat)
+                    if nb_h: lignes.append(f"  • {lbl} H — {nb_h} tireur(s)")
+                    if nb_d: lignes.append(f"  • {lbl} D — {nb_d} tireur(s)")
+                lignes.append("")
 
         cats_equipe = groupes_equipe.get(date_str, {})
         if cats_equipe:
             lignes.append("ÉPREUVES PAR ÉQUIPES")
-
-            # Détecter si les clés sont par arme (ex: "M13|F") ou simples (ex: "M13")
-            par_arme_mail = any("|" in k for k in cats_equipe.keys())
-
-            ARMES_MAIL = [("F","Fleuret"), ("E","Épée"), ("S","Sabre")]
-
-            def _ecrire_equipes_bloc(cats_a_afficher):
-                """Écrit les lignes équipes pour un sous-ensemble de cats."""
-                for cat, clubs in cats_a_afficher:
-                    is_mx  = any(v.get("mixte", False) for v in clubs.values())
-                    nb_mx  = sum(len(v.get("equipes", set())) for v in clubs.values() if v.get("tireurs_MX", 0) > 0) if is_mx else 0
-                    nb_h   = sum(len(v.get("equipes", set())) for v in clubs.values() if v.get("tireurs_H", 0) > 0) if not is_mx else 0
-                    nb_d   = sum(len(v.get("equipes", set())) for v in clubs.values() if v.get("tireurs_D", 0) > 0) if not is_mx else 0
-                    cat_base    = cat.split("|")[0] if "|" in cat else cat
-                    arme_code_eq= cat.split("|")[1] if "|" in cat else None
-                    lbl         = CAT_LBL_E.get(cat_base, cat_base)
-                    hor         = _horaire(cat_base, lbl, date_str, arme_code=arme_code_eq)
-                    if not hor:
-                        hor = " (à l'issue des épreuves individuelles)"
-                    if is_mx and nb_mx:
-                        lignes.append(f"  • Équipe {lbl} Mixte — {nb_mx} équipe(s){hor}")
-                        lignes.append(_formule(nb_mx, is_equipe=True))
-                    else:
-                        if nb_h:
-                            lignes.append(f"  • Équipe {lbl} H — {nb_h} équipe(s){hor}")
-                            lignes.append(_formule(nb_h, is_equipe=True))
-                        if nb_d:
-                            lignes.append(f"  • Équipe {lbl} D — {nb_d} équipe(s){hor}")
-                            lignes.append(_formule(nb_d, is_equipe=True))
-
-            if par_arme_mail:
-                for arme_code, arme_lbl in ARMES_MAIL:
-                    cats_arme = [(k, v) for k, v in cats_equipe.items()
-                                 if k.endswith(f"|{arme_code}")]
-                    if not cats_arme:
-                        continue
-                    lignes.append(f"  ── {arme_lbl} ──")
-                    _ecrire_equipes_bloc(cats_arme)
-            else:
-                _ecrire_equipes_bloc(list(cats_equipe.items()))
-
+            for cat, clubs in cats_equipe.items():
+                is_mx = any(v.get("mixte",False) for v in clubs.values())
+                lbl   = CAT_LBL_E.get(cat, cat)
+                if is_mx:
+                    nb_mx = sum(len(v.get("equipes",set())) for v in clubs.values() if v.get("tireurs_MX",0)>0)
+                    if nb_mx: lignes.append(f"  • Équipe {lbl} Mixte — {nb_mx} équipe(s)")
+                else:
+                    nb_h = sum(len(v.get("equipes",set())) for v in clubs.values() if v.get("tireurs_H",0)>0)
+                    nb_d = sum(len(v.get("equipes",set())) for v in clubs.values() if v.get("tireurs_D",0)>0)
+                    if nb_h: lignes.append(f"  • Équipe {lbl} H — {nb_h} équipe(s)")
+                    if nb_d: lignes.append(f"  • Équipe {lbl} D — {nb_d} équipe(s)")
             lignes.append("")
 
         arb_jour = arb_par_date.get(date_str, [])
         nb_arb = len(arb_jour)
-        total_t = sum(v.get("H",0)+v.get("D",0)
-                      for cats in groupes_indiv.get(date_str,{}).values()
-                      for v in cats.values())
-        total_e = sum(1 for cats in groupes_equipe.get(date_str,{}).values()
-                      for v in cats.values()
-                      if v.get("tireurs_H",0)+v.get("tireurs_D",0)+v.get("tireurs_MX",0)>0)
-        b_i = 0 if total_t < 4 else (1 if total_t <= 8 else 2)
-        b_e = 0 if total_e == 0 else (1 if total_e <= 2 else (2 if total_e <= 4 else 3))
-        besoin = b_i + b_e
-        lignes.append(f"ARBITRES INSCRITS — {nb_arb} / BESOIN ESTIMÉ — {besoin}")
+        total_tireurs = sum(v.get("H",0)+v.get("D",0)
+                            for cats in groupes_indiv.get(date_str,{}).values()
+                            for v in cats.values())
+        total_equipes = sum(1 for cats in groupes_equipe.get(date_str,{}).values()
+                            for v in cats.values()
+                            if v.get("tireurs_H",0)+v.get("tireurs_D",0)+v.get("tireurs_MX",0)>0)
+        besoin = (0 if total_tireurs<4 else (1 if total_tireurs<=8 else 2)) + \
+                 (0 if total_equipes==0 else (1 if total_equipes<=2 else (2 if total_equipes<=4 else 3)))
+        lignes.append(f"ARBITRES INSCRITS — {nb_arb}")
+        lignes.append(f"BESOIN ESTIMÉ — {besoin}")
         if nb_arb >= besoin:
             lignes.append(f"Situation : quota couvert ({nb_arb}/{besoin}).")
         else:
-            lignes.append(f"⚠ Situation : il manque {besoin - nb_arb} arbitre(s).")
+            lignes.append(f"⚠ Situation : il manque {besoin-nb_arb} arbitre(s) pour couvrir le quota.")
 
-        arb_par_club = _dd(int)
-        for a in arb_jour:
-            arb_par_club[a.get("club","").strip()] += 1
         clubs_all = set()
         for cats in list(groupes_indiv.get(date_str,{}).values()) + list(groupes_equipe.get(date_str,{}).values()):
             clubs_all |= set(cats.keys())
+        arb_par_club = _dd(int)
+        for a in arb_jour: arb_par_club[a.get("club","").strip()] += 1
         deficit = []
         for club in sorted(clubs_all):
             nb_t = sum(v.get("H",0)+v.get("D",0)
@@ -1031,16 +811,14 @@ def mail_body():
             nb_e = sum(1 for cats in groupes_equipe.get(date_str,{}).values()
                        for c,v in cats.items()
                        if c==club and v.get("tireurs_H",0)+v.get("tireurs_D",0)+v.get("tireurs_MX",0)>0)
-            bi = 0 if nb_t<4 else (1 if nb_t<=8 else 2)
-            be = 0 if nb_e==0 else (1 if nb_e<=2 else (2 if nb_e<=4 else 3))
-            b  = bi + be
-            f  = arb_par_club.get(club, 0)
-            if b > 0 and f < b:
-                deficit.append((club, b, f))
+            b = (0 if nb_t<4 else (1 if nb_t<=8 else 2)) + \
+                (0 if nb_e==0 else (1 if nb_e<=2 else (2 if nb_e<=4 else 3)))
+            f = arb_par_club.get(club,0)
+            if b>0 and f<b: deficit.append((club,b,f))
         if deficit:
             lignes.append("")
             lignes.append("⚠ Clubs en déficit d'arbitrage :")
-            for club, b, f in deficit:
+            for club,b,f in deficit:
                 lignes.append(f"  • {club} — besoin : {b}, fournis : {f}, manque : {b-f}")
         lignes.append("")
 
@@ -1051,85 +829,59 @@ def mail_body():
             lignes.append(f"  • {nom} ({tireur['club']}) — licence {lic}")
         lignes.append("")
 
-    # ── Bilan financier prévisionnel global
+    # Bilan financier prévisionnel
     try:
-        tarif_i = getattr(comp_obj, "TARIF_INDIV",  {})
+        tarif_i = getattr(comp_obj, "TARIF_INDIV", {})
         tarif_e = getattr(comp_obj, "TARIF_EQUIPE", {})
         total_recettes = 0
         for date_str in dates_ordonnees:
-            # Recettes individuelles
             for cat, clubs in groupes_indiv.get(date_str, {}).items():
                 cat_base = cat.split("|")[0] if "|" in cat else cat
                 pu = tarif_i.get(cat_base, 0)
-                nb = sum(v.get("H", 0) + v.get("D", 0) for v in clubs.values())
+                nb = sum(v.get("H",0)+v.get("D",0) for v in clubs.values())
                 total_recettes += nb * pu
-            # Recettes équipes — même logique que le bilan Excel :
-            # sum(len(equipes) clubs avec H>0) + sum(len(equipes) clubs avec D>0)
             for cat, clubs in groupes_equipe.get(date_str, {}).items():
                 cat_base = cat.split("|")[0] if "|" in cat else cat
                 pu = tarif_e.get(cat_base, 0)
-                is_mx = any(v.get("mixte", False) for v in clubs.values())
+                is_mx = any(v.get("mixte",False) for v in clubs.values())
                 if is_mx:
-                    nb = sum(len(v.get("equipes", set()))
-                             for v in clubs.values() if v.get("tireurs_MX", 0) > 0)
+                    nb = sum(len(v.get("equipes",set())) for v in clubs.values() if v.get("tireurs_MX",0)>0)
                 else:
-                    nb_h = sum(len(v.get("equipes", set()))
-                               for v in clubs.values() if v.get("tireurs_H", 0) > 0)
-                    nb_d = sum(len(v.get("equipes", set()))
-                               for v in clubs.values() if v.get("tireurs_D", 0) > 0)
+                    nb_h = sum(len(v.get("equipes",set())) for v in clubs.values() if v.get("tireurs_H",0)>0)
+                    nb_d = sum(len(v.get("equipes",set())) for v in clubs.values() if v.get("tireurs_D",0)>0)
                     nb = nb_h + nb_d
                 total_recettes += nb * pu
 
-        # Dépenses arbitres — utilise les statuts Excel si disponibles
-        arbitres_statuts = session.get("arbitres_statuts", {})
-        BAREME_D = dict(BAREME_ARBITRES)
-        source_statuts = "prévisionnel"
-
         if arbitres_statuts:
-            # Statuts réels depuis l'Excel modifié
             total_depenses = sum(v["cout_retenu"] for v in arbitres_statuts.values())
-            nb_ret_mail = sum(v["retenu"] for v in arbitres_statuts.values())
-            nb_lib_mail = sum(v["libere"] for v in arbitres_statuts.values())
             source_statuts = "réel"
         else:
-            # Fallback : tous les arbitres comme retenus
             total_depenses = 0
             for date_str in dates_ordonnees:
                 for a in arb_par_date.get(date_str, []):
-                    total_depenses += BAREME_D.get(a.get("categorie", ""), 0)
-            nb_ret_mail = sum(len(v) for v in arb_par_date.values())
-            nb_lib_mail = 0
+                    total_depenses += BAREME_D.get(a.get("categorie",""), 0)
+            source_statuts = "prévisionnel"
 
         solde = total_recettes - total_depenses
         if total_recettes > 0 or total_depenses > 0:
-            signe    = "+" if solde >= 0 else "−"
+            signe = "+" if solde >= 0 else "−"
             abs_solde = abs(solde)
             lignes += [SEP, "  BILAN FINANCIER PRÉVISIONNEL", SEP, ""]
-            if source_statuts == "réel":
-                pass  # statuts réels chargés, on affiche juste la balance
-            else:
-                lignes.append(f"Arbitres inscrits : {nb_ret_mail} (tous comptés — charger l'Excel pour affiner)")
+            if source_statuts == "prévisionnel":
+                lignes.append(f"Arbitres inscrits : {sum(len(v) for v in arb_par_date.values())} (tous comptés — charger l'Excel pour affiner)")
             lignes.append(f"Balance estimée : {signe} {abs_solde:,.0f} €".replace(",", " "))
             lignes.append("")
             if solde > 200:
-                lignes.append(
-                    "Cette marge positive permet d'envisager un ajustement du nombre d'arbitres pour le bon déroulement de la compétition."
-                )
+                lignes.append("Cette marge positive permet d'envisager un ajustement du nombre d'arbitres pour le bon déroulement de la compétition.")
             elif solde >= 0:
-                lignes.append(
-                    "La balance est équilibrée. Tout désistement d'arbitre devra être "
-                    "traité avec attention."
-                )
+                lignes.append("La balance est équilibrée. Tout désistement d'arbitre devra être traité avec attention.")
             else:
-                lignes.append(
-                    f"La balance est négative ({signe} {abs_solde:,.0f} €). "
-                    "Il est recommandé de revoir le nombre d'arbitres ou de vérifier "
-                    "les engagements des clubs.".replace(",", " ")
-                )
+                lignes.append(f"La balance est négative ({signe} {abs_solde:,.0f} €). Il est recommandé de revoir le nombre d'arbitres ou de vérifier les engagements des clubs.".replace(",", " "))
             lignes.append("")
     except Exception:
-        pass  # Ne pas bloquer le mail si le calcul échoue
+        pass
 
+    # Rappels
     lignes += [SEP, "  RAPPELS", SEP, ""]
     lignes.append("• Tireurs absents : les engagements restent dus sauf motif valable.")
     lignes.append('  Inscriptions hors délai majorées — <a href="https://tinyurl.com/hdlrege">https://tinyurl.com/hdlrege</a>')
@@ -1144,9 +896,6 @@ def mail_body():
 
     sujet = f"{titre} — Synthèse engagements et arbitrage"
 
-    # Générer HTML minimal avec liens actifs
-    import html as _html
-    import re as _re
     def _to_html(txt):
         parts = _re.split(r'(<a [^>]+>.*?</a>)', txt)
         out = []
@@ -1162,12 +911,32 @@ def mail_body():
         + "\n".join(lines_html)
         + '</pre></body></html>'
     )
-    corps_txt = "\n".join(lignes)  # version texte pour la modale copier-coller
-    # Nettoyer les balises HTML du texte brut
-    import re as _re2
-    corps_txt_clean = _re2.sub(r'<[^>]+>', '', corps_txt)
+    corps_txt_clean = _re.sub(r'<[^>]+>', '', "\n".join(lignes))
 
+    return corps_html, sujet, corps_txt_clean
+
+
+@app.route("/api/mail_body", methods=["POST"])
+def mail_body():
+    """Retourne le sujet et le corps du mail en JSON (pour Gmail)."""
+    store = get_store()
+    if not store:
+        return jsonify({"error": "Aucun fichier chargé"}), 400
+
+    data       = request.get_json() or {}
+    titre_long = data.get("titre_long", "").strip()
+    lieu       = data.get("lieu", "").strip()
+    comp_type  = data.get("comp_type", "grand_est")
+
+    fichiers_list    = [(m, t, a) for m, t, a in store]
+    arbitres_statuts = session.get("arbitres_statuts")
+
+    corps_html, sujet, corps_txt_clean = _generer_corps_mail(
+        titre_long=titre_long, lieu=lieu, comp_type=comp_type,
+        fichiers_list=fichiers_list, arbitres_statuts=arbitres_statuts,
+    )
     return jsonify({"sujet": sujet, "corps": corps_txt_clean, "corps_html": corps_html})
+
 
 
 
@@ -1205,204 +974,16 @@ def generate_mail():
     safe = re.sub(r" {2,}", " ", safe).replace(" ", "_")
     excel_filename = f"{safe}.xlsx"
 
-    # Construire les données pour le corps du mail
-    comp_obj = get_competition(comp_type)
-    (groupes_indiv, groupes_equipe, arbitres_all,
-     _, _, plage_dates, dates_ordonnees) = construire_donnees(
-        fichiers_list, comp_obj.CAT_MAP_INDIV, comp_obj.CAT_MAP_EQUIPE)
-
-    from core.parser import date_avec_jour as _daj
-
-    # Corps du mail : synthèse par jour
-    lignes = []
-    lignes.append(f"Bonjour,")
-    lignes.append(f"")
-    lignes.append(f"Veuillez trouver en pièce jointe le tableau de synthèse SYNESC ainsi que le récapitulatif des inscriptions et de la situation arbitrale pour {titre}.")
-    lignes.append(f"")
-
-    CAT_LBL_I = comp_obj.CAT_LABEL_INDIV
-    CAT_LBL_E = comp_obj.CAT_LABEL_EQUIPE
-    BAREME_D  = dict(BAREME_ARBITRES)
-
-    # Arbitres par date et par club
-    arb_par_date = _dd(list)
-    seen_arb = _dd(set)
-    for a in arbitres_all:
-        date_src = a.get("date_source", "")
-        lic = a.get("licence", "").strip()
-        if lic and lic not in seen_arb[date_src]:
-            seen_arb[date_src].add(lic)
-            arb_par_date[date_src].append(a)
-
-    # Arbitres-tireurs
-    licences_tireurs = {}
-    for meta, tireurs, _ in fichiers_list:
-        for t in tireurs:
-            lic = t.get("licence", "").strip()
-            if lic:
-                licences_tireurs[lic] = t
-    licences_arbitres = {a.get("licence","").strip(): a
-                         for a in arbitres_all if a.get("licence","").strip()}
-    arb_tireurs = [(lic, licences_tireurs[lic], licences_arbitres[lic])
-                   for lic in licences_tireurs if lic in licences_arbitres]
-
-    SEP = "─" * 50
-
-    for date_str in dates_ordonnees:
-        label = _daj(date_str).capitalize()
-        lignes.append(SEP)
-        lignes.append(f"  {label.upper()}")
-        lignes.append(SEP)
-        lignes.append("")
-
-        # Indiv
-        cats_indiv = groupes_indiv.get(date_str, {})
-        if cats_indiv:
-            lignes.append("ÉPREUVES INDIVIDUELLES")
-            for cat, clubs in cats_indiv.items():
-                nb_h = sum(v.get("H", 0) for v in clubs.values())
-                nb_d = sum(v.get("D", 0) for v in clubs.values())
-                lbl  = CAT_LBL_I.get(cat, cat)
-                if nb_h: lignes.append(f"  • {lbl} H — {nb_h} tireur(s)")
-                if nb_d: lignes.append(f"  • {lbl} D — {nb_d} tireur(s)")
-            lignes.append("")
-
-        # Équipes
-        cats_equipe = groupes_equipe.get(date_str, {})
-        if cats_equipe:
-            lignes.append("ÉPREUVES PAR ÉQUIPES")
-            for cat, clubs in cats_equipe.items():
-                is_mx   = any(v.get("mixte", False) for v in clubs.values())
-                lbl     = CAT_LBL_E.get(cat, cat)
-                if is_mx:
-                    nb_mx = sum(len(v.get("equipes", set())) for v in clubs.values() if v.get("tireurs_MX", 0) > 0)
-                    if nb_mx: lignes.append(f"  • Équipe {lbl} Mixte — {nb_mx} équipe(s)")
-                else:
-                    nb_eq_h = sum(len(v.get("equipes", set())) for v in clubs.values() if v.get("tireurs_H", 0) > 0)
-                    nb_eq_d = sum(len(v.get("equipes", set())) for v in clubs.values() if v.get("tireurs_D", 0) > 0)
-                    if nb_eq_h: lignes.append(f"  • Équipe {lbl} H — {nb_eq_h} équipe(s)")
-                    if nb_eq_d: lignes.append(f"  • Équipe {lbl} D — {nb_eq_d} équipe(s)")
-            lignes.append("")
-
-        # Arbitres
-        arb_jour = arb_par_date.get(date_str, [])
-        nb_arb = len(arb_jour)
-        lignes.append(f"ARBITRES INSCRITS — {nb_arb}")
-
-        # Besoin total indiv + équipe
-        total_tireurs = sum(
-            v.get("H", 0) + v.get("D", 0)
-            for cats in groupes_indiv.get(date_str, {}).values()
-            for v in cats.values()
-        )
-        total_equipes = sum(
-            1 for cats in groupes_equipe.get(date_str, {}).values()
-            for v in cats.values()
-            if v.get("tireurs_H", 0) + v.get("tireurs_D", 0) + v.get("tireurs_MX", 0) > 0
-        )
-        besoin_i = 0 if total_tireurs < 4 else (1 if total_tireurs <= 8 else 2)
-        besoin_e = 0 if total_equipes == 0 else (1 if total_equipes <= 2 else (2 if total_equipes <= 4 else 3))
-        besoin   = besoin_i + besoin_e
-        lignes.append(f"BESOIN ESTIMÉ — {besoin}")
-
-        if nb_arb >= besoin:
-            lignes.append(f"Situation : quota couvert ({nb_arb}/{besoin}).")
-        else:
-            manque = besoin - nb_arb
-            lignes.append(f"⚠ Situation : il manque {manque} arbitre(s) pour couvrir le quota.")
-
-        # Clubs en déficit
-        clubs_all = set()
-        for cats in list(groupes_indiv.get(date_str, {}).values()) + list(groupes_equipe.get(date_str, {}).values()):
-            clubs_all |= set(cats.keys())
-        arb_par_club = _dd(int)
-        for a in arb_jour:
-            arb_par_club[a.get("club","").strip()] += 1
-
-        deficit = []
-        for club in sorted(clubs_all):
-            # Besoin de ce club ce jour
-            nb_t = sum(
-                v.get("H", 0) + v.get("D", 0)
-                for cats in groupes_indiv.get(date_str, {}).values()
-                for c, v in cats.items() if c == club
-            )
-            nb_e = sum(
-                1 for cats in groupes_equipe.get(date_str, {}).values()
-                for c, v in cats.items()
-                if c == club and v.get("tireurs_H", 0) + v.get("tireurs_D", 0) + v.get("tireurs_MX", 0) > 0
-            )
-            b_i = 0 if nb_t < 4 else (1 if nb_t <= 8 else 2)
-            b_e = 0 if nb_e == 0 else (1 if nb_e <= 2 else (2 if nb_e <= 4 else 3))
-            besoin_club = b_i + b_e
-            fournis = arb_par_club.get(club, 0)
-            if besoin_club > 0 and fournis < besoin_club:
-                deficit.append((club, besoin_club, fournis))
-
-        if deficit:
-            lignes.append("")
-            lignes.append("⚠ Clubs en déficit d'arbitrage :")
-            for club, b, f in deficit:
-                lignes.append(f"  • {club} — besoin : {b}, fournis : {f}, manque : {b - f}")
-
-        lignes.append("")
-
-    # Arbitres-tireurs
-    if arb_tireurs:
-        lignes.append(SEP)
-        lignes.append("  ARBITRES ÉGALEMENT INSCRITS EN COMPÉTITION")
-        lignes.append(SEP)
-        lignes.append("")
-        for lic, tireur, arb in sorted(arb_tireurs, key=lambda x: x[1]["club"]):
-            nom = f"{tireur['nom']} {tireur['prenom']}".strip()
-            lignes.append(f"  • {nom} ({tireur['club']}) — licence {lic}")
-        lignes.append("")
-
-    # Rappels
-    lignes.append(SEP)
-    lignes.append("  RAPPELS")
-    lignes.append(SEP)
-    lignes.append("")
-    lignes.append("• Tireurs absents : les engagements restent dus sauf motif valable.")
-    lignes.append('  Inscriptions hors délai majorées — <a href="https://tinyurl.com/hdlrege">https://tinyurl.com/hdlrege</a>')
-    lignes.append('• Dérogations au niveau d\'arbitrage : contacter la Présidente de la CRA, Auxane Cholley — <a href="mailto:auxane.cholley@hotmail.fr">auxane.cholley@hotmail.fr</a>')
-    lignes.append('• Fichiers résultats (*.cotcot, PDF, FFF) à transmettre à <a href="mailto:atrcrege@gmail.com">atrcrege@gmail.com</a>')
-    lignes.append("")
-    if comp_type == "grand_est":
-        lignes.append("• Les fichiers sont normalement téléchargeables depuis l'extranet dans la partie « gestion des compétitions » à partir de mercredi, sur chaque fin de ligne dernier bouton « télécharger les inscrits ». Les classements sont intégrés dans les fichiers. Les tireurs étrangers seront à rajouter à la main dans le logiciel.")
-    else:
-        lignes.append('• Les fichiers sont normalement téléchargeables depuis l\'extranet dans la partie « gestion des compétitions » à partir de mercredi, sur chaque fin de ligne dernier bouton « télécharger les inscrits ». Les classements sont à télécharger sur <a href="https://crege.fr/menu-classements-quotas">https://crege.fr/menu-classements-quotas</a>. Les tireurs extérieurs seront à rajouter à la main dans le logiciel.')
-    lignes.append("")
-    lignes.append("Cordialement,")
-    lignes.append("La Ligue Régionale d'Escrime Grand Est")
-
-    # Corps HTML : on enveloppe le texte préformaté avec les liens actifs
-    corps_txt = "\r\n".join(lignes)
-    # Convertir en HTML minimal : balises <br> + liens déjà présents
-    import html as _html
-    def _to_html(txt):
-        # Préserver les liens <a href=...> déjà insérés, échapper le reste
-        import re
-        parts = re.split(r'(<a [^>]+>.*?</a>)', txt)
-        out = []
-        for p in parts:
-            if p.startswith('<a '):
-                out.append(p)
-            else:
-                out.append(_html.escape(p))
-        return "".join(out)
-
-    lines_html = [_to_html(l) for l in lignes]
-    corps_html = (
-        '<html><body><pre style="font-family:Consolas,monospace;font-size:13px;'
-        'white-space:pre-wrap;line-height:1.5">'
-        + "\n".join(lines_html)
-        + '</pre></body></html>'
+    # Corps du mail : appel direct à _generer_corps_mail (logique partagée avec mail_body)
+    corps_html, sujet, _ = _generer_corps_mail(
+        titre_long=titre_long, lieu=lieu, comp_type=comp_type,
+        fichiers_list=fichiers_list,
+        arbitres_statuts=session.get("arbitres_statuts"),
     )
 
     # Construire le .eml
     msg = _mp.MIMEMultipart()
-    msg["Subject"] = f"{titre} — Synthèse engagements et arbitrage"
+    msg["Subject"] = sujet
     msg["From"]    = "lrege@escrime-grandest.fr"
     msg["To"]      = destinataires or ""
     msg.attach(_mt.MIMEText(corps_html, "html", "utf-8"))

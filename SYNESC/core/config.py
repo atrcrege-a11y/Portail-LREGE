@@ -162,8 +162,17 @@ FORMULE_ARBITRE_EQUIPE = (
 )
 
 BAREME_ARBITRES = [
-    ("FD", 25), ("D", 30), ("FR", 35), ("R", 45),
-    ("FN", 50), ("N", 70), ("I", 100),
+    # Source : règlement FFE 2024–2025 (en attente des informations 2025–2026)
+    # Codes Engarde : FD = Formation Territoriale, D = Territorial
+    ("FT", 25),   # Formation Territoriale
+    ("FD", 25),   # Formation Territoriale (alias Engarde)
+    ("T",  30),   # Territorial
+    ("D",  30),   # Territorial (alias Engarde)
+    ("FR", 35),   # Formation Régionale
+    ("R",  45),   # Régional
+    ("FN", 50),   # Formation Nationale
+    ("N",  70),   # National
+    ("I",  100),  # International
 ]
 
 # ── Jours de la semaine (lundi=0)

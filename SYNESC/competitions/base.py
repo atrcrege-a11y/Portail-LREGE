@@ -90,13 +90,20 @@ class CompetitionBase(ABC):
             plages_arbitres=plages,
         )
 
+        # Détecter s'il y a des équipes dans cette compétition
+        has_equipes = any(
+            cats for cats in groupes_equipe.values()
+            if any(cats.values())
+        ) if groupes_equipe else False
+
         # 2. Épreuve Individuelle
         ws_indiv = wb.create_sheet(self.NOM_FEUILLE_INDIV)
         self.feuille_indiv(ws_indiv, groupes_indiv, titre_excel, dates_ordonnees)
 
-        # 3. Épreuve Équipe
-        ws_equipe = wb.create_sheet(self.NOM_FEUILLE_EQUIPE)
-        self.feuille_equipe(ws_equipe, groupes_equipe, titre_excel, dates_ordonnees)
+        # 3. Épreuve Équipe — uniquement si équipes présentes
+        if has_equipes:
+            ws_equipe = wb.create_sheet(self.NOM_FEUILLE_EQUIPE)
+            self.feuille_equipe(ws_equipe, groupes_equipe, titre_excel, dates_ordonnees)
 
         # 4. Extranet Indiv
         ws_ext_i = wb.create_sheet("Indiv Extranet")
@@ -106,13 +113,14 @@ class CompetitionBase(ABC):
             cat_map=self.CAT_MAP_INDIV, is_equipe=False,
         )
 
-        # 5. Extranet Équipe
-        ws_ext_e = wb.create_sheet("Equipe Extranet")
-        feuille_extranet(
-            ws_ext_e, fichiers_list,
-            self.CATS_EXTRANET_EQUIPE, self.CAT_LABEL_EQUIPE,
-            cat_map=self.CAT_MAP_EQUIPE, is_equipe=True,
-        )
+        # 5. Extranet Équipe — uniquement si équipes présentes
+        if has_equipes:
+            ws_ext_e = wb.create_sheet("Equipe Extranet")
+            feuille_extranet(
+                ws_ext_e, fichiers_list,
+                self.CATS_EXTRANET_EQUIPE, self.CAT_LABEL_EQUIPE,
+                cat_map=self.CAT_MAP_EQUIPE, is_equipe=True,
+            )
 
         # Déplacer Arbitres et Récap en fin de classeur
         n = len(wb.sheetnames)

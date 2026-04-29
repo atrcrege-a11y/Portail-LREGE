@@ -278,8 +278,9 @@ class Lorraine(CompetitionBase):
                 if cat_rows:
                     ws.cell(row=row, column=col_lbl,
                             value=f"  Sous-total {arme_lbl}").font = mk_font(bold=True, size=10)
+                    refs_cat = "+".join(f"{gcl(col_total)}{r}" for r in cat_rows)
                     ws.cell(row=row, column=col_total,
-                            value=f"=SUM({gcl(col_total)}{cat_rows[0]}:{gcl(col_total)}{cat_rows[-1]})").font = mk_font(bold=True, size=10)
+                            value=f"={refs_cat}").font = mk_font(bold=True, size=10)
                     for ci in range(1, 8):
                         c = ws.cell(row=row, column=ci)
                         c.fill = mk_fill(C["green_bg"]); c.border = border_all()
@@ -291,8 +292,9 @@ class Lorraine(CompetitionBase):
             ws.cell(row=rec_tot, column=col_lbl,
                     value="TOTAL RECETTES").font = mk_font(bold=True, size=11, color=C["white"])
             if arme_rows:
+                refs_arme = "+".join(f"{gcl(col_total)}{r}" for r in arme_rows)
                 ws.cell(row=rec_tot, column=col_total,
-                        value=f"=SUM({gcl(col_total)}{arme_rows[0]}:{gcl(col_total)}{row-1})").font = mk_font(bold=True, size=11, color=C["white"])
+                        value=f"={refs_arme}").font = mk_font(bold=True, size=11, color=C["white"])
             for ci in range(1, 8):
                 c = ws.cell(row=rec_tot, column=ci)
                 c.fill = mk_fill(C["accent"]); c.border = border_all()
@@ -574,6 +576,12 @@ class Lorraine(CompetitionBase):
 
         # Total général
         tot_row = DATA_START + len(tous_clubs)
+        # Helper : retourne la formule SUM ou 0 si pas de données
+        def _sum_or_zero(cl):
+            if tot_row > DATA_START:
+                return f"=SUM({cl}{DATA_START}:{cl}{tot_row-1})"
+            return 0
+
         ws.merge_cells(start_row=tot_row, start_column=1, end_row=tot_row, end_column=2)
         sc(ws.cell(row=tot_row, column=1, value="TOTAL GÉNÉRAL"),
            bold=True, bg=COLORS["navy"], fg=COLORS["white"], h="left")
@@ -581,8 +589,7 @@ class Lorraine(CompetitionBase):
             for cp in dp["cats"]:
                 for ci in [cp["col_h"], cp["col_d"]]:
                     cl = gcl(ci)
-                    c = ws.cell(row=tot_row, column=ci,
-                                value=f"=SUM({cl}{DATA_START}:{cl}{tot_row-1})")
+                    c = ws.cell(row=tot_row, column=ci, value=_sum_or_zero(cl))
                     c.font = mk_font(bold=True, color="FFFFFF")
                     c.fill = mk_fill(COLORS["navy"])
                     c.alignment = mk_align(); c.border = border_all()
@@ -591,16 +598,14 @@ class Lorraine(CompetitionBase):
                 (dp["col_fournis"], "D9E8F5", "1F4E79"),
             ]:
                 cl = gcl(ci)
-                c = ws.cell(row=tot_row, column=ci,
-                            value=f"=SUM({cl}{DATA_START}:{cl}{tot_row-1})")
+                c = ws.cell(row=tot_row, column=ci, value=_sum_or_zero(cl))
                 c.font = mk_font(bold=True, color=fg)
                 c.fill = mk_fill(bg); c.alignment = mk_align(); c.border = border_all()
             c = ws.cell(row=tot_row, column=dp["col_statut"], value="")
             c.fill = mk_fill("D9D9D9"); c.border = border_all()
         for ci in [col_tot_h, col_tot_d, col_tot_clb]:
             cl = gcl(ci)
-            c = ws.cell(row=tot_row, column=ci,
-                        value=f"=SUM({cl}{DATA_START}:{cl}{tot_row-1})")
+            c = ws.cell(row=tot_row, column=ci, value=_sum_or_zero(cl))
             c.font = mk_font(bold=True, color="FFFFFF")
             c.fill = mk_fill(COLORS["accent"])
             c.alignment = mk_align(); c.border = border_all()

@@ -186,8 +186,9 @@ class Alsace(GrandEst):
                 if indiv_rows:
                     _sous_total_indiv_row = row
                     ws.cell(row=row, column=col_lbl, value="Sous-total Individuels").font = mk_font(bold=True, size=10)
+                    refs_i = "+".join(f"{gcl(col_total)}{r}" for r in indiv_rows)
                     ws.cell(row=row, column=col_total,
-                            value=f"=SUM({gcl(col_total)}{indiv_rows[0]}:{gcl(col_total)}{indiv_rows[-1]})").font = mk_font(bold=True, size=10)
+                            value=f"={refs_i}").font = mk_font(bold=True, size=10)
                     style_row(row, bg=C["green_bg"]); row += 1
 
             # ── Recettes Équipes par arme
@@ -247,8 +248,9 @@ class Alsace(GrandEst):
             if equipe_rows:
                 _sous_total_eq_row = row
                 ws.cell(row=row, column=col_lbl, value="Sous-total Équipes").font = mk_font(bold=True, size=10)
+                refs_e = "+".join(f"{gcl(col_total)}{r}" for r in equipe_rows)
                 ws.cell(row=row, column=col_total,
-                        value=f"=SUM({gcl(col_total)}{equipe_rows[0]}:{gcl(col_total)}{equipe_rows[-1]})").font = mk_font(bold=True, size=10)
+                        value=f"={refs_e}").font = mk_font(bold=True, size=10)
                 style_row(row, bg=C["green_bg"]); row += 1
 
             # Total recettes — somme des sous-totaux uniquement (pas des lignes détail)
