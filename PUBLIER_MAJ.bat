@@ -13,13 +13,19 @@ set /p DESC="Description des changements : "
 if "%DESC%"=="" set DESC=Mise a jour v%VERSION%
 
 echo.
-echo --- Etape 1/5 : Mise a jour des fichiers de version ---
+echo --- Etape 1/6 : Mise a jour des fichiers de version ---
 python maj_versions.py %VERSION%
 if errorlevel 1 ( echo Erreur mise a jour versions. & pause & exit /b 1 )
 echo OK
 
 echo.
-echo --- Etape 2/5 : Compilation Inno Setup ---
+echo --- Etape 2/6 : Generation setup.iss ---
+python generer_setup_iss.py %VERSION%
+if errorlevel 1 ( echo Erreur generation setup.iss. & pause & exit /b 1 )
+echo OK
+
+echo.
+echo --- Etape 3/6 : Compilation Inno Setup ---
 
 set ISCC=
 if exist "C:\Program Files (x86)\Inno Setup 6\ISCC.exe" set ISCC=C:\Program Files (x86)\Inno Setup 6\ISCC.exe
@@ -38,7 +44,7 @@ set EXE=dist\PortailLREGE_Setup_v%VERSION%.exe
 if not exist "%EXE%" ( echo Fichier %EXE% introuvable. & pause & exit /b 1 )
 
 echo.
-echo --- Etape 3/5 : Sauvegarde GitHub ---
+echo --- Etape 4/6 : Sauvegarde GitHub ---
 git add .
 git commit -m "Portail v%VERSION% - %DESC%"
 git push
@@ -46,7 +52,7 @@ if errorlevel 1 ( echo Erreur git push. & pause & exit /b 1 )
 echo OK
 
 echo.
-echo --- Etape 4/5 : Publication GitHub Release ---
+echo --- Etape 5/6 : Publication GitHub Release ---
 gh release create "v%VERSION%" "%EXE%" --title "Portail LREGE v%VERSION%" --notes "%DESC%"
 if errorlevel 1 ( echo Erreur GitHub Release. & pause & exit /b 1 )
 echo OK

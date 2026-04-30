@@ -1,16 +1,17 @@
 ; ================================================================
 ;  Portail LREGE - Installeur Inno Setup
-;  Version : 1.0.0
+;  Genere automatiquement par generer_setup_iss.py
+;  Version : 1.5.1
 ;  Editeur : Escrime Grand Est
 ; ================================================================
 
 #define AppName    "Portail LREGE"
-#define AppVersion "1.5"
+#define AppVersion "1.5.1"
 #define AppPublisher "Escrime Grand Est"
 #define AppURL     "https://www.lrege.fr"
 
 [Setup]
-AppId={{B4F2A3C1-7E9D-4A2B-8C6F-1D3E5F7A9B2C}
+AppId={{B4F2A3C1-7E9D-4A2B-8C6F-1D3E5F7A9B2C}}
 AppName={#AppName}
 AppVersion={#AppVersion}
 AppPublisherURL={#AppURL}
@@ -39,9 +40,10 @@ Source: "portail.ico"; DestDir: "{app}"; Flags: ignoreversion
 Source: "portail.py"; DestDir: "{app}"; Flags: ignoreversion
 Source: "LANCER_PORTAIL.bat"; DestDir: "{app}"; Flags: ignoreversion
 Source: "PREMIER_LANCEMENT.bat"; DestDir: "{app}"; Flags: ignoreversion
-Source: "SelecGE\*"; DestDir: "{app}\SelecGE"; Flags: ignoreversion recursesubdirs
-Source: "SYNESC\*"; DestDir: "{app}\SYNESC"; Flags: ignoreversion recursesubdirs
-Source: "EscriTools\*"; DestDir: "{app}\EscriTools"; Flags: ignoreversion recursesubdirs
+Source: "SelecGE\*"; DestDir: "{app}\SelecGE"; Flags: ignoreversion recursesubdirs; Excludes: "*.pyc,__pycache__"
+Source: "SYNESC\*"; DestDir: "{app}\SYNESC"; Flags: ignoreversion recursesubdirs; Excludes: "*.pyc,__pycache__"
+Source: "EscriTools\*"; DestDir: "{app}\EscriTools"; Flags: ignoreversion recursesubdirs; Excludes: "*.pyc,__pycache__"
+Source: "CalendrierLREGE\*"; DestDir: "{app}\CalendrierLREGE"; Flags: ignoreversion recursesubdirs; Excludes: "*.pyc,__pycache__"
 
 [Icons]
 Name: "{group}\{#AppName}"; Filename: "{app}\LANCER_PORTAIL.bat"; WorkingDir: "{app}"; IconFilename: "{app}\portail.ico"
