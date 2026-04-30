@@ -1,0 +1,692 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Calendrier LREGE</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:ital,wght@0,400;0,500;1,400&family=Syne:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bleu:#1F3864;--bleu2:#1F6391;--bleu3:#2E75B6;--or:#C9A84C;
+  --fond:#F0F3FA;--blanc:#fff;--gris:#E4E9F4;--gris2:#D0D8EE;
+  --txt:#2C3A5C;--txt2:#6B7A99;
+  --int:#856404;--int-bg:#FFF3CD;
+  --nat:#084298;--nat-bg:#CFE2FF;
+  --zon:#432874;--zon-bg:#E2D9F3;
+  --reg:#0a3622;--reg-bg:#D1E7DD;
+  --dep:#842029;--dep-bg:#F8D7DA;
+  --clu:#41464b;--clu-bg:#E2E3E5;
+  --stage:#7B3F00;--stage-bg:#FDE8D0;
+  --r:10px;--sh:0 2px 14px rgba(31,56,100,.10);
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Syne',sans-serif;background:var(--fond);color:var(--txt);display:flex;flex-direction:column;height:100vh;overflow:hidden}
+
+/* HEADER */
+.header{background:var(--bleu);color:#fff;padding:12px 20px;display:flex;align-items:center;gap:16px;border-bottom:3px solid var(--or);flex-shrink:0}
+.header h1{font-size:1.15rem;font-weight:800;letter-spacing:-.3px;white-space:nowrap}
+.header h1 span{color:var(--or)}
+.header-stats{display:flex;gap:12px;flex:1;flex-wrap:wrap;justify-content:center}
+.hstat{font-family:'DM Mono',monospace;font-size:.72rem;color:#9DB8D9;display:flex;gap:4px;align-items:center}
+.hstat strong{color:#fff;font-weight:500}
+.header-actions{display:flex;gap:8px;flex-shrink:0}
+
+/* LAYOUT */
+.layout{display:flex;flex:1;overflow:hidden}
+
+/* SIDEBAR */
+.sidebar{width:220px;flex-shrink:0;background:var(--blanc);border-right:1px solid var(--gris2);display:flex;flex-direction:column;overflow-y:auto}
+.sb-section{padding:14px 14px 6px;border-bottom:1px solid var(--gris)}
+.sb-title{font-size:.65rem;font-weight:800;text-transform:uppercase;letter-spacing:1.2px;color:var(--txt2);margin-bottom:10px;display:flex;align-items:center;gap:5px}
+.sb-item{display:flex;align-items:center;gap:7px;padding:5px 6px;border-radius:6px;cursor:pointer;transition:background .12s;font-size:.82rem;font-weight:600;color:var(--txt);border:none;background:none;width:100%;text-align:left}
+.sb-item:hover{background:var(--gris)}
+.sb-item.active{background:var(--bleu);color:#fff}
+.sb-item .dot{width:9px;height:9px;border-radius:50%;flex-shrink:0}
+.sb-item .count{margin-left:auto;font-family:'DM Mono',monospace;font-size:.68rem;color:var(--txt2);font-weight:400}
+.sb-item.active .count{color:#9DB8D9}
+.sb-input{width:100%;border:1.5px solid var(--gris2);border-radius:6px;padding:6px 9px;font-family:'Syne',sans-serif;font-size:.8rem;color:var(--txt);background:var(--fond);outline:none;transition:border .15s}
+.sb-input:focus{border-color:var(--bleu3)}
+.sb-label{font-size:.72rem;color:var(--txt2);margin-bottom:4px;display:block}
+.sb-reset{display:block;width:100%;padding:7px;text-align:center;font-size:.78rem;font-weight:700;color:var(--txt2);background:none;border:1.5px dashed var(--gris2);border-radius:7px;cursor:pointer;margin-top:8px;transition:all .15s}
+.sb-reset:hover{background:var(--gris);color:var(--txt)}
+
+/* MAIN */
+.main{flex:1;display:flex;flex-direction:column;overflow:hidden}
+
+/* TOOLBAR */
+.toolbar{background:var(--blanc);border-bottom:1px solid var(--gris2);padding:9px 16px;display:flex;gap:8px;align-items:center;flex-shrink:0}
+.search-wrap{position:relative;flex:1;max-width:260px}
+.search-wrap input{width:100%;padding:7px 10px 7px 32px;border:1.5px solid var(--gris2);border-radius:7px;font-family:'Syne',sans-serif;font-size:.82rem;background:var(--fond);color:var(--txt);outline:none;transition:border .15s}
+.search-wrap input:focus{border-color:var(--bleu3)}
+.search-icon{position:absolute;left:10px;top:50%;transform:translateY(-50%);color:var(--txt2);font-size:.85rem;pointer-events:none}
+.toolbar-sep{flex:1}
+.view-toggle{display:flex;background:var(--gris);border-radius:7px;padding:2px}
+.view-toggle button{background:none;border:none;padding:5px 11px;border-radius:5px;font-family:'Syne',sans-serif;font-size:.76rem;font-weight:700;cursor:pointer;color:var(--txt2);transition:all .15s}
+.view-toggle button.active{background:var(--blanc);color:var(--bleu);box-shadow:0 1px 4px rgba(0,0,0,.1)}
+
+/* RÉSULTATS */
+.results-info{padding:8px 16px 4px;font-size:.75rem;color:var(--txt2);font-family:'DM Mono',monospace;flex-shrink:0}
+.results-info strong{color:var(--txt)}
+
+/* CONTENT AREA */
+.content{flex:1;overflow-y:auto;padding:8px 16px 20px}
+
+/* EXPORT BAR */
+.export-bar{background:var(--blanc);border-top:1px solid var(--gris2);padding:8px 16px;display:flex;gap:8px;align-items:center;flex-shrink:0}
+.export-label{font-size:.72rem;color:var(--txt2);font-weight:700;text-transform:uppercase;letter-spacing:.5px}
+
+/* BOUTONS */
+.btn{padding:7px 14px;border-radius:7px;border:none;font-family:'Syne',sans-serif;font-weight:700;font-size:.8rem;cursor:pointer;transition:all .15s;display:inline-flex;align-items:center;gap:5px;white-space:nowrap}
+.btn-primary{background:var(--bleu);color:#fff}.btn-primary:hover{background:var(--bleu2)}
+.btn-secondary{background:var(--gris);color:var(--txt)}.btn-secondary:hover{background:var(--gris2)}
+.btn-gold{background:var(--or);color:#fff}.btn-gold:hover{opacity:.9}
+.btn-outline{background:none;border:1.5px solid var(--gris2);color:var(--txt)}.btn-outline:hover{background:var(--gris)}
+.btn-danger{background:#fdecea;color:#C0392B;border:1px solid #f5c6c2}.btn-danger:hover{background:#f5c6c2}
+.btn-sm{padding:4px 10px;font-size:.73rem}
+
+/* LISTE */
+.month-sep{padding:10px 0 5px;font-size:.7rem;font-weight:800;text-transform:uppercase;letter-spacing:2px;color:var(--txt2);font-family:'DM Mono',monospace;border-bottom:1px solid var(--gris);margin-bottom:4px;margin-top:16px}
+.month-sep:first-child{margin-top:0}
+
+.card{background:var(--blanc);border-radius:var(--r);padding:11px 14px;margin-bottom:5px;display:grid;grid-template-columns:68px 1fr auto;gap:10px;align-items:center;box-shadow:var(--sh);border-left:4px solid transparent;cursor:pointer;transition:box-shadow .12s,transform .1s}
+.card:hover{box-shadow:0 4px 20px rgba(31,56,100,.14);transform:translateY(-1px)}
+.card.lv-international{border-left-color:var(--or)}
+.card.lv-national{border-left-color:var(--bleu3)}
+.card.lv-zone{border-left-color:#9B59B6}
+.card.lv-regional{border-left-color:#27AE60}
+.card.lv-departemental{border-left-color:#E74C3C}
+.card.lv-club,.card.lv-autre{border-left-color:var(--gris2)}
+.card.ev-stage,.card.ev-formation_arbitrage,.card.ev-formation_animateur,.card.ev-formation_cadre{border-left-color:var(--or);border-left-style:dashed}
+
+.card-date{text-align:center;font-family:'DM Mono',monospace}
+.card-date .j{font-size:1.45rem;font-weight:500;line-height:1;color:var(--bleu)}
+.card-date .m{font-size:.62rem;text-transform:uppercase;color:var(--txt2);letter-spacing:.8px}
+.card-date .a{font-size:.6rem;color:var(--txt2)}
+
+.card-body{}
+.card-title{font-size:.88rem;font-weight:700;margin-bottom:4px;line-height:1.2}
+.card-meta{display:flex;gap:5px;flex-wrap:wrap;align-items:center}
+.card-lieu{font-size:.74rem;color:var(--txt2)}
+
+.card-actions{display:flex;gap:5px;opacity:0;transition:opacity .15s}
+.card:hover .card-actions{opacity:1}
+
+/* BADGES */
+.badge{display:inline-flex;align-items:center;padding:2px 7px;border-radius:4px;font-family:'DM Mono',monospace;font-size:.64rem;font-weight:500;text-transform:uppercase;letter-spacing:.3px;white-space:nowrap}
+.b-international{background:var(--int-bg);color:var(--int)}
+.b-national{background:var(--nat-bg);color:var(--nat)}
+.b-zone{background:var(--zon-bg);color:var(--zon)}
+.b-regional{background:var(--reg-bg);color:var(--reg)}
+.b-departemental{background:var(--dep-bg);color:var(--dep)}
+.b-club,.b-autre{background:var(--clu-bg);color:var(--clu)}
+.b-stage{background:var(--stage-bg);color:var(--stage)}
+.b-ge{background:var(--bleu);color:#fff}
+.b-manuel{background:var(--or);color:#fff}
+.b-cat{background:var(--gris);color:var(--bleu2);font-size:.62rem}
+.b-arme{background:var(--gris);color:var(--bleu2)}
+
+/* CALENDRIER MENSUEL */
+.cal-nav{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px}
+.cal-nav h2{font-size:1rem;font-weight:800;text-transform:capitalize}
+.cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:3px}
+.cal-dh{text-align:center;font-size:.65rem;font-weight:700;text-transform:uppercase;color:var(--txt2);font-family:'DM Mono',monospace;padding:5px 0}
+.cal-cell{background:var(--blanc);border-radius:7px;min-height:80px;padding:5px;border:1.5px solid transparent;transition:border .1s}
+.cal-cell.today{border-color:var(--or)}
+.cal-cell.other{background:#edf0f8;opacity:.5}
+.cal-dn{font-size:.7rem;font-weight:700;color:var(--txt2);font-family:'DM Mono',monospace;margin-bottom:3px}
+.cal-cell.today .cal-dn{color:var(--or)}
+.cal-ev{font-size:.6rem;padding:2px 4px;border-radius:3px;margin-bottom:2px;cursor:pointer;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-weight:600}
+.cal-ev.lv-international{background:var(--int-bg);color:var(--int)}
+.cal-ev.lv-national{background:var(--nat-bg);color:var(--nat)}
+.cal-ev.lv-zone{background:var(--zon-bg);color:var(--zon)}
+.cal-ev.lv-regional{background:var(--reg-bg);color:var(--reg)}
+.cal-ev.lv-departemental{background:var(--dep-bg);color:var(--dep)}
+.cal-ev.lv-club,.cal-ev.lv-autre{background:var(--clu-bg);color:var(--clu)}
+.cal-ev.ev-stage,.cal-ev.ev-formation_arbitrage,.cal-ev.ev-formation_animateur,.cal-ev.ev-formation_cadre{background:var(--stage-bg);color:var(--stage)}
+.cal-more{font-size:.58rem;color:var(--txt2);padding:1px 3px}
+
+/* DETAIL PANEL */
+.dp{position:fixed;right:0;top:0;bottom:0;width:340px;background:var(--blanc);box-shadow:-6px 0 30px rgba(31,56,100,.15);z-index:900;transform:translateX(100%);transition:transform .22s ease;overflow-y:auto;padding:20px 18px}
+.dp.open{transform:translateX(0)}
+.dp-close{position:absolute;top:14px;right:14px;background:var(--gris);border:none;border-radius:50%;width:28px;height:28px;cursor:pointer;font-size:.85rem;display:flex;align-items:center;justify-content:center}
+.dp h3{font-size:.95rem;font-weight:800;margin-bottom:14px;padding-right:30px;line-height:1.3}
+.dp-row{margin-bottom:9px}
+.dp-row .lbl{font-size:.65rem;font-weight:700;color:var(--txt2);text-transform:uppercase;letter-spacing:.5px;margin-bottom:2px}
+.dp-row .val{font-size:.84rem}
+
+/* MODAL */
+.overlay{display:none;position:fixed;inset:0;background:rgba(31,56,100,.45);z-index:1000;align-items:center;justify-content:center}
+.overlay.open{display:flex}
+.modal{background:var(--blanc);border-radius:14px;padding:24px;width:500px;max-width:95vw;max-height:90vh;overflow-y:auto;box-shadow:0 20px 60px rgba(31,56,100,.25)}
+.modal h2{font-size:1rem;font-weight:800;margin-bottom:18px}
+.fr{margin-bottom:12px}
+.fr label{display:block;font-size:.7rem;font-weight:700;color:var(--txt2);margin-bottom:4px;text-transform:uppercase;letter-spacing:.4px}
+.fr input,.fr select,.fr textarea{width:100%;border:1.5px solid var(--gris2);border-radius:7px;padding:7px 10px;font-family:'Syne',sans-serif;font-size:.82rem;background:var(--fond);color:var(--txt);outline:none}
+.fr input:focus,.fr select:focus,.fr textarea:focus{border-color:var(--bleu3)}
+.f2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.mf{display:flex;justify-content:flex-end;gap:8px;margin-top:16px}
+
+/* IMPORT */
+.drop-zone{border:2px dashed var(--bleu3);border-radius:10px;padding:18px;text-align:center;cursor:pointer;transition:background .15s;font-size:.82rem;color:var(--txt2);margin-bottom:12px}
+.drop-zone:hover{background:#edf3fb}
+
+/* TOAST */
+.toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%) translateY(70px);background:var(--bleu);color:#fff;padding:10px 20px;border-radius:8px;font-size:.82rem;font-weight:600;box-shadow:0 4px 20px rgba(0,0,0,.2);transition:transform .25s;z-index:2000}
+.toast.show{transform:translateX(-50%) translateY(0)}
+.toast.ok{background:#27AE60}.toast.err{background:#C0392B}
+
+.empty{text-align:center;padding:60px 20px;color:var(--txt2)}
+.empty .ico{font-size:2.5rem;margin-bottom:10px}
+
+::-webkit-scrollbar{width:5px}::-webkit-scrollbar-track{background:var(--gris)}::-webkit-scrollbar-thumb{background:var(--bleu3);border-radius:3px}
+</style>
+</head>
+<body>
+
+<div class="header">
+  <h1>📅 Calendrier <span>LREGE</span></h1>
+  <div class="header-stats" id="headerStats"><span class="hstat">Chargement…</span></div>
+  <div class="header-actions">
+    <button class="btn btn-secondary btn-sm" onclick="openImport()">⬆ Import FFE</button>
+    <button class="btn btn-gold" onclick="openAdd()">+ Ajouter</button>
+  </div>
+</div>
+
+<div class="layout">
+
+  <!-- SIDEBAR FILTRES -->
+  <div class="sidebar">
+    <div class="sb-section">
+      <div class="sb-title">🔍 Recherche</div>
+      <input class="sb-input" type="text" id="fSearch" placeholder="Intitulé, lieu…" oninput="debounce(applyFilters,300)()">
+    </div>
+
+    <div class="sb-section">
+      <div class="sb-title">📅 Période</div>
+      <label class="sb-label">Du</label>
+      <input class="sb-input" type="date" id="fDateFrom" onchange="applyFilters()" style="margin-bottom:6px">
+      <label class="sb-label">Au</label>
+      <input class="sb-input" type="date" id="fDateTo" onchange="applyFilters()">
+    </div>
+
+    <div class="sb-section">
+      <div class="sb-title">🏆 Niveau</div>
+      <button class="sb-item active" data-f="niveau" data-v="tous" onclick="setFilter(this)"><span class="dot" style="background:#888"></span>Tous<span class="count" id="cnt-niv-tous"></span></button>
+      <button class="sb-item" data-f="niveau" data-v="international" onclick="setFilter(this)"><span class="dot" style="background:#C9A84C"></span>International<span class="count" id="cnt-niv-international"></span></button>
+      <button class="sb-item" data-f="niveau" data-v="national" onclick="setFilter(this)"><span class="dot" style="background:#2E75B6"></span>National<span class="count" id="cnt-niv-national"></span></button>
+      <button class="sb-item" data-f="niveau" data-v="zone" onclick="setFilter(this)"><span class="dot" style="background:#9B59B6"></span>Zone<span class="count" id="cnt-niv-zone"></span></button>
+      <button class="sb-item" data-f="niveau" data-v="regional" onclick="setFilter(this)"><span class="dot" style="background:#27AE60"></span>Régional<span class="count" id="cnt-niv-regional"></span></button>
+      <button class="sb-item" data-f="niveau" data-v="departemental" onclick="setFilter(this)"><span class="dot" style="background:#E74C3C"></span>Départemental<span class="count" id="cnt-niv-departemental"></span></button>
+      <button class="sb-item" data-f="niveau" data-v="club" onclick="setFilter(this)"><span class="dot" style="background:#95A5A6"></span>Club<span class="count" id="cnt-niv-club"></span></button>
+    </div>
+
+    <div class="sb-section">
+      <div class="sb-title">⚔️ Type</div>
+      <button class="sb-item active" data-f="type_evenement" data-v="tous" onclick="setFilter(this)"><span class="dot" style="background:#888"></span>Tous</button>
+      <button class="sb-item" data-f="type_evenement" data-v="competition" onclick="setFilter(this)"><span class="dot" style="background:#2E75B6"></span>Compétitions</button>
+      <button class="sb-item" data-f="type_evenement" data-v="stage" onclick="setFilter(this)"><span class="dot" style="background:#C9A84C"></span>Stages</button>
+      <button class="sb-item" data-f="type_evenement" data-v="formation_arbitrage" onclick="setFilter(this)"><span class="dot" style="background:#E67E22"></span>Form. arbitrage</button>
+      <button class="sb-item" data-f="type_evenement" data-v="formation_animateur" onclick="setFilter(this)"><span class="dot" style="background:#1ABC9C"></span>Form. animateur</button>
+      <button class="sb-item" data-f="type_evenement" data-v="formation_cadre" onclick="setFilter(this)"><span class="dot" style="background:#8E44AD"></span>Form. cadre</button>
+    </div>
+
+    <div class="sb-section">
+      <div class="sb-title">🏹 Arme</div>
+      <button class="sb-item active" data-f="arme" data-v="tous" onclick="setFilter(this)"><span class="dot" style="background:#888"></span>Toutes</button>
+      <button class="sb-item" data-f="arme" data-v="épée" onclick="setFilter(this)"><span class="dot" style="background:#3498DB"></span>Épée</button>
+      <button class="sb-item" data-f="arme" data-v="fleuret" onclick="setFilter(this)"><span class="dot" style="background:#E74C3C"></span>Fleuret</button>
+      <button class="sb-item" data-f="arme" data-v="sabre" onclick="setFilter(this)"><span class="dot" style="background:#F39C12"></span>Sabre</button>
+      <button class="sb-item" data-f="arme" data-v="sabre laser" onclick="setFilter(this)"><span class="dot" style="background:#9B59B6"></span>Sabre laser</button>
+    </div>
+
+    <div class="sb-section">
+      <div class="sb-title">👤 Catégorie</div>
+      <select class="sb-input" id="fCategorie" onchange="applyFilters()">
+        <option value="tous">Toutes</option>
+        <option>M9</option><option>M11</option><option>M13</option><option>M15</option>
+        <option>M17</option><option>M20</option><option>SENIOR</option>
+        <option>V1</option><option>V2</option><option>V3</option><option>V4</option>
+      </select>
+    </div>
+
+    <div class="sb-section">
+      <div class="sb-title">📍 Périmètre</div>
+      <label style="display:flex;align-items:center;gap:7px;font-size:.82rem;cursor:pointer;padding:4px 0">
+        <input type="checkbox" id="fGrandEst" onchange="applyFilters()"> Grand Est uniquement
+      </label>
+    </div>
+
+    <div style="padding:10px 14px">
+      <button class="sb-reset" onclick="resetFilters()">↺ Réinitialiser les filtres</button>
+    </div>
+  </div>
+
+  <!-- MAIN -->
+  <div class="main">
+    <div class="toolbar">
+      <div class="search-wrap">
+        <span class="search-icon">🔍</span>
+        <input type="text" id="fSearchTop" placeholder="Recherche rapide…" oninput="syncSearch(this)">
+      </div>
+      <div class="toolbar-sep"></div>
+      <div class="view-toggle">
+        <button id="btnListe" class="active" onclick="setView('liste')">☰ Liste</button>
+        <button id="btnCal" onclick="setView('cal')">⊞ Mois</button>
+      </div>
+    </div>
+
+    <div class="results-info" id="resultsInfo"></div>
+
+    <div class="content">
+      <div id="viewListe"></div>
+      <div id="viewCal" style="display:none">
+        <div class="cal-nav">
+          <button class="btn btn-secondary btn-sm" onclick="prevMonth()">◀</button>
+          <h2 id="calTitle"></h2>
+          <button class="btn btn-secondary btn-sm" onclick="nextMonth()">▶</button>
+        </div>
+        <div class="cal-grid" id="calGrid"></div>
+      </div>
+    </div>
+
+    <div class="export-bar">
+      <span class="export-label">Export</span>
+      <button class="btn btn-outline btn-sm" onclick="doExport('pdf')">📄 PDF</button>
+      <button class="btn btn-outline btn-sm" onclick="doExport('excel')">📊 Excel</button>
+      <button class="btn btn-outline btn-sm" onclick="doExport('ical')">📆 iCal</button>
+      <span style="font-size:.7rem;color:var(--txt2);margin-left:4px">— filtres appliqués</span>
+    </div>
+  </div>
+</div>
+
+<!-- DETAIL PANEL -->
+<div class="dp" id="dp">
+  <button class="dp-close" onclick="closeDP()">✕</button>
+  <h3 id="dpTitle"></h3>
+  <div id="dpBody"></div>
+  <div id="dpActions" style="margin-top:12px;display:flex;gap:8px;flex-wrap:wrap"></div>
+</div>
+
+<!-- MODAL AJOUT/EDIT -->
+<div class="overlay" id="modalOv" onclick="if(event.target===this)closeModal()">
+<div class="modal">
+  <h2 id="modalTitle">Ajouter un événement</h2>
+  <input type="hidden" id="editId">
+  <div class="fr">
+    <label>Type d'événement</label>
+    <select id="eType">
+      <option value="competition">Compétition</option>
+      <option value="stage">Stage</option>
+      <option value="formation_arbitrage">Formation arbitrage</option>
+      <option value="formation_animateur">Formation animateur</option>
+      <option value="formation_cadre">Formation cadres / éducateurs</option>
+    </select>
+  </div>
+  <div class="f2">
+    <div class="fr"><label>Date début</label><input type="date" id="eDateD"></div>
+    <div class="fr"><label>Date fin</label><input type="date" id="eDateF"></div>
+  </div>
+  <div class="fr"><label>Intitulé</label><input type="text" id="eIntitule" placeholder="Nom de l'événement"></div>
+  <div class="fr"><label>Lieu</label><input type="text" id="eLieu" placeholder="Ville / Salle"></div>
+  <div class="f2">
+    <div class="fr">
+      <label>Niveau</label>
+      <select id="eNiveau">
+        <option value="regional">Régional</option><option value="national">National</option>
+        <option value="international">International</option><option value="zone">Zone</option>
+        <option value="departemental">Départemental</option><option value="club">Club</option>
+      </select>
+    </div>
+    <div class="fr">
+      <label>Arme</label>
+      <select id="eArme">
+        <option value="">Toutes / N/A</option><option value="épée">Épée</option>
+        <option value="fleuret">Fleuret</option><option value="sabre">Sabre</option>
+        <option value="sabre laser">Sabre laser</option><option value="artistique">Artistique</option>
+      </select>
+    </div>
+  </div>
+  <div class="f2">
+    <div class="fr">
+      <label>Sexe</label>
+      <select id="eSexe"><option value="H+D">H+D</option><option value="H">Hommes</option><option value="D">Dames</option><option value="">N/A</option></select>
+    </div>
+    <div class="fr">
+      <label>Type épreuve</label>
+      <select id="eTypeEp"><option>Individuelle</option><option>Par équipes de Club</option><option value="">N/A</option></select>
+    </div>
+  </div>
+  <div class="fr"><label>Catégories (virgule)</label><input type="text" id="eCats" placeholder="M17, M20, SENIOR"></div>
+  <div class="fr"><label>URL / lien</label><input type="text" id="eUrl" placeholder="https://…"></div>
+  <div class="fr"><label><input type="checkbox" id="eGE" checked> Compétition Grand Est</label></div>
+  <div class="fr"><label>Notes</label><textarea id="eNotes" rows="2" placeholder="Informations complémentaires…"></textarea></div>
+  <div class="mf">
+    <button class="btn btn-secondary" onclick="closeModal()">Annuler</button>
+    <button class="btn btn-primary" onclick="saveEvent()">Enregistrer</button>
+  </div>
+</div>
+</div>
+
+<!-- MODAL IMPORT -->
+<div class="overlay" id="importOv" onclick="if(event.target===this)closeImport()">
+<div class="modal">
+  <h2>⬆ Import calendrier FFE</h2>
+  <p style="font-size:.82rem;color:var(--txt2);margin-bottom:14px">Fichier .xlsx exporté depuis l'extranet FFE. Les événements manuels sont conservés.</p>
+  <div class="drop-zone" onclick="document.getElementById('importFile').click()">
+    📂 Cliquer pour sélectionner le fichier .xlsx
+    <input type="file" id="importFile" accept=".xlsx" style="display:none" onchange="doImport(this)">
+  </div>
+  <div id="importResult"></div>
+  <div class="mf"><button class="btn btn-secondary" onclick="closeImport()">Fermer</button></div>
+</div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const MOIS=['Janvier','Février','Mars','Avril','Mai','Juin','Juillet','Août','Septembre','Octobre','Novembre','Décembre'];
+const JOURS=['Lun','Mar','Mer','Jeu','Ven','Sam','Dim'];
+const NIV_LBL={international:'International',national:'National',zone:'Zone',regional:'Régional',departemental:'Départemental',club:'Club',autre:'Autre'};
+const TYPE_LBL={competition:'Compétition',stage:'Stage',formation_arbitrage:'Form. arbitrage',formation_animateur:'Form. animateur',formation_cadre:'Form. cadres'};
+const NIV_EMOJI={international:'🌍',national:'🇫🇷',zone:'🗺️',regional:'🏅',departemental:'📍',club:'🏠'};
+
+let allEvents=[], filtered=[], view='liste', calY=new Date().getFullYear(), calM=new Date().getMonth();
+let filters={niveau:'tous',arme:'tous',type_evenement:'tous'};
+
+// ── INIT ──────────────────────────────────────────────────────────────────────
+async function init(){ await Promise.all([loadStats(), loadEvents()]); }
+
+async function loadStats(){
+  const s=await fetch('/api/stats').then(r=>r.json());
+  document.getElementById('headerStats').innerHTML=`
+    <span class="hstat">Total <strong>${s.total}</strong></span>
+    <span class="hstat">Grand Est <strong>${s.grand_est}</strong></span>
+    <span class="hstat">🌍 <strong>${s.international}</strong></span>
+    <span class="hstat">🇫🇷 <strong>${s.national}</strong></span>
+    <span class="hstat">🏅 <strong>${s.regional}</strong></span>
+    <span class="hstat">Stages <strong>${s.stages}</strong></span>
+    <span class="hstat" style="margin-left:auto;opacity:.6;font-size:.68rem">MAJ ${s.derniere_maj}</span>
+  `;
+}
+
+async function loadEvents(){
+  const p=buildParams();
+  const r=await fetch('/api/events?'+p);
+  filtered=await r.json();
+  updateCounts();
+  render();
+}
+
+function buildParams(){
+  const p=new URLSearchParams();
+  const v=filters;
+  if(v.niveau&&v.niveau!=='tous') p.set('niveau',v.niveau);
+  if(v.arme&&v.arme!=='tous') p.set('arme',v.arme);
+  if(v.type_evenement&&v.type_evenement!=='tous') p.set('type_evenement',v.type_evenement);
+  const cat=document.getElementById('fCategorie')?.value;
+  if(cat&&cat!=='tous') p.set('categorie',cat);
+  if(document.getElementById('fGrandEst')?.checked) p.set('grand_est','1');
+  const s=(document.getElementById('fSearch')?.value||'').trim();
+  if(s) p.set('search',s);
+  const df=document.getElementById('fDateFrom')?.value;
+  const dt=document.getElementById('fDateTo')?.value;
+  if(df) p.set('date_from',df);
+  if(dt) p.set('date_to',dt);
+  return p.toString();
+}
+
+// ── FILTRES ───────────────────────────────────────────────────────────────────
+function setFilter(btn){
+  const f=btn.dataset.f, v=btn.dataset.v;
+  filters[f]=v;
+  document.querySelectorAll(`[data-f="${f}"]`).forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  applyFilters();
+}
+
+function applyFilters(){ loadEvents(); }
+
+function syncSearch(el){
+  document.getElementById('fSearch').value=el.value;
+  debounce(applyFilters,300)();
+}
+
+function resetFilters(){
+  filters={niveau:'tous',arme:'tous',type_evenement:'tous'};
+  document.querySelectorAll('[data-f]').forEach(b=>{ b.classList.remove('active'); if(b.dataset.v==='tous') b.classList.add('active'); });
+  ['fCategorie'].forEach(id=>{ const el=document.getElementById(id); if(el) el.value='tous'; });
+  ['fGrandEst'].forEach(id=>{ const el=document.getElementById(id); if(el) el.checked=false; });
+  ['fSearch','fSearchTop','fDateFrom','fDateTo'].forEach(id=>{ const el=document.getElementById(id); if(el) el.value=''; });
+  loadEvents();
+}
+
+function updateCounts(){
+  // Totaux sidebar (on recharge en parallèle)
+  fetch('/api/events').then(r=>r.json()).then(all=>{
+    const niv={};
+    all.forEach(e=>{ const n=e.niveau||'autre'; niv[n]=(niv[n]||0)+1; });
+    niv.tous=all.length;
+    Object.entries(niv).forEach(([k,v])=>{
+      const el=document.getElementById(`cnt-niv-${k}`);
+      if(el) el.textContent=v;
+    });
+  });
+}
+
+// ── RENDER ────────────────────────────────────────────────────────────────────
+function render(){
+  document.getElementById('resultsInfo').innerHTML=`<strong>${filtered.length}</strong> événement${filtered.length>1?'s':''} affiché${filtered.length>1?'s':''}`;
+  if(view==='liste') renderListe(); else renderCal();
+}
+
+function setView(v){
+  view=v;
+  document.getElementById('viewListe').style.display=v==='liste'?'':'none';
+  document.getElementById('viewCal').style.display=v==='cal'?'':'none';
+  document.getElementById('btnListe').classList.toggle('active',v==='liste');
+  document.getElementById('btnCal').classList.toggle('active',v==='cal');
+  render();
+}
+
+// ── LISTE ─────────────────────────────────────────────────────────────────────
+function renderListe(){
+  const el=document.getElementById('viewListe');
+  if(!filtered.length){ el.innerHTML=`<div class="empty"><div class="ico">📭</div>Aucun résultat</div>`; return; }
+  let html='', lastM='';
+  for(const e of filtered){
+    const d=pd(e.date_debut), mk=`${d.getFullYear()}-${d.getMonth()}`;
+    if(mk!==lastM){ html+=`<div class="month-sep">${MOIS[d.getMonth()]} ${d.getFullYear()}</div>`; lastM=mk; }
+    html+=renderCard(e);
+  }
+  el.innerHTML=html;
+}
+
+function renderCard(e){
+  const d=pd(e.date_debut);
+  const niv=e.niveau||'autre';
+  const tev=e.type_evenement||'competition';
+  const isStage=tev!=='competition';
+  const cls=`card lv-${niv} ev-${tev}`;
+  const bNiv=`<span class="badge b-${niv}">${NIV_EMOJI[niv]||''} ${NIV_LBL[niv]||niv}</span>`;
+  const bType=isStage?`<span class="badge b-stage">${TYPE_LBL[tev]||tev}</span>`:'';
+  const bGE=e.grand_est?`<span class="badge b-ge">GE</span>`:'';
+  const bManu=e.manuel?`<span class="badge b-manuel">Manuel</span>`:'';
+  const bArme=e.arme?`<span class="badge b-arme">${e.arme}${e.sexe?' '+e.sexe:''}</span>`:'';
+  const cats=(e.categories||[]).slice(0,3).map(c=>`<span class="badge b-cat">${c}</span>`).join('');
+  const lieu=e.lieu?`<span class="card-lieu">📍 ${e.lieu}</span>`:'';
+  const actions=e.manuel?`<button class="btn btn-secondary btn-sm" onclick="event.stopPropagation();editEvent('${e.id}')">✏</button><button class="btn btn-danger btn-sm" onclick="event.stopPropagation();delEvent('${e.id}')">🗑</button>`:'';
+  return `<div class="${cls}" onclick="showDP('${e.id}')">
+    <div class="card-date"><div class="j">${d.getDate().toString().padStart(2,'0')}</div><div class="m">${MOIS[d.getMonth()].slice(0,3).toUpperCase()}</div><div class="a">${d.getFullYear()}</div></div>
+    <div class="card-body"><div class="card-title">${e.intitule||'—'}</div><div class="card-meta">${bNiv}${bType}${bGE}${bManu}${bArme}${cats}${lieu}</div></div>
+    <div class="card-actions">${actions}</div>
+  </div>`;
+}
+
+// ── CALENDRIER ────────────────────────────────────────────────────────────────
+function renderCal(){
+  document.getElementById('calTitle').textContent=`${MOIS[calM]} ${calY}`;
+  const grid=document.getElementById('calGrid');
+  let html=JOURS.map(j=>`<div class="cal-dh">${j}</div>`).join('');
+  const first=new Date(calY,calM,1);
+  let dow=first.getDay(); dow=dow===0?6:dow-1;
+  const dim=new Date(calY,calM+1,0).getDate();
+  const today=new Date();
+  const byDay={};
+  filtered.forEach(e=>{ const d=pd(e.date_debut); if(d.getFullYear()===calY&&d.getMonth()===calM){ const k=d.getDate(); (byDay[k]=byDay[k]||[]).push(e); } });
+  for(let i=0;i<dow;i++) html+=`<div class="cal-cell other"></div>`;
+  for(let d=1;d<=dim;d++){
+    const isT=today.getFullYear()===calY&&today.getMonth()===calM&&today.getDate()===d;
+    const evs=byDay[d]||[];
+    const evHtml=evs.slice(0,3).map(e=>`<div class="cal-ev lv-${e.niveau||'autre'} ev-${e.type_evenement||'competition'}" onclick="showDP('${e.id}')" title="${e.intitule}">${e.intitule}</div>`).join('')
+      +(evs.length>3?`<div class="cal-more">+${evs.length-3} →</div>`:'');
+    html+=`<div class="cal-cell${isT?' today':''}"><div class="cal-dn">${d}</div>${evHtml}</div>`;
+  }
+  grid.innerHTML=html;
+}
+function prevMonth(){ calM--; if(calM<0){calM=11;calY--;} renderCal(); }
+function nextMonth(){ calM++; if(calM>11){calM=0;calY++;} renderCal(); }
+
+// ── DETAIL ────────────────────────────────────────────────────────────────────
+function showDP(id){
+  const e=filtered.find(x=>x.id===id)||allEvents.find(x=>x.id===id);
+  if(!e) return;
+  document.getElementById('dpTitle').textContent=e.intitule||'—';
+  const d0=pd(e.date_debut).toLocaleDateString('fr-FR');
+  const d1=e.date_fin&&e.date_fin!==e.date_debut?pd(e.date_fin).toLocaleDateString('fr-FR'):null;
+  const df=d1?`${d0} → ${d1}`:d0;
+  const row=(lbl,val)=>val?`<div class="dp-row"><div class="lbl">${lbl}</div><div class="val">${val}</div></div>`:'';
+  document.getElementById('dpBody').innerHTML=`
+    ${row('Date',df)}
+    ${row('Lieu',e.lieu?'📍 '+e.lieu:'')}
+    ${row('Niveau',`<span class="badge b-${e.niveau||'autre'}">${NIV_LBL[e.niveau]||e.niveau||'—'}</span>`)}
+    ${row('Type',TYPE_LBL[e.type_evenement]||e.type_evenement||'—')}
+    ${row('Périmètre',e.perimetre)}
+    ${row('Arme / Sexe',[e.arme,e.sexe].filter(Boolean).join(' · '))}
+    ${row('Catégories',(e.categories||[]).join(', '))}
+    ${row('Type épreuve',e.type_epreuve)}
+    ${row('Statut',e.statut)}
+    ${row('Grand Est',e.grand_est?'✅ Oui':'')}
+    ${row('Notes',e.notes)}
+    ${e.url?`<div class="dp-row"><a href="${e.url}" target="_blank" class="btn btn-outline btn-sm">🔗 Fiche FFE</a></div>`:''}
+    ${row('Source',e.manuel?'✍ Saisie manuelle':'📊 Import FFE')}
+  `;
+  document.getElementById('dpActions').innerHTML=e.manuel?`
+    <button class="btn btn-secondary btn-sm" onclick="editEvent('${e.id}')">✏ Modifier</button>
+    <button class="btn btn-danger btn-sm" onclick="delEvent('${e.id}')">🗑 Supprimer</button>`:'';
+  document.getElementById('dp').classList.add('open');
+}
+function closeDP(){ document.getElementById('dp').classList.remove('open'); }
+
+// ── MODAL ─────────────────────────────────────────────────────────────────────
+function openAdd(){
+  document.getElementById('editId').value='';
+  document.getElementById('modalTitle').textContent='Ajouter un événement';
+  ['eDateD','eDateF','eIntitule','eLieu','eUrl','eNotes','eCats'].forEach(id=>document.getElementById(id).value='');
+  document.getElementById('eType').value='competition';
+  document.getElementById('eNiveau').value='regional';
+  document.getElementById('eArme').value='';
+  document.getElementById('eSexe').value='H+D';
+  document.getElementById('eTypeEp').value='Individuelle';
+  document.getElementById('eGE').checked=true;
+  document.getElementById('modalOv').classList.add('open');
+}
+function editEvent(id){
+  const e=filtered.find(x=>x.id===id)||[];
+  if(!e) return;
+  document.getElementById('editId').value=id;
+  document.getElementById('modalTitle').textContent='Modifier l\'événement';
+  document.getElementById('eType').value=e.type_evenement||'competition';
+  document.getElementById('eDateD').value=e.date_debut||'';
+  document.getElementById('eDateF').value=e.date_fin||'';
+  document.getElementById('eIntitule').value=e.intitule||'';
+  document.getElementById('eLieu').value=e.lieu||'';
+  document.getElementById('eNiveau').value=e.niveau||'regional';
+  document.getElementById('eArme').value=e.arme||'';
+  document.getElementById('eSexe').value=e.sexe||'H+D';
+  document.getElementById('eTypeEp').value=e.type_epreuve||'Individuelle';
+  document.getElementById('eCats').value=(e.categories||[]).join(', ');
+  document.getElementById('eUrl').value=e.url||'';
+  document.getElementById('eGE').checked=!!e.grand_est;
+  document.getElementById('eNotes').value=e.notes||'';
+  closeDP();
+  document.getElementById('modalOv').classList.add('open');
+}
+function closeModal(){ document.getElementById('modalOv').classList.remove('open'); }
+
+async function saveEvent(){
+  const id=document.getElementById('editId').value;
+  const data={
+    type_evenement:document.getElementById('eType').value,
+    date_debut:document.getElementById('eDateD').value,
+    date_fin:document.getElementById('eDateF').value,
+    intitule:document.getElementById('eIntitule').value,
+    lieu:document.getElementById('eLieu').value,
+    niveau:document.getElementById('eNiveau').value,
+    arme:document.getElementById('eArme').value,
+    sexe:document.getElementById('eSexe').value,
+    type_epreuve:document.getElementById('eTypeEp').value,
+    categories:document.getElementById('eCats').value.split(',').map(s=>s.trim()).filter(Boolean),
+    url:document.getElementById('eUrl').value,
+    grand_est:document.getElementById('eGE').checked,
+    notes:document.getElementById('eNotes').value,
+  };
+  if(!data.date_debut||!data.intitule){ showToast('Date et intitulé requis','err'); return; }
+  const url=id?`/api/events/${id}`:'/api/events';
+  const r=await fetch(url,{method:id?'PUT':'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(data)});
+  const res=await r.json();
+  if(res.success){ closeModal(); showToast(id?'Modifié':'Ajouté','ok'); await Promise.all([loadStats(),loadEvents()]); }
+  else showToast(res.error||'Erreur','err');
+}
+
+async function delEvent(id){
+  if(!confirm('Supprimer cet événement ?')) return;
+  await fetch(`/api/events/${id}`,{method:'DELETE'});
+  closeDP(); showToast('Supprimé','ok');
+  await Promise.all([loadStats(),loadEvents()]);
+}
+
+// ── IMPORT ────────────────────────────────────────────────────────────────────
+function openImport(){ document.getElementById('importOv').classList.add('open'); }
+function closeImport(){ document.getElementById('importOv').classList.remove('open'); }
+
+async function doImport(input){
+  const f=input.files[0]; if(!f) return;
+  const el=document.getElementById('importResult');
+  el.innerHTML='<span style="color:var(--bleu2)">Import en cours…</span>';
+  const fd=new FormData(); fd.append('file',f);
+  try{
+    const r=await fetch('/api/import',{method:'POST',body:fd});
+    const res=await r.json();
+    if(res.success){
+      el.innerHTML=`<span style="color:#27AE60">✓ ${res.ffe} événements FFE importés + ${res.manuels} manuels conservés (total: ${res.total})</span>`;
+      await Promise.all([loadStats(),loadEvents()]);
+    } else el.innerHTML=`<span style="color:#C0392B">✗ ${res.error}</span>`;
+  } catch{ el.innerHTML='<span style="color:#C0392B">✗ Erreur réseau</span>'; }
+  input.value='';
+}
+
+// ── EXPORTS ───────────────────────────────────────────────────────────────────
+function doExport(fmt){
+  const p=buildParams();
+  const a=document.createElement('a');
+  a.href=`/api/export/${fmt}?${p}`;
+  a.click();
+  showToast(`Export ${fmt.toUpperCase()} en cours…`,'ok');
+}
+
+// ── UTILS ─────────────────────────────────────────────────────────────────────
+function pd(s){ if(!s) return new Date(); const [y,m,d]=s.split('-'); return new Date(+y,+m-1,+d); }
+
+function showToast(msg,type=''){
+  const t=document.getElementById('toast');
+  t.textContent=msg; t.className='toast '+type; t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'),2800);
+}
+
+let _dbt={};
+function debounce(fn,ms){ return function(){ clearTimeout(_dbt[fn]); _dbt[fn]=setTimeout(fn,ms); }; }
+
+init();
+</script>
+</body>
+</html>
