@@ -9,13 +9,6 @@ c = re.sub(r'VERSION_LOCALE = ["\']?[\d.]+["\']?', 'VERSION_LOCALE = "' + v + '"
 with open('portail.py', 'w', encoding='utf-8') as f:
     f.write(c)
 
-# setup.iss
-with open('setup.iss', encoding='utf-8') as f:
-    c = f.read()
-c = re.sub(r'#define AppVersion ["\']?[\d.]+["\']?', '#define AppVersion "' + v + '"', c)
-with open('setup.iss', 'w', encoding='utf-8') as f:
-    f.write(c)
-
 # version.json
 url = 'https://github.com/atrcrege-a11y/Portail-LREGE/releases/download/v' + v + '/PortailLREGE_Setup_v' + v + '.exe'
 with open('version.json', 'w') as f:
