@@ -1239,6 +1239,107 @@ class TabMDPDF(tk.Frame):
         self._refresh()
 
 
+# ── Onglet Renommage XML ─────────────────────────────────────────────────────
+
+class TabRenommage(tk.Frame):
+    def __init__(self, parent, root):
+        super().__init__(parent)
+        self.root = root
+        self.var_dossier = tk.StringVar()
+        self._build()
+
+    def _build(self):
+        tk.Label(self,
+                 text="Renomme les fichiers XML en .cotcot (masquage pour FFE WIN) "
+                      "ou restaure les .cotcot en .xml.",
+                 fg="gray", wraplength=580, justify="left").pack(
+            anchor="w", padx=14, pady=(10, 6))
+
+        fr = tk.LabelFrame(self, text="Dossier cible", padx=10, pady=6)
+        fr.pack(fill="x", padx=14, pady=(0, 8))
+        row_field(fr, "Dossier contenant les fichiers :", self.var_dossier, self._choisir, 0)
+
+        fr_btn = tk.Frame(self)
+        fr_btn.pack(pady=12)
+
+        self.btn_xml2cot = tk.Button(
+            fr_btn, text="XML  →  .cotcot",
+            command=self._xml_vers_cotcot,
+            bg="#1F3864", fg="white",
+            font=("Segoe UI", 10, "bold"), padx=16, pady=8)
+        self.btn_xml2cot.pack(side="left", padx=12)
+
+        self.btn_cot2xml = tk.Button(
+            fr_btn, text=".cotcot  →  XML",
+            command=self._cotcot_vers_xml,
+            bg="#2E75B6", fg="white",
+            font=("Segoe UI", 10, "bold"), padx=16, pady=8)
+        self.btn_cot2xml.pack(side="left", padx=12)
+
+        fr_log = tk.LabelFrame(self, text="Journal", padx=2, pady=2)
+        fr_log.pack(fill="both", expand=True, padx=14, pady=(0, 14))
+        self.log = make_log(fr_log)
+
+    def _log(self, msg): log_write(self.log, msg, self.root)
+
+    def _choisir(self):
+        d = filedialog.askdirectory(title="Selectionner le dossier")
+        if d:
+            self.var_dossier.set(d)
+
+    def _xml_vers_cotcot(self):
+        dossier = self.var_dossier.get().strip()
+        if not dossier:
+            messagebox.showwarning("Attention", "Choisissez un dossier."); return
+        self.log.delete("1.0", tk.END)
+        self._log("=== XML -> .cotcot ===")
+        fichiers = [f for f in os.listdir(dossier) if f.lower().endswith(".xml")]
+        if not fichiers:
+            self._log("Aucun fichier .xml trouve.")
+            messagebox.showinfo("Termine", "Aucun fichier .xml trouve."); return
+        erreurs = []
+        for f in fichiers:
+            src = os.path.join(dossier, f)
+            dst = os.path.join(dossier, f[:-4] + ".cotcot")
+            try:
+                os.rename(src, dst)
+                self._log(f"  {f}  ->  {os.path.basename(dst)}")
+            except Exception as e:
+                erreurs.append((f, str(e)))
+                self._log(f"  ERREUR {f} : {e}")
+        msg = f"{len(fichiers) - len(erreurs)} fichier(s) renomme(s) en .cotcot"
+        if erreurs:
+            msg += f"\n{len(erreurs)} erreur(s)."
+        self._log(msg)
+        (messagebox.showinfo if not erreurs else messagebox.showwarning)("Termine", msg)
+
+    def _cotcot_vers_xml(self):
+        dossier = self.var_dossier.get().strip()
+        if not dossier:
+            messagebox.showwarning("Attention", "Choisissez un dossier."); return
+        self.log.delete("1.0", tk.END)
+        self._log("=== .cotcot -> XML ===")
+        fichiers = [f for f in os.listdir(dossier) if f.lower().endswith(".cotcot")]
+        if not fichiers:
+            self._log("Aucun fichier .cotcot trouve.")
+            messagebox.showinfo("Termine", "Aucun fichier .cotcot trouve."); return
+        erreurs = []
+        for f in fichiers:
+            src = os.path.join(dossier, f)
+            dst = os.path.join(dossier, f[:-7] + ".xml")
+            try:
+                os.rename(src, dst)
+                self._log(f"  {f}  ->  {os.path.basename(dst)}")
+            except Exception as e:
+                erreurs.append((f, str(e)))
+                self._log(f"  ERREUR {f} : {e}")
+        msg = f"{len(fichiers) - len(erreurs)} fichier(s) restaure(s) en .xml"
+        if erreurs:
+            msg += f"\n{len(erreurs)} erreur(s)."
+        self._log(msg)
+        (messagebox.showinfo if not erreurs else messagebox.showwarning)("Termine", msg)
+
+
 # =============================================================================
 # FENETRE PRINCIPALE
 # =============================================================================
@@ -1260,12 +1361,14 @@ def lancer_app():
     tab1 = TabFFF(nb, root)
     tab2 = TabMD(nb, root)
     tab3 = TabMDPDF(nb, root)
+    tab4 = TabRenommage(nb, root)
     nb.add(tab1, text="  BellePoule → FFF  ")
     nb.add(tab2, text="  PDF → Markdown  ")
     nb.add(tab3, text="  Markdown → PDF  ")
+    nb.add(tab4, text="  Renommage XML  ")
 
     # Pied de page
-    tk.Label(root, text="EscriTools v1.0  —  LREGE Grand Est",
+    tk.Label(root, text="EscriTools v1.1  —  LREGE Grand Est",
              fg="gray", font=("Segoe UI", 8)).pack(side="bottom", pady=(0, 6))
 
     root.mainloop()
