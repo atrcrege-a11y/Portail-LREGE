@@ -1245,7 +1245,7 @@ class TabRenommage(tk.Frame):
     def __init__(self, parent, root):
         super().__init__(parent)
         self.root = root
-        self.var_dossier = tk.StringVar()
+        self.var_fichiers = []  # chemins complets
         self._build()
 
     def _build(self):
@@ -1255,9 +1255,23 @@ class TabRenommage(tk.Frame):
                  fg="gray", wraplength=580, justify="left").pack(
             anchor="w", padx=14, pady=(10, 6))
 
-        fr = tk.LabelFrame(self, text="Dossier cible", padx=10, pady=6)
+        fr = tk.LabelFrame(self, text="Fichiers", padx=10, pady=6)
         fr.pack(fill="x", padx=14, pady=(0, 8))
-        row_field(fr, "Dossier contenant les fichiers :", self.var_dossier, self._choisir, 0)
+
+        fr_lst = tk.Frame(fr)
+        fr_lst.grid(row=0, column=0, columnspan=2, sticky="ew")
+        self.lst = tk.Listbox(fr_lst, width=56, height=5, selectmode=tk.EXTENDED)
+        self.lst.pack(side="left")
+        sb = tk.Scrollbar(fr_lst, orient="vertical", command=self.lst.yview)
+        sb.pack(side="left", fill="y")
+        self.lst.config(yscrollcommand=sb.set)
+
+        fr_b = tk.Frame(fr)
+        fr_b.grid(row=1, column=0, columnspan=2, sticky="w", pady=(6, 0))
+        for txt, cmd in [("Ajouter fichier(s)...", self._ajouter),
+                         ("Retirer", self._retirer),
+                         ("Vider", self._vider)]:
+            tk.Button(fr_b, text=txt, command=cmd).pack(side="left", padx=(0, 6))
 
         fr_btn = tk.Frame(self)
         fr_btn.pack(pady=12)
@@ -1266,14 +1280,16 @@ class TabRenommage(tk.Frame):
             fr_btn, text="XML  →  .cotcot",
             command=self._xml_vers_cotcot,
             bg="#1F3864", fg="white",
-            font=("Segoe UI", 10, "bold"), padx=16, pady=8)
+            font=("Segoe UI", 10, "bold"), padx=16, pady=8,
+            state="disabled")
         self.btn_xml2cot.pack(side="left", padx=12)
 
         self.btn_cot2xml = tk.Button(
             fr_btn, text=".cotcot  →  XML",
             command=self._cotcot_vers_xml,
             bg="#2E75B6", fg="white",
-            font=("Segoe UI", 10, "bold"), padx=16, pady=8)
+            font=("Segoe UI", 10, "bold"), padx=16, pady=8,
+            state="disabled")
         self.btn_cot2xml.pack(side="left", padx=12)
 
         fr_log = tk.LabelFrame(self, text="Journal", padx=2, pady=2)
@@ -1282,62 +1298,70 @@ class TabRenommage(tk.Frame):
 
     def _log(self, msg): log_write(self.log, msg, self.root)
 
-    def _choisir(self):
-        d = filedialog.askdirectory(title="Selectionner le dossier")
-        if d:
-            self.var_dossier.set(d)
+    def _ajouter(self):
+        chemins = filedialog.askopenfilenames(
+            title="Selectionner des fichiers XML ou .cotcot",
+            filetypes=[("XML / cotcot", "*.xml *.cotcot"), ("Tous", "*.*")])
+        for c in chemins:
+            if c not in self.var_fichiers:
+                self.var_fichiers.append(c)
+                self.lst.insert(tk.END, os.path.basename(c))
+        self._refresh()
+
+    def _retirer(self):
+        for i in reversed(self.lst.curselection()):
+            self.lst.delete(i); self.var_fichiers.pop(i)
+        self._refresh()
+
+    def _vider(self):
+        self.lst.delete(0, tk.END); self.var_fichiers.clear(); self._refresh()
+
+    def _refresh(self):
+        state = "normal" if self.var_fichiers else "disabled"
+        self.btn_xml2cot.config(state=state)
+        self.btn_cot2xml.config(state=state)
+
+    def _renommer(self, ext_src, ext_dst, label):
+        self.log.delete("1.0", tk.END)
+        self._log(f"=== {label} ===")
+        cibles = [p for p in self.var_fichiers if p.lower().endswith(ext_src)]
+        ignores = [p for p in self.var_fichiers if not p.lower().endswith(ext_src)]
+        if ignores:
+            for p in ignores:
+                self._log(f"  IGNORE (mauvaise extension) : {os.path.basename(p)}")
+        if not cibles:
+            self._log(f"Aucun fichier {ext_src} dans la selection.")
+            messagebox.showinfo("Termine", f"Aucun fichier {ext_src} dans la selection."); return
+        erreurs = []
+        nouveaux = []
+        for src in cibles:
+            dst = src[:-len(ext_src)] + ext_dst
+            try:
+                os.rename(src, dst)
+                self._log(f"  {os.path.basename(src)}  ->  {os.path.basename(dst)}")
+                nouveaux.append(dst)
+            except Exception as e:
+                erreurs.append((src, str(e)))
+                self._log(f"  ERREUR {os.path.basename(src)} : {e}")
+                nouveaux.append(src)  # garde l'ancien chemin en cas d'erreur
+        # Mettre à jour la liste interne avec les nouveaux chemins
+        idx_cibles = [i for i, p in enumerate(self.var_fichiers) if p.lower().endswith(ext_src)]
+        for i, nouveau in zip(idx_cibles, nouveaux):
+            self.var_fichiers[i] = nouveau
+            self.lst.delete(i)
+            self.lst.insert(i, os.path.basename(nouveau))
+        n_ok = len(cibles) - len(erreurs)
+        msg = f"{n_ok} fichier(s) renomme(s)"
+        if erreurs:
+            msg += f"\n{len(erreurs)} erreur(s)."
+        self._log(msg)
+        (messagebox.showinfo if not erreurs else messagebox.showwarning)("Termine", msg)
 
     def _xml_vers_cotcot(self):
-        dossier = self.var_dossier.get().strip()
-        if not dossier:
-            messagebox.showwarning("Attention", "Choisissez un dossier."); return
-        self.log.delete("1.0", tk.END)
-        self._log("=== XML -> .cotcot ===")
-        fichiers = [f for f in os.listdir(dossier) if f.lower().endswith(".xml")]
-        if not fichiers:
-            self._log("Aucun fichier .xml trouve.")
-            messagebox.showinfo("Termine", "Aucun fichier .xml trouve."); return
-        erreurs = []
-        for f in fichiers:
-            src = os.path.join(dossier, f)
-            dst = os.path.join(dossier, f[:-4] + ".cotcot")
-            try:
-                os.rename(src, dst)
-                self._log(f"  {f}  ->  {os.path.basename(dst)}")
-            except Exception as e:
-                erreurs.append((f, str(e)))
-                self._log(f"  ERREUR {f} : {e}")
-        msg = f"{len(fichiers) - len(erreurs)} fichier(s) renomme(s) en .cotcot"
-        if erreurs:
-            msg += f"\n{len(erreurs)} erreur(s)."
-        self._log(msg)
-        (messagebox.showinfo if not erreurs else messagebox.showwarning)("Termine", msg)
+        self._renommer(".xml", ".cotcot", "XML -> .cotcot")
 
     def _cotcot_vers_xml(self):
-        dossier = self.var_dossier.get().strip()
-        if not dossier:
-            messagebox.showwarning("Attention", "Choisissez un dossier."); return
-        self.log.delete("1.0", tk.END)
-        self._log("=== .cotcot -> XML ===")
-        fichiers = [f for f in os.listdir(dossier) if f.lower().endswith(".cotcot")]
-        if not fichiers:
-            self._log("Aucun fichier .cotcot trouve.")
-            messagebox.showinfo("Termine", "Aucun fichier .cotcot trouve."); return
-        erreurs = []
-        for f in fichiers:
-            src = os.path.join(dossier, f)
-            dst = os.path.join(dossier, f[:-7] + ".xml")
-            try:
-                os.rename(src, dst)
-                self._log(f"  {f}  ->  {os.path.basename(dst)}")
-            except Exception as e:
-                erreurs.append((f, str(e)))
-                self._log(f"  ERREUR {f} : {e}")
-        msg = f"{len(fichiers) - len(erreurs)} fichier(s) restaure(s) en .xml"
-        if erreurs:
-            msg += f"\n{len(erreurs)} erreur(s)."
-        self._log(msg)
-        (messagebox.showinfo if not erreurs else messagebox.showwarning)("Termine", msg)
+        self._renommer(".cotcot", ".xml", ".cotcot -> XML")
 
 
 # =============================================================================
