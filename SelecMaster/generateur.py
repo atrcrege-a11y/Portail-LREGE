@@ -30,7 +30,7 @@ C_BLANC        = "FFFFFF"
 C_JAUNE        = "FFF2CC"   # alerte M11 double
 C_BLEU_M13OK   = "EBF3FF"   # M11 autorisé M13
 
-NIVEAUX_ARB = '"Formation Territoriale,Territorial,Formation Régionale,Régionale,Formation Nationale,National,International"'
+NIVEAUX_ARB = '"Formation Régionale,Régionale,Formation Nationale,National,International"'
 OUI_NON     = '"Oui,Non"'
 MOIS_FR  = ["Janvier","Février","Mars","Avril","Mai","Juin",
             "Juillet","Août","Septembre","Octobre","Novembre","Décembre"]
