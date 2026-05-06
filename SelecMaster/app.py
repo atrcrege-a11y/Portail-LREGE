@@ -10,8 +10,43 @@ from generateur import generer_excel
 app = Flask(__name__)
 app.secret_key = "selecmaster-lrege-2025"
 
+@app.after_request
+def add_cors(response):
+    response.headers["Access-Control-Allow-Origin"] = "http://localhost:5000"
+    response.headers["Access-Control-Allow-Methods"] = "GET, POST, OPTIONS"
+    response.headers["Access-Control-Allow-Headers"] = "Content-Type"
+    return response
+
+@app.route("/api/<path:path>", methods=["OPTIONS"])
+def options(path):
+    return "", 204
+
+import pickle, pathlib
+
 _cache = {}  # clés : "H_M11", "H_M13", "D_M11", "D_M13"
-_params = {}  # paramètres globaux : arme, territoire_organisateur, bonus_organisateur
+_params = {}
+_CACHE_FILE = os.path.join(os.path.dirname(os.path.abspath(__file__)), ".cache_selecmaster.pkl")
+
+
+def _sauvegarder_cache():
+    try:
+        with open(_CACHE_FILE, "wb") as f:
+            pickle.dump(_cache, f)
+    except Exception:
+        pass
+
+
+def _charger_cache():
+    global _cache
+    try:
+        if os.path.isfile(_CACHE_FILE):
+            with open(_CACHE_FILE, "rb") as f:
+                _cache.update(pickle.load(f))
+    except Exception:
+        pass
+
+
+_charger_cache()
 
 
 @app.route("/")
@@ -62,9 +97,11 @@ def upload():
     selection = calculer_selection(donnees, bonus_organisateur)
     cle = f"{genre}_{categorie}"
     _cache[cle] = selection
+    print(f"[UPLOAD] cle={cle} | cache keys={list(_cache.keys())}")
     _params[cle] = {"territoire_orga": territoire_orga, "bonus": bonus_organisateur}
 
     _tenter_croisement_m11(genre)
+    _sauvegarder_cache()
 
     return jsonify({**_resume(_cache[cle], genre, categorie),
                     "alerte_territoire": alerte_territoire})
@@ -130,8 +167,10 @@ def generer():
     sel_h = _cache.get(f"H_{categorie}")
     sel_d = _cache.get(f"D_{categorie}")
 
+    print(f"[GENERER] categorie={categorie} | cache keys={list(_cache.keys())} | sel_h={sel_h is not None} | sel_d={sel_d is not None}")
+
     if not sel_h and not sel_d:
-        return jsonify({"erreur": f"Aucun fichier {categorie} importé."}), 400
+        return jsonify({"erreur": f"Aucun fichier {categorie} importé. Cache: {list(_cache.keys())}"}), 400
 
     ref = sel_h or sel_d
     arme = ref.get("arme", "arme")
@@ -146,11 +185,20 @@ def generer():
     nom = f"Selection_Master_{arme}_{categorie}_{territoire}.xlsx".replace(" ", "_")
     sorties_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), "sorties")
     os.makedirs(sorties_dir, exist_ok=True)
-    with open(os.path.join(sorties_dir, nom), "wb") as f:
+    chemin = os.path.join(sorties_dir, nom)
+    with open(chemin, "wb") as f:
         f.write(buf.read())
-    buf.seek(0)
 
-    return send_file(buf, as_attachment=True, download_name=nom,
+    return jsonify({"ok": True, "fichier": nom})
+
+
+@app.route("/api/telecharger/<nom>")
+def telecharger(nom):
+    sorties_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), "sorties")
+    chemin = os.path.join(sorties_dir, nom)
+    if not os.path.isfile(chemin):
+        return jsonify({"erreur": "Fichier introuvable"}), 404
+    return send_file(chemin, as_attachment=True, download_name=nom,
                      mimetype="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
 
 
@@ -158,6 +206,11 @@ def generer():
 def reset():
     _cache.clear()
     _params.clear()
+    try:
+        if os.path.isfile(_CACHE_FILE):
+            os.remove(_CACHE_FILE)
+    except Exception:
+        pass
     return jsonify({"ok": True})
 
 

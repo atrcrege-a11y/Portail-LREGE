@@ -235,6 +235,7 @@
 </main>
 
 <script>
+const API = window.location.port === "5004" ? "" : "http://localhost:5004";
 const cache = {};
 const alertesTerritoire = [];
 
@@ -251,7 +252,7 @@ function onBonusChange() {
 }
 
 async function recalculer(bonus) {
-  const resp = await fetch('/api/recalculer', {
+  const resp = await fetch(API + '/api/recalculer', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ bonus_organisateur: bonus })
@@ -291,7 +292,7 @@ async function uploadFichier(genre, categorie) {
   fd.append('bonus_organisateur', bonus);
 
   try {
-    const resp = await fetch('/api/upload', { method: 'POST', body: fd });
+    const resp = await fetch(API + '/api/upload', { method: 'POST', body: fd });
     const data = await resp.json();
 
     if (data.erreur) {
@@ -418,14 +419,15 @@ function tableauTireurs(tireurs) {
 
 async function generer(categorie) {
   const btn = document.getElementById('btn-gen-' + categorie);
-  if (!btn) return;
+  console.log('[GENERER] btn=', btn, 'categorie=', categorie);
+  if (!btn) { console.error('[GENERER] bouton introuvable : btn-gen-' + categorie); return; }
   btn.disabled = true;
   btn.innerHTML = '<span class="spinner"></span>Génération…';
 
   try {
     const dateConf = document.getElementById('date-confirmation');
     const dateExt  = document.getElementById('date-extranet');
-    const resp = await fetch('/api/generer', {
+    const resp = await fetch(API + '/api/generer', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
@@ -438,20 +440,16 @@ async function generer(categorie) {
           : ''
       })
     });
-    if (!resp.ok) {
-      const data = await resp.json();
+    const data = await resp.json();
+    if (!resp.ok || data.erreur) {
       afficherErreur(data.erreur || 'Erreur lors de la génération.');
     } else {
-      const blob = await resp.blob();
-      const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
-      a.href = url;
-      const cd = resp.headers.get('Content-Disposition') || '';
-      a.download = cd.split('filename=')[1]?.replace(/"/g, '') || ('selection_master_' + categorie + '.xlsx');
+      a.href = API + '/api/telecharger/' + encodeURIComponent(data.fichier);
+      a.download = data.fichier;
       document.body.appendChild(a);
       a.click();
       document.body.removeChild(a);
-      URL.revokeObjectURL(url);
     }
   } catch(e) {
     afficherErreur('Erreur réseau : ' + e.message);
@@ -462,7 +460,7 @@ async function generer(categorie) {
 }
 
 async function reset() {
-  await fetch('/api/reset', { method: 'POST' });
+  await fetch(API + '/api/reset', { method: 'POST' });
   Object.keys(cache).forEach(k => delete cache[k]);
   ['H_M11','H_M13','D_M11','D_M13'].forEach(cle => {
     setEtat(cle, 'Aucun fichier', '');
