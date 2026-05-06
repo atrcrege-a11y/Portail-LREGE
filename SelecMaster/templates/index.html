@@ -417,45 +417,48 @@ function tableauTireurs(tireurs) {
 // ── Génération ───────────────────────────────────────────────────────────────
 
 async function generer(categorie) {
-  const btn = document.getElementById(`btn-gen-${categorie}`);
+  const btn = document.getElementById('btn-gen-' + categorie);
+  if (!btn) return;
   btn.disabled = true;
-  btn.innerHTML = `<span class="spinner"></span>Génération…`;
+  btn.innerHTML = '<span class="spinner"></span>Génération…';
 
   try {
+    const dateConf = document.getElementById('date-confirmation');
+    const dateExt  = document.getElementById('date-extranet');
     const resp = await fetch('/api/generer', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         categorie,
-        date_confirmation: document.getElementById('date-confirmation').value
-          ? new Date(document.getElementById('date-confirmation').value)
-              .toLocaleDateString('fr-FR', {day:'2-digit',month:'2-digit',year:'numeric'})
+        date_confirmation: dateConf && dateConf.value
+          ? new Date(dateConf.value).toLocaleDateString('fr-FR', {day:'2-digit',month:'2-digit',year:'numeric'})
           : '',
-        date_extranet: document.getElementById('date-extranet').value
-          ? new Date(document.getElementById('date-extranet').value)
-              .toLocaleDateString('fr-FR', {day:'2-digit',month:'2-digit',year:'numeric'})
+        date_extranet: dateExt && dateExt.value
+          ? new Date(dateExt.value).toLocaleDateString('fr-FR', {day:'2-digit',month:'2-digit',year:'numeric'})
           : ''
       })
     });
     if (!resp.ok) {
       const data = await resp.json();
-      afficherErreur(data.erreur || 'Erreur génération.');
+      afficherErreur(data.erreur || 'Erreur lors de la génération.');
     } else {
       const blob = await resp.blob();
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
       const cd = resp.headers.get('Content-Disposition') || '';
-      a.download = cd.split('filename=')[1]?.replace(/"/g,'') || `selection_master_${categorie}.xlsx`;
+      a.download = cd.split('filename=')[1]?.replace(/"/g, '') || ('selection_master_' + categorie + '.xlsx');
+      document.body.appendChild(a);
       a.click();
+      document.body.removeChild(a);
       URL.revokeObjectURL(url);
     }
   } catch(e) {
     afficherErreur('Erreur réseau : ' + e.message);
+  } finally {
+    btn.disabled = false;
+    btn.innerHTML = '⬇ Générer ' + categorie;
   }
-
-  btn.disabled = false;
-  btn.innerHTML = `⬇ Générer ${categorie}`;
 }
 
 async function reset() {

@@ -140,11 +140,13 @@ def generer():
     try:
         buf = generer_excel(sel_h or {}, sel_d or {}, date_confirmation=date_confirmation, date_extranet=date_extranet)
     except Exception as e:
-        return jsonify({"erreur": f"Erreur génération : {str(e)}"}), 500
+        import traceback
+        return jsonify({"erreur": f"Erreur génération : {str(e)}", "detail": traceback.format_exc()}), 500
 
     nom = f"Selection_Master_{arme}_{categorie}_{territoire}.xlsx".replace(" ", "_")
-    os.makedirs("sorties", exist_ok=True)
-    with open(os.path.join("sorties", nom), "wb") as f:
+    sorties_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), "sorties")
+    os.makedirs(sorties_dir, exist_ok=True)
+    with open(os.path.join(sorties_dir, nom), "wb") as f:
         f.write(buf.read())
     buf.seek(0)
 
@@ -160,4 +162,5 @@ def reset():
 
 
 if __name__ == "__main__":
+    os.chdir(os.path.dirname(os.path.abspath(__file__)))
     app.run(port=5004, debug=False)
