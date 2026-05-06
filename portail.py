@@ -5,7 +5,7 @@ import os, sys, subprocess, threading, webbrowser, time, json, tempfile
 import urllib.request as urlreq
 from flask import Flask, render_template_string, jsonify
 
-VERSION_LOCALE = "2.10"
+VERSION_LOCALE = "3.0"
 VERSION_JSON_URL = "https://raw.githubusercontent.com/atrcrege-a11y/Portail-LREGE/main/version.json"
 
 app = Flask(__name__)
@@ -56,6 +56,17 @@ OUTILS = {
         "type": "web",
         "cwd": os.path.join(BASE_DIR, "CalendrierLREGE"),
     },
+    "selecmaster": {
+        "nom": "SelecMaster",
+        "description": "Selection Master Grand Est",
+        "detail": "M11 / M13 - Epee - Fleuret - Sabre - Territories",
+        "script": os.path.join(BASE_DIR, "SelecMaster", "app.py"),
+        "port": 5004,
+        "icone": "\U0001F947",
+        "couleur": "#1F6B38",
+        "type": "web",
+        "cwd": os.path.join(BASE_DIR, "SelecMaster"),
+    },
 }
 
 _processus = {}
@@ -64,6 +75,7 @@ VENVS = {
     "synesc":     os.path.join(BASE_DIR, "SYNESC", ".venv", "Scripts", "python.exe"),
     "escritools": None,
     "calendrier": None,
+    "selecmaster": None,
 }
 
 
@@ -248,8 +260,8 @@ HTML_PORTAIL = """<!DOCTYPE html>
   <span><span class="dot-live"></span><span id="ts">&mdash;</span></span>
 </footer>
 <script>
-const TYPES = {selecge:"web",synesc:"web",escritools:"tkinter",calendrier:"web"};
-const PORTS = {selecge:5001,synesc:5002,calendrier:5003};
+const TYPES = {selecge:"web",synesc:"web",escritools:"tkinter",calendrier:"web",selecmaster:"web"};
+const PORTS = {selecge:5001,synesc:5002,calendrier:5003,selecmaster:5004};
 
 function btn(cls, oid, label, extra) {
   return `<button class="btn ${cls}" onclick="${extra||cls.replace('btn-','')}('${oid}')">${label}</button>`;

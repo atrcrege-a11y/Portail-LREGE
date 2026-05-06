@@ -1,0 +1,488 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SelecMaster — LREGE Grand Est</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: Verdana, Geneva, sans-serif; font-size: 10pt; background: #f0f4f8; color: #222; }
+
+  header { background: #1F3864; color: #fff; padding: 12px 24px; display: flex; align-items: center; gap: 16px; }
+  header h1 { font-size: 14pt; }
+  header span { font-size: 9pt; opacity: .75; }
+
+  main { max-width: 980px; margin: 24px auto; padding: 0 16px; }
+
+  .card { background: #fff; border-radius: 6px; box-shadow: 0 1px 4px rgba(0,0,0,.12); padding: 18px 22px; margin-bottom: 18px; }
+  .card h2 { font-size: 11pt; color: #1F3864; border-bottom: 2px solid #2E75B6; padding-bottom: 6px; margin-bottom: 14px; }
+
+  .form-row { display: flex; gap: 14px; flex-wrap: wrap; margin-bottom: 10px; }
+  .form-row > div { flex: 1; min-width: 150px; }
+  label { display: block; font-size: 8.5pt; color: #555; margin-bottom: 4px; font-weight: bold; }
+  select { width: 100%; padding: 6px 8px; border: 1px solid #ccc; border-radius: 4px; font-family: Verdana, sans-serif; font-size: 9pt; background: #fff; }
+
+  /* Toggle bonus organisateur */
+  .bonus-row {
+    display: flex; align-items: center; gap: 12px;
+    background: #DEEAF1; border: 1px solid #2E75B6;
+    border-radius: 5px; padding: 9px 14px; margin-top: 4px;
+  }
+  .bonus-row label { margin: 0; font-size: 9.5pt; color: #1F3864; font-weight: bold; cursor: pointer; }
+  .toggle { position: relative; display: inline-block; width: 40px; height: 22px; }
+  .toggle input { opacity: 0; width: 0; height: 0; }
+  .slider {
+    position: absolute; cursor: pointer; inset: 0;
+    background: #ccc; border-radius: 22px; transition: .2s;
+  }
+  .slider:before {
+    content: ""; position: absolute;
+    height: 16px; width: 16px; left: 3px; bottom: 3px;
+    background: white; border-radius: 50%; transition: .2s;
+  }
+  input:checked + .slider { background: #2E75B6; }
+  input:checked + .slider:before { transform: translateX(18px); }
+  .bonus-note { font-size: 8.5pt; color: #555; }
+
+  /* Upload grid */
+  .upload-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  @media (max-width: 560px) { .upload-grid { grid-template-columns: 1fr; } }
+
+  .col-header { text-align: center; font-weight: bold; font-size: 10pt; color: #2E75B6; padding: 4px 0 8px; }
+
+  .upload-bloc { border: 2px dashed #ccc; border-radius: 6px; padding: 12px 14px; transition: border-color .2s; }
+  .upload-bloc:hover { border-color: #2E75B6; }
+  .upload-bloc.charge { border: 2px solid #70AD47; background: #f2faf0; }
+  .upload-bloc.erreur { border: 2px solid #C00000; background: #fff0f0; }
+  .upload-bloc .slot-label { font-size: 10pt; font-weight: bold; color: #1F3864; margin-bottom: 6px; }
+  .upload-bloc input[type=file] { width: 100%; font-size: 8.5pt; border: 1px solid #ddd; border-radius: 3px; padding: 3px 4px; background: #fafafa; }
+  .upload-bloc .etat { font-size: 8pt; margin-top: 5px; color: #555; min-height: 14px; }
+
+  .btn { display: inline-block; padding: 7px 16px; border: none; border-radius: 4px; cursor: pointer; font-family: Verdana, sans-serif; font-size: 9.5pt; font-weight: bold; transition: opacity .15s; }
+  .btn:hover { opacity: .85; }
+  .btn:disabled { opacity: .4; cursor: not-allowed; }
+  .btn-success { background: #70AD47; color: #fff; }
+  .btn-danger  { background: #C00000; color: #fff; }
+  .actions { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 14px; align-items: center; }
+
+  /* Messages */
+  .msg-erreur { background: #fff0f0; border: 1px solid #C00000; color: #C00000; padding: 7px 12px; border-radius: 4px; font-size: 9pt; margin-top: 8px; }
+  .msg-warn   { background: #FFF2CC; border: 1px solid #BF8F00; color: #7F6000; padding: 7px 12px; border-radius: 4px; font-size: 9pt; margin-top: 6px; }
+  .msg-info   { background: #DEEAF1; border: 1px solid #2E75B6; color: #1F3864; padding: 7px 12px; border-radius: 4px; font-size: 9pt; margin-bottom: 10px; }
+
+  /* Aperçu */
+  #apercu { display: none; }
+  .cat-tabs { display: flex; gap: 8px; margin-bottom: 14px; }
+  .cat-tab { padding: 5px 14px; border-radius: 4px; cursor: pointer; font-size: 9.5pt; font-weight: bold; border: 2px solid #2E75B6; background: #fff; color: #2E75B6; transition: all .15s; }
+  .cat-tab.active { background: #2E75B6; color: #fff; }
+
+  .badges { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 10px; }
+  .badge { padding: 3px 10px; border-radius: 12px; font-size: 8.5pt; font-weight: bold; }
+  .b-sel  { background: #E2EFDA; color: #375623; }
+  .b-rem  { background: #FCE4D6; color: #843C0C; }
+  .b-non  { background: #F2F2F2; color: #595959; }
+  .b-dbl  { background: #FFF2CC; color: #7F6000; }
+  .b-m13  { background: #DEEAF1; color: #1F3864; }
+  .b-info { background: #E7E6E6; color: #333; }
+  .b-quota{ background: #1F3864; color: #fff; }
+
+  .genre-titre { font-size: 11pt; font-weight: bold; color: #1F3864; border-left: 4px solid #2E75B6; padding-left: 8px; margin: 14px 0 8px; }
+
+  table.tbl { width: 100%; border-collapse: collapse; font-size: 8.5pt; margin-top: 4px; }
+  table.tbl th { background: #DEEAF1; color: #1F3864; padding: 5px 7px; border: 1px solid #aaa; font-size: 8pt; text-align: left; }
+  table.tbl td { padding: 4px 7px; border: 1px solid #ccc; vertical-align: middle; }
+  table.tbl tr.sel   { background: #E2EFDA; }
+  table.tbl tr.rem   { background: #FCE4D6; }
+  table.tbl tr.non   { background: #F2F2F2; color: #888; }
+  table.tbl tr.dbl   { background: #FFF2CC; }
+  table.tbl tr.m13ok { background: #EBF3FF; }
+
+  .spinner { display: inline-block; width: 12px; height: 12px; border: 2px solid #fff; border-top-color: transparent; border-radius: 50%; animation: spin .6s linear infinite; vertical-align: middle; margin-right: 5px; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+</style>
+</head>
+<body>
+
+<header>
+  <div>
+    <h1>SelecMaster</h1>
+    <span>Sélection Master Grand Est M11 / M13 — LREGE</span>
+  </div>
+</header>
+
+<main>
+
+  <!-- Paramètres -->
+  <div class="card">
+    <h2>⚙ Paramètres</h2>
+    <div class="form-row">
+      <div>
+        <label>Arme</label>
+        <select id="sel-arme" onchange="onArmeChange()">
+          <option value="">— Choisir —</option>
+          <option value="Épée">Épée</option>
+          <option value="Fleuret">Fleuret</option>
+          <option value="Sabre">Sabre</option>
+        </select>
+      </div>
+      <div>
+        <label>Territoire importé <small style="font-weight:normal">(le fichier prime)</small></label>
+        <select id="sel-territoire">
+          <option value="">— Choisir —</option>
+          <option value="Alsace">Alsace</option>
+          <option value="Champagne-Ardenne">Champagne-Ardenne</option>
+          <option value="Lorraine">Lorraine</option>
+        </select>
+      </div>
+      <div>
+        <label>Territoire organisateur</label>
+        <select id="sel-orga">
+          <option value="">— Choisir —</option>
+          <option value="Alsace">Alsace</option>
+          <option value="Champagne-Ardenne">Champagne-Ardenne</option>
+          <option value="Lorraine">Lorraine</option>
+        </select>
+      </div>
+    </div>
+
+    <!-- Toggle bonus organisateur -->
+    <div class="bonus-row">
+      <label class="toggle">
+        <input type="checkbox" id="chk-bonus" onchange="onBonusChange()">
+        <span class="slider"></span>
+      </label>
+      <label for="chk-bonus">Ce territoire est organisateur → quota 6 (au lieu de 5)</label>
+      <span class="bonus-note" id="bonus-note">Quota actuel : <b>5</b></span>
+    </div>
+
+    <div class="msg-info" id="info-sabre" style="display:none;margin-top:10px">
+      ℹ Sabre : pas de condition de participations — sélection directe par classement.
+    </div>
+  </div>
+
+  <!-- Import -->
+  <div class="card">
+    <h2>📂 Import classements (4 fichiers)</h2>
+    <p style="font-size:8.5pt;color:#555;margin-bottom:12px;">
+      Importez les fichiers HTML BellePoule. Le territoire est lu depuis le fichier — une alerte s'affiche en cas d'écart.
+    </p>
+
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:0 20px">
+      <div class="col-header">♂ Hommes</div>
+      <div class="col-header">♀ Dames</div>
+    </div>
+
+    <div class="upload-grid">
+      <div class="upload-bloc" id="zone-H_M11">
+        <div class="slot-label">Hommes M11</div>
+        <input type="file" id="file-H_M11" accept=".html,.htm" onchange="uploadFichier('H','M11')">
+        <div class="etat" id="etat-H_M11">Aucun fichier</div>
+      </div>
+      <div class="upload-bloc" id="zone-D_M11">
+        <div class="slot-label">Dames M11</div>
+        <input type="file" id="file-D_M11" accept=".html,.htm" onchange="uploadFichier('D','M11')">
+        <div class="etat" id="etat-D_M11">Aucun fichier</div>
+      </div>
+      <div class="upload-bloc" id="zone-H_M13">
+        <div class="slot-label">Hommes M13</div>
+        <input type="file" id="file-H_M13" accept=".html,.htm" onchange="uploadFichier('H','M13')">
+        <div class="etat" id="etat-H_M13">Aucun fichier</div>
+      </div>
+      <div class="upload-bloc" id="zone-D_M13">
+        <div class="slot-label">Dames M13</div>
+        <input type="file" id="file-D_M13" accept=".html,.htm" onchange="uploadFichier('D','M13')">
+        <div class="etat" id="etat-D_M13">Aucun fichier</div>
+      </div>
+    </div>
+
+    <div id="msg-erreur-upload" class="msg-erreur" style="display:none"></div>
+    <div id="alertes-territoire"></div>
+
+    <div style="margin-top:14px;display:flex;align-items:center;gap:20px;flex-wrap:wrap">
+      <div>
+        <label style="font-size:8.5pt;color:#555;font-weight:bold;display:block;margin-bottom:4px">
+          📧 Confirmations avant le
+        </label>
+        <input type="date" id="date-confirmation"
+          style="padding:6px 8px;border:1px solid #ccc;border-radius:4px;font-family:Verdana,sans-serif;font-size:9pt">
+      </div>
+      <div>
+        <label style="font-size:8.5pt;color:#555;font-weight:bold;display:block;margin-bottom:4px">
+          🖥 Clôture extranet
+        </label>
+        <input type="date" id="date-extranet"
+          style="padding:6px 8px;border:1px solid #ccc;border-radius:4px;font-family:Verdana,sans-serif;font-size:9pt">
+      </div>
+    </div>
+    <div class="actions">
+      <button class="btn btn-success" id="btn-gen-m11" onclick="generer('M11')" disabled>⬇ Générer M11</button>
+      <button class="btn btn-success" id="btn-gen-m13" onclick="generer('M13')" disabled>⬇ Générer M13</button>
+      <button class="btn btn-danger" onclick="reset()" style="margin-left:auto">↺ Réinitialiser</button>
+    </div>
+  </div>
+
+  <!-- Aperçu -->
+  <div class="card" id="apercu">
+    <h2>👁 Aperçu</h2>
+    <div class="cat-tabs">
+      <div class="cat-tab active" id="tab-M11" onclick="afficherCat('M11')">M11</div>
+      <div class="cat-tab" id="tab-M13" onclick="afficherCat('M13')">M13</div>
+    </div>
+    <div id="apercu-M11"></div>
+    <div id="apercu-M13" style="display:none"></div>
+  </div>
+
+</main>
+
+<script>
+const cache = {};
+const alertesTerritoire = [];
+
+function onArmeChange() {
+  document.getElementById('info-sabre').style.display =
+    document.getElementById('sel-arme').value === 'Sabre' ? 'block' : 'none';
+}
+
+function onBonusChange() {
+  const bonus = document.getElementById('chk-bonus').checked;
+  document.getElementById('bonus-note').innerHTML =
+    `Quota actuel : <b>${bonus ? 6 : 5}</b>`;
+  if (Object.keys(cache).length > 0) recalculer(bonus);
+}
+
+async function recalculer(bonus) {
+  const resp = await fetch('/api/recalculer', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ bonus_organisateur: bonus })
+  });
+  const resultats = await resp.json();
+  for (const [cle, data] of Object.entries(resultats)) {
+    cache[cle] = data;
+    const [genre, cat] = cle.split('_');
+    const nb = data.nb_selectionnes;
+    const nr = data.nb_remplacants;
+    setEtat(cle, `✓ ${data.territoire || '—'} — ${nb} sél. / ${nr} remplac.`, 'charge');
+  }
+  mettreAJourApercu();
+}
+
+async function uploadFichier(genre, categorie) {
+  const arme  = document.getElementById('sel-arme').value;
+  const terr  = document.getElementById('sel-territoire').value;
+  const orga  = document.getElementById('sel-orga').value;
+  const bonus = document.getElementById('chk-bonus').checked;
+  const cle   = `${genre}_${categorie}`;
+  const fichier = document.getElementById(`file-${cle}`).files[0];
+
+  if (!fichier) return;
+  if (!arme) { afficherErreur("Sélectionnez l'arme avant d'importer."); return; }
+  if (!orga) { afficherErreur("Sélectionnez le territoire organisateur avant d'importer."); return; }
+
+  setEtat(cle, '⏳ Chargement…', '');
+  cacherErreur();
+
+  const fd = new FormData();
+  fd.append('fichier', fichier);
+  fd.append('genre', genre);
+  fd.append('categorie', categorie);
+  fd.append('territoire', terr);
+  fd.append('territoire_organisateur', orga);
+  fd.append('bonus_organisateur', bonus);
+
+  try {
+    const resp = await fetch('/api/upload', { method: 'POST', body: fd });
+    const data = await resp.json();
+
+    if (data.erreur) {
+      setEtat(cle, '✗ ' + data.erreur, 'erreur');
+      afficherErreur(data.erreur);
+      delete cache[cle];
+    } else {
+      cache[cle] = data;
+      setEtat(cle,
+        `✓ ${data.territoire || terr} — ${data.nb_selectionnes} sél. / ${data.nb_remplacants} remplac.`,
+        'charge');
+
+      // Alerte territoire
+      if (data.alerte_territoire) afficherAlerteTerritoire(cle, data.alerte_territoire);
+
+      mettreAJourApercu();
+      verifierBoutons();
+    }
+  } catch(e) {
+    setEtat(cle, '✗ Erreur réseau', 'erreur');
+    afficherErreur('Erreur réseau : ' + e.message);
+  }
+}
+
+function setEtat(cle, texte, type) {
+  document.getElementById('etat-' + cle).textContent = texte;
+  const zone = document.getElementById('zone-' + cle);
+  zone.classList.remove('charge', 'erreur');
+  if (type) zone.classList.add(type);
+}
+
+function verifierBoutons() {
+  document.getElementById('btn-gen-m11').disabled = !(cache['H_M11'] || cache['D_M11']);
+  document.getElementById('btn-gen-m13').disabled = !(cache['H_M13'] || cache['D_M13']);
+  document.getElementById('apercu').style.display = Object.keys(cache).length > 0 ? 'block' : 'none';
+}
+
+function afficherAlerteTerritoire(cle, msg) {
+  const div = document.getElementById('alertes-territoire');
+  // Éviter les doublons
+  const id = 'alerte-' + cle;
+  let el = document.getElementById(id);
+  if (!el) {
+    el = document.createElement('div');
+    el.id = id;
+    el.className = 'msg-warn';
+    div.appendChild(el);
+  }
+  el.textContent = '⚠ ' + msg;
+}
+
+// ── Aperçu ───────────────────────────────────────────────────────────────────
+
+function afficherCat(cat) {
+  ['M11','M13'].forEach(c => {
+    document.getElementById('apercu-' + c).style.display = c === cat ? 'block' : 'none';
+    document.getElementById('tab-' + c).classList.toggle('active', c === cat);
+  });
+}
+
+function mettreAJourApercu() {
+  ['M11','M13'].forEach(cat => {
+    const div = document.getElementById('apercu-' + cat);
+    const slots = ['H','D'].filter(g => cache[`${g}_${cat}`]);
+    if (!slots.length) {
+      div.innerHTML = '<p style="color:#888;font-size:9pt;padding:8px 0">Aucun fichier importé.</p>';
+      return;
+    }
+
+    let html = '';
+    ['H','D'].forEach(genre => {
+      const sel = cache[`${genre}_${cat}`];
+      if (!sel) return;
+      const gl = genre === 'H' ? 'Hommes' : 'Dames';
+
+      let badges = `<div class="badges">
+        <span class="badge b-info">${sel.territoire || '—'}</span>
+        <span class="badge b-quota">Quota : ${sel.quota}</span>
+        <span class="badge b-sel">✓ ${sel.nb_selectionnes} sélectionné(s)</span>
+        <span class="badge b-rem">↩ ${sel.nb_remplacants} remplaçant(s)</span>`;
+      if (sel.nb_non_selectionnables > 0)
+        badges += `<span class="badge b-non">✗ ${sel.nb_non_selectionnables} non sél.</span>`;
+      if (sel.nb_double_qualification > 0)
+        badges += `<span class="badge b-dbl">⚠ ${sel.nb_double_qualification} double qualif. M11+M13</span>`;
+      if (sel.nb_m13_seulement > 0)
+        badges += `<span class="badge b-m13">ℹ ${sel.nb_m13_seulement} M11 autorisé(s) en M13</span>`;
+      badges += '</div>';
+
+      html += `<div class="genre-titre">${gl}</div>${badges}` + tableauTireurs(sel.tireurs);
+    });
+
+    div.innerHTML = html;
+  });
+}
+
+function tableauTireurs(tireurs) {
+  const STATUTS = { selectionne:'✓ Sélectionné', remplacant:'Remplaçant', non_selectionnable:'✗ Non sélectionnable' };
+  let html = `<table class="tbl"><thead><tr>
+    <th>#</th><th>Nom</th><th>Prénom</th><th>Club</th><th>Né(e)</th>
+    <th>Points</th><th>Part.</th><th>Statut / Remarque</th>
+  </tr></thead><tbody>`;
+
+  tireurs.forEach(t => {
+    let cls = { selectionne:'sel', remplacant:'rem', non_selectionnable:'non' }[t.statut] || '';
+    let note = '';
+    if (t.alerte_m11 === 'double')   { cls = 'dbl';   note = '⚠ Double qualif. M11+M13 — choix obligatoire'; }
+    else if (t.alerte_m11 === 'm13only') { cls = 'm13ok'; note = 'ℹ M11 autorisé (qualifié M13 uniquement)'; }
+    else if (t.raison) note = t.raison;
+
+    html += `<tr class="${cls}">
+      <td style="text-align:center">${t.place}</td>
+      <td><b>${t.nom}</b></td><td>${t.prenom}</td><td>${t.club}</td>
+      <td style="text-align:center">${t.annee_naissance}</td>
+      <td style="text-align:center">${t.points_total}</td>
+      <td style="text-align:center">${t.participations}</td>
+      <td>${STATUTS[t.statut] || t.statut}${note ? ' <small style="color:#666"> — ' + note + '</small>' : ''}</td>
+    </tr>`;
+  });
+
+  return html + '</tbody></table>';
+}
+
+// ── Génération ───────────────────────────────────────────────────────────────
+
+async function generer(categorie) {
+  const btn = document.getElementById(`btn-gen-${categorie}`);
+  btn.disabled = true;
+  btn.innerHTML = `<span class="spinner"></span>Génération…`;
+
+  try {
+    const resp = await fetch('/api/generer', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        categorie,
+        date_confirmation: document.getElementById('date-confirmation').value
+          ? new Date(document.getElementById('date-confirmation').value)
+              .toLocaleDateString('fr-FR', {day:'2-digit',month:'2-digit',year:'numeric'})
+          : '',
+        date_extranet: document.getElementById('date-extranet').value
+          ? new Date(document.getElementById('date-extranet').value)
+              .toLocaleDateString('fr-FR', {day:'2-digit',month:'2-digit',year:'numeric'})
+          : ''
+      })
+    });
+    if (!resp.ok) {
+      const data = await resp.json();
+      afficherErreur(data.erreur || 'Erreur génération.');
+    } else {
+      const blob = await resp.blob();
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      const cd = resp.headers.get('Content-Disposition') || '';
+      a.download = cd.split('filename=')[1]?.replace(/"/g,'') || `selection_master_${categorie}.xlsx`;
+      a.click();
+      URL.revokeObjectURL(url);
+    }
+  } catch(e) {
+    afficherErreur('Erreur réseau : ' + e.message);
+  }
+
+  btn.disabled = false;
+  btn.innerHTML = `⬇ Générer ${categorie}`;
+}
+
+async function reset() {
+  await fetch('/api/reset', { method: 'POST' });
+  Object.keys(cache).forEach(k => delete cache[k]);
+  ['H_M11','H_M13','D_M11','D_M13'].forEach(cle => {
+    setEtat(cle, 'Aucun fichier', '');
+    document.getElementById('file-' + cle).value = '';
+    const el = document.getElementById('alerte-' + cle);
+    if (el) el.remove();
+  });
+  document.getElementById('apercu').style.display = 'none';
+  document.getElementById('btn-gen-m11').disabled = true;
+  document.getElementById('btn-gen-m13').disabled = true;
+  document.getElementById('chk-bonus').checked = false;
+  document.getElementById('bonus-note').innerHTML = 'Quota actuel : <b>5</b>';
+  cacherErreur();
+}
+
+function afficherErreur(msg) {
+  const el = document.getElementById('msg-erreur-upload');
+  el.textContent = '⚠ ' + msg;
+  el.style.display = 'block';
+}
+function cacherErreur() {
+  document.getElementById('msg-erreur-upload').style.display = 'none';
+}
+</script>
+</body>
+</html>
