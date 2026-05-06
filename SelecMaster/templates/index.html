@@ -215,8 +215,8 @@
       </div>
     </div>
     <div class="actions">
-      <button class="btn btn-success" id="btn-gen-m11" onclick="generer('M11')" disabled>⬇ Générer M11</button>
-      <button class="btn btn-success" id="btn-gen-m13" onclick="generer('M13')" disabled>⬇ Générer M13</button>
+      <button class="btn btn-success" id="btn-gen-m11" onclick="generer('m11')" disabled>⬇ Générer M11</button>
+      <button class="btn btn-success" id="btn-gen-m13" onclick="generer('m13')" disabled>⬇ Générer M13</button>
       <button class="btn btn-danger" onclick="reset()" style="margin-left:auto">↺ Réinitialiser</button>
     </div>
   </div>
@@ -418,6 +418,7 @@ function tableauTireurs(tireurs) {
 // ── Génération ───────────────────────────────────────────────────────────────
 
 async function generer(categorie) {
+  const CAT = categorie.toUpperCase();
   const btn = document.getElementById('btn-gen-' + categorie);
   console.log('[GENERER] btn=', btn, 'categorie=', categorie);
   if (!btn) { console.error('[GENERER] bouton introuvable : btn-gen-' + categorie); return; }
@@ -431,7 +432,7 @@ async function generer(categorie) {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        categorie,
+        categorie: CAT,
         date_confirmation: dateConf && dateConf.value
           ? new Date(dateConf.value).toLocaleDateString('fr-FR', {day:'2-digit',month:'2-digit',year:'numeric'})
           : '',
