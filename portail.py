@@ -5,7 +5,7 @@ import os, sys, subprocess, threading, webbrowser, time, json, tempfile
 import urllib.request as urlreq
 from flask import Flask, render_template_string, jsonify
 
-VERSION_LOCALE = "3.6"
+VERSION_LOCALE = "3.7"
 VERSION_JSON_URL = "https://raw.githubusercontent.com/atrcrege-a11y/Portail-LREGE/main/version.json"
 
 app = Flask(__name__)
@@ -112,11 +112,38 @@ def verifier_maj():
     return {"maj_disponible": False, "version": VERSION_LOCALE}
 
 
+def _tuer_processus(oid):
+    """Termine proprement un processus et ses enfants."""
+    proc = _processus.get(oid)
+    if not proc or proc.poll() is not None:
+        return
+    try:
+        if sys.platform == "win32":
+            subprocess.call(["taskkill", "/F", "/T", "/PID", str(proc.pid)],
+                            capture_output=True)
+        else:
+            proc.terminate()
+        proc.wait(timeout=3)
+    except Exception:
+        try:
+            proc.kill()
+        except Exception:
+            pass
+
+
 def _telecharger_et_installer(url, version):
     try:
         tmp = os.path.join(tempfile.gettempdir(), "PortailLREGE_Setup_v{}.exe".format(version))
         urlreq.urlretrieve(url, tmp)
+        # Arrêter tous les outils proprement
+        for oid in list(_processus.keys()):
+            _tuer_processus(oid)
+        time.sleep(1)
+        # Lancer l'installeur
         subprocess.Popen([tmp], shell=True)
+        time.sleep(1)
+        # Fermer le portail lui-même
+        os.kill(os.getpid(), 9)
     except Exception:
         pass
 
@@ -200,24 +227,6 @@ def lancer(outil_id):
     except Exception as e:
         return jsonify({"ok": False, "message": str(e)}), 500
 
-
-def _tuer_processus(oid):
-    """Termine proprement un processus et ses enfants."""
-    proc = _processus.get(oid)
-    if not proc or proc.poll() is not None:
-        return
-    try:
-        if sys.platform == "win32":
-            subprocess.call(["taskkill", "/F", "/T", "/PID", str(proc.pid)],
-                            capture_output=True)
-        else:
-            proc.terminate()
-        proc.wait(timeout=3)
-    except Exception:
-        try:
-            proc.kill()
-        except Exception:
-            pass
 
 
 @app.route("/api/arreter/<outil_id>", methods=["POST"])
