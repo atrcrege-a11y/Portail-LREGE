@@ -5,7 +5,7 @@ import os, sys, subprocess, threading, webbrowser, time, json, tempfile
 import urllib.request as urlreq
 from flask import Flask, render_template_string, jsonify
 
-VERSION_LOCALE = "3.10"
+VERSION_LOCALE = "3.11"
 VERSION_JSON_URL = "https://raw.githubusercontent.com/atrcrege-a11y/Portail-LREGE/main/version.json"
 
 app = Flask(__name__)
@@ -229,6 +229,19 @@ def lancer(outil_id):
 
 
 
+@app.route("/api/installer-maj", methods=["POST"])
+def installer_maj():
+    info = verifier_maj()
+    if not info.get("maj_disponible"):
+        return jsonify({"ok": False, "message": "Aucune mise a jour disponible"})
+    threading.Thread(
+        target=_telecharger_et_installer,
+        args=(info["url"], info["version"]),
+        daemon=True
+    ).start()
+    return jsonify({"ok": True, "message": "Telechargement lance"})
+
+
 @app.route("/api/arreter/<outil_id>", methods=["POST"])
 def arreter(outil_id):
     _tuer_processus(outil_id)
@@ -378,9 +391,16 @@ async function verifierMaj() {
 }
 
 async function installerMaj() {
-  if (!confirm("Installer la mise a jour ? L'installeur se lancera automatiquement.")) return;
-  await fetch("/api/maj");
-  alert("Telechargement en cours... L'installeur se lancera dans quelques instants.");
+  if (!confirm("Installer la mise a jour ? L'installeur se lancera automatiquement.\nLe portail et les outils se fermeront automatiquement.")) return;
+  const btn = document.querySelector("#bandeau-maj button");
+  if (btn) { btn.disabled = true; btn.textContent = "Téléchargement..."; }
+  try {
+    const resp = await fetch("/api/installer-maj", {method: "POST"});
+    const data = await resp.json();
+    if (!data.ok) alert("Erreur : " + data.message);
+  } catch(e) {
+    alert("Erreur réseau : " + e.message);
+  }
 }
 
 fetchStatut();
