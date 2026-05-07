@@ -5,7 +5,7 @@ import os, sys, subprocess, threading, webbrowser, time, json, tempfile
 import urllib.request as urlreq
 from flask import Flask, render_template_string, jsonify
 
-VERSION_LOCALE = "3.13"
+VERSION_LOCALE = "3.14"
 VERSION_JSON_URL = "https://raw.githubusercontent.com/atrcrege-a11y/Portail-LREGE/main/version.json"
 
 app = Flask(__name__)
@@ -414,7 +414,7 @@ async function verifierMaj() {
 }
 
 async function installerMaj() {
-  if (!confirm("Installer la mise a jour ? L'installeur se lancera automatiquement.\nLe portail et les outils se fermeront automatiquement.")) return;
+  if (!confirm("Installer la mise a jour ? L'installeur se lancera automatiquement. Le portail et les outils se fermeront automatiquement.")) return;
   const btn = document.querySelector("#bandeau-maj button");
   if (btn) { btn.disabled = true; btn.textContent = "Téléchargement..."; }
   try {
