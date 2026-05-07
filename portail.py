@@ -5,7 +5,7 @@ import os, sys, subprocess, threading, webbrowser, time, json, tempfile
 import urllib.request as urlreq
 from flask import Flask, render_template_string, jsonify
 
-VERSION_LOCALE = "3.5"
+VERSION_LOCALE = "3.6"
 VERSION_JSON_URL = "https://raw.githubusercontent.com/atrcrege-a11y/Portail-LREGE/main/version.json"
 
 app = Flask(__name__)
@@ -121,6 +121,34 @@ def _telecharger_et_installer(url, version):
         pass
 
 
+REQUIREMENTS = {
+    "selecge":     os.path.join(BASE_DIR, "SelecGE",        "requirements.txt"),
+    "synesc":      os.path.join(BASE_DIR, "SYNESC",         "requirements.txt"),
+    "escritools":  os.path.join(BASE_DIR, "EscriTools",     "requirements.txt"),
+    "calendrier":  os.path.join(BASE_DIR, "CalendrierLREGE","requirements.txt"),
+    "selecmaster": os.path.join(BASE_DIR, "SelecMaster",    "requirements.txt"),
+}
+
+
+def installer_dependances():
+    """Installe silencieusement les dépendances de chaque outil au démarrage."""
+    time.sleep(2)
+    for oid, req in REQUIREMENTS.items():
+        if not os.path.isfile(req):
+            continue
+        py = python_pour(oid)
+        try:
+            subprocess.run(
+                [py, "-m", "pip", "install", "-r", req, "--quiet", "--no-warn-script-location"],
+                cwd=os.path.dirname(req),
+                capture_output=True,
+                timeout=120,
+            )
+            print(f"[DEPS] {oid} OK")
+        except Exception as e:
+            print(f"[DEPS] {oid} erreur : {e}")
+
+
 def verifier_maj_demarrage():
     time.sleep(4)
     info = verifier_maj()
@@ -173,11 +201,36 @@ def lancer(outil_id):
         return jsonify({"ok": False, "message": str(e)}), 500
 
 
+def _tuer_processus(oid):
+    """Termine proprement un processus et ses enfants."""
+    proc = _processus.get(oid)
+    if not proc or proc.poll() is not None:
+        return
+    try:
+        if sys.platform == "win32":
+            subprocess.call(["taskkill", "/F", "/T", "/PID", str(proc.pid)],
+                            capture_output=True)
+        else:
+            proc.terminate()
+        proc.wait(timeout=3)
+    except Exception:
+        try:
+            proc.kill()
+        except Exception:
+            pass
+
+
 @app.route("/api/arreter/<outil_id>", methods=["POST"])
 def arreter(outil_id):
-    proc = _processus.get(outil_id)
-    if proc and proc.poll() is None:
-        proc.terminate()
+    _tuer_processus(outil_id)
+    return jsonify({"ok": True})
+
+
+@app.route("/api/arreter-tout", methods=["POST"])
+def arreter_tout():
+    """Appelé à la fermeture du navigateur — arrête tous les outils."""
+    for oid in list(_processus.keys()):
+        _tuer_processus(oid)
     return jsonify({"ok": True})
 
 
@@ -324,6 +377,11 @@ async function installerMaj() {
 fetchStatut();
 setInterval(fetchStatut, 4000);
 setTimeout(verifierMaj, 4000);
+
+// Fermeture navigateur → arrêt de tous les outils
+window.addEventListener('beforeunload', function() {
+  navigator.sendBeacon('/api/arreter-tout');
+});
 </script>
 </body>
 </html>"""
@@ -337,4 +395,5 @@ def ouvrir_portail():
 if __name__ == "__main__":
     threading.Thread(target=ouvrir_portail, daemon=True).start()
     threading.Thread(target=verifier_maj_demarrage, daemon=True).start()
+    threading.Thread(target=installer_dependances, daemon=True).start()
     app.run(port=5000, debug=False)
