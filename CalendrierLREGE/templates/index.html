@@ -688,5 +688,17 @@ function debounce(fn,ms){ return function(){ clearTimeout(_dbt[fn]); _dbt[fn]=se
 
 init();
 </script>
+<script>
+// Heartbeat -> portail (fermeture onglet = arret automatique)
+(function() {
+  var PORTAIL = "http://localhost:5000";
+  var OID = "calendrier";
+  function ping() {
+    fetch(PORTAIL + "/api/heartbeat/" + OID, {method:"POST", keepalive:true}).catch(function(){});
+  }
+  ping();
+  setInterval(ping, 5000);
+})();
+</script>
 </body>
 </html>

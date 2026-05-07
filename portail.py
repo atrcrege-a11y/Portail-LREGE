@@ -5,7 +5,7 @@ import os, sys, subprocess, threading, webbrowser, time, json, tempfile
 import urllib.request as urlreq
 from flask import Flask, render_template_string, jsonify
 
-VERSION_LOCALE = "3.11"
+VERSION_LOCALE = "3.12"
 VERSION_JSON_URL = "https://raw.githubusercontent.com/atrcrege-a11y/Portail-LREGE/main/version.json"
 
 app = Flask(__name__)
@@ -70,6 +70,7 @@ OUTILS = {
 }
 
 _processus = {}
+_derniere_activite = {}
 VENVS = {
     "selecge":    os.path.join(BASE_DIR, "SelecGE", ".venv", "Scripts", "python.exe"),
     "synesc":     os.path.join(BASE_DIR, "SYNESC", ".venv", "Scripts", "python.exe"),
@@ -139,11 +140,10 @@ def _telecharger_et_installer(url, version):
         for oid in list(_processus.keys()):
             _tuer_processus(oid)
         time.sleep(1)
-        # Lancer l'installeur
+        # Lancer l'installeur puis quitter proprement
         subprocess.Popen([tmp], shell=True)
-        time.sleep(1)
-        # Fermer le portail lui-même
-        os.kill(os.getpid(), 9)
+        time.sleep(2)
+        os._exit(0)
     except Exception:
         pass
 
@@ -174,6 +174,21 @@ def installer_dependances():
             print(f"[DEPS] {oid} OK")
         except Exception as e:
             print(f"[DEPS] {oid} erreur : {e}")
+
+
+def _watchdog():
+    """Tue automatiquement un outil si son onglet est fermé (heartbeat absent > 10s)."""
+    while True:
+        time.sleep(5)
+        maintenant = time.time()
+        for oid in list(_processus.keys()):
+            if not outil_en_cours(oid):
+                continue
+            derniere = _derniere_activite.get(oid)
+            if derniere is not None and (maintenant - derniere) > 10:
+                print(f"[WATCHDOG] {oid} inactif depuis >10s — arrêt automatique")
+                _tuer_processus(oid)
+                _derniere_activite.pop(oid, None)
 
 
 def verifier_maj_demarrage():
@@ -240,6 +255,13 @@ def installer_maj():
         daemon=True
     ).start()
     return jsonify({"ok": True, "message": "Telechargement lance"})
+
+
+@app.route("/api/heartbeat/<outil_id>", methods=["POST"])
+def heartbeat(outil_id):
+    if outil_id in OUTILS:
+        _derniere_activite[outil_id] = time.time()
+    return jsonify({"ok": True})
 
 
 @app.route("/api/arreter/<outil_id>", methods=["POST"])
@@ -425,4 +447,5 @@ if __name__ == "__main__":
     threading.Thread(target=ouvrir_portail, daemon=True).start()
     threading.Thread(target=verifier_maj_demarrage, daemon=True).start()
     threading.Thread(target=installer_dependances, daemon=True).start()
+    threading.Thread(target=_watchdog, daemon=True).start()
     app.run(port=5000, debug=False)
