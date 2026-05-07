@@ -24,11 +24,11 @@ exit /b 1
 :PYTHON_OK
 echo  [1/3] Python detecte : %PYTHON_CMD%
 
-:: ── Dependances SelecGE (Python systeme) ───────────────────
-echo  [2/3] Installation dependances SelecGE...
-"%PYTHON_CMD%" -m pip install flask openpyxl pdfplumber requests --quiet
+:: ── Dependances SelecGE + SelecMaster (Python systeme) ──────
+echo  [2/3] Installation dependances SelecGE + SelecMaster...
+"%PYTHON_CMD%" -m pip install flask openpyxl pdfplumber requests beautifulsoup4 --quiet
 if %errorlevel% neq 0 (
-    echo  [ATTENTION] Erreur installation SelecGE — verifiez la connexion internet
+    echo  [ATTENTION] Erreur installation — verifiez la connexion internet
 )
 
 :: ── Dependances EscriTools (Python systeme) ────────────────
