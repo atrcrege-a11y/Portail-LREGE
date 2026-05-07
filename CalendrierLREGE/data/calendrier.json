@@ -11,7 +11,7 @@
     "niveau": "regional",
     "niveau_raw": "Régional(e)",
     "numero": "1.0",
-    "intitule": "nan",
+    "intitule": "ÉPERNAY",
     "lieu": "ÉPERNAY",
     "perimetre": "Challenge / Open",
     "armes": [
@@ -994,7 +994,7 @@
     "niveau": "regional",
     "niveau_raw": "Régional(e)",
     "numero": "1.0",
-    "intitule": "nan",
+    "intitule": "ORANGE",
     "lieu": "ORANGE",
     "perimetre": "Challenge / Open",
     "armes": [
@@ -1023,7 +1023,7 @@
     "niveau": "regional",
     "niveau_raw": "Régional(e)",
     "numero": "1.0",
-    "intitule": "nan",
+    "intitule": "SAINT-JEAN-DE-LA-RUELLE",
     "lieu": "SAINT-JEAN-DE-LA-RUELLE",
     "perimetre": "Challenge / Open",
     "armes": [
@@ -1372,7 +1372,7 @@
     "niveau": "regional",
     "niveau_raw": "Régional(e)",
     "numero": "1.0",
-    "intitule": "nan",
+    "intitule": "ORANGE",
     "lieu": "ORANGE",
     "perimetre": "Challenge / Open",
     "armes": [
@@ -1402,7 +1402,7 @@
     "niveau": "regional",
     "niveau_raw": "Régional(e)",
     "numero": "1.0",
-    "intitule": "nan",
+    "intitule": "SAINT-JEAN-DE-LA-RUELLE",
     "lieu": "SAINT-JEAN-DE-LA-RUELLE",
     "perimetre": "Challenge / Open",
     "armes": [
@@ -1469,7 +1469,7 @@
     "niveau": "regional",
     "niveau_raw": "Régional(e)",
     "numero": "1.0",
-    "intitule": "nan",
+    "intitule": "CORTE",
     "lieu": "CORTE",
     "perimetre": "Régional",
     "armes": [
@@ -1553,7 +1553,7 @@
     "niveau": "regional",
     "niveau_raw": "Régional(e)",
     "numero": "1.0",
-    "intitule": "nan",
+    "intitule": "BASTIA",
     "lieu": "BASTIA",
     "perimetre": "Régional",
     "armes": [
@@ -1640,7 +1640,7 @@
     "niveau": "regional",
     "niveau_raw": "Régional(e)",
     "numero": "1.0",
-    "intitule": "nan",
+    "intitule": "NÎMES",
     "lieu": "NÎMES",
     "perimetre": "Challenge / Open",
     "armes": [
@@ -1810,7 +1810,7 @@
     "niveau": "autre",
     "niveau_raw": "nan",
     "numero": "nan",
-    "intitule": "nan",
+    "intitule": "SAVIGNY-SUR-ORGE",
     "lieu": "SAVIGNY-SUR-ORGE",
     "perimetre": "Challenge / Open",
     "armes": [
@@ -1867,7 +1867,7 @@
     "niveau": "departemental",
     "niveau_raw": "Départemental(e)",
     "numero": "1.0",
-    "intitule": "nan",
+    "intitule": "ARMENTIÈRES",
     "lieu": "ARMENTIÈRES",
     "perimetre": "Challenge / Open",
     "armes": [
@@ -1966,7 +1966,7 @@
     "niveau": "regional",
     "niveau_raw": "Régional(e)",
     "numero": "1.0",
-    "intitule": "nan",
+    "intitule": "MONTEUX",
     "lieu": "MONTEUX",
     "perimetre": "Challenge / Open",
     "armes": [
@@ -2088,7 +2088,7 @@
     "niveau": "regional",
     "niveau_raw": "Régional(e)",
     "numero": "2.0",
-    "intitule": "nan",
+    "intitule": "TOULON",
     "lieu": "TOULON",
     "perimetre": "Challenge / Open",
     "armes": [
@@ -2118,7 +2118,7 @@
     "niveau": "regional",
     "niveau_raw": "Régional(e)",
     "numero": "1.0",
-    "intitule": "nan",
+    "intitule": "MURET",
     "lieu": "MURET",
     "perimetre": "Challenge / Open",
     "armes": [
@@ -2179,7 +2179,7 @@
     "niveau": "regional",
     "niveau_raw": "Régional(e)",
     "numero": "1.0",
-    "intitule": "nan",
+    "intitule": "MÉRIGNAC",
     "lieu": "MÉRIGNAC",
     "perimetre": "Événement",
     "armes": [
@@ -2403,7 +2403,7 @@
     "niveau": "regional",
     "niveau_raw": "Régional(e)",
     "numero": "1.0",
-    "intitule": "nan",
+    "intitule": "ORLÉANS",
     "lieu": "ORLÉANS",
     "perimetre": "Challenge / Open",
     "armes": [
@@ -2494,7 +2494,7 @@
     "niveau": "regional",
     "niveau_raw": "Régional(e)",
     "numero": "1.0",
-    "intitule": "nan",
+    "intitule": "SALBRIS",
     "lieu": "SALBRIS",
     "perimetre": "Challenge / Open",
     "armes": [
@@ -2582,7 +2582,7 @@
     "niveau": "regional",
     "niveau_raw": "Régional(e)",
     "numero": "1.0",
-    "intitule": "nan",
+    "intitule": "MURET",
     "lieu": "MURET",
     "perimetre": "Challenge / Open",
     "armes": [
@@ -2698,7 +2698,7 @@
     "niveau": "autre",
     "niveau_raw": "nan",
     "numero": "nan",
-    "intitule": "nan",
+    "intitule": "SAVIGNY-SUR-ORGE",
     "lieu": "SAVIGNY-SUR-ORGE",
     "perimetre": "Challenge / Open",
     "armes": [
@@ -3081,7 +3081,7 @@
     "niveau": "regional",
     "niveau_raw": "Régional(e)",
     "numero": "1.0",
-    "intitule": "nan",
+    "intitule": "TOULON",
     "lieu": "TOULON",
     "perimetre": "Régional",
     "armes": [
@@ -3140,7 +3140,7 @@
     "niveau": "autre",
     "niveau_raw": "nan",
     "numero": "1.0",
-    "intitule": "nan",
+    "intitule": "MÉRIGNAC",
     "lieu": "MÉRIGNAC",
     "perimetre": "Challenge / Open",
     "armes": [
@@ -3169,7 +3169,7 @@
     "niveau": "regional",
     "niveau_raw": "Régional(e)",
     "numero": "1.0",
-    "intitule": "nan",
+    "intitule": "ORLÉANS",
     "lieu": "ORLÉANS",
     "perimetre": "Challenge / Open",
     "armes": [
@@ -3199,7 +3199,7 @@
     "niveau": "regional",
     "niveau_raw": "Régional(e)",
     "numero": "1.0",
-    "intitule": "nan",
+    "intitule": "SALBRIS",
     "lieu": "SALBRIS",
     "perimetre": "Challenge / Open",
     "armes": [
@@ -3349,7 +3349,7 @@
     "niveau": "regional",
     "niveau_raw": "Régional(e)",
     "numero": "1.0",
-    "intitule": "nan",
+    "intitule": "VARENNES-VAUZELLES",
     "lieu": "VARENNES-VAUZELLES",
     "perimetre": "Challenge / Open",
     "armes": [
@@ -3385,7 +3385,7 @@
     "niveau": "regional",
     "niveau_raw": "Régional(e)",
     "numero": "1.0",
-    "intitule": "nan",
+    "intitule": "DIJON",
     "lieu": "DIJON",
     "perimetre": "Challenge / Open",
     "armes": [
@@ -3421,7 +3421,7 @@
     "niveau": "regional",
     "niveau_raw": "Régional(e)",
     "numero": "1.0",
-    "intitule": "nan",
+    "intitule": "QUETIGNY",
     "lieu": "QUETIGNY",
     "perimetre": "Challenge / Open",
     "armes": [
@@ -3544,7 +3544,7 @@
     "niveau": "regional",
     "niveau_raw": "Régional(e)",
     "numero": "1.0",
-    "intitule": "nan",
+    "intitule": "THIONVILLE",
     "lieu": "THIONVILLE",
     "perimetre": "Challenge / Open",
     "armes": [
@@ -3628,7 +3628,7 @@
     "niveau": "regional",
     "niveau_raw": "Régional(e)",
     "numero": "1.0",
-    "intitule": "nan",
+    "intitule": "ÉPERNAY",
     "lieu": "ÉPERNAY",
     "perimetre": "Challenge / Open",
     "armes": [
@@ -3744,7 +3744,7 @@
     "niveau": "regional",
     "niveau_raw": "Régional(e)",
     "numero": "1.0",
-    "intitule": "nan",
+    "intitule": "MANDELIEU-LA-NAPOULE",
     "lieu": "MANDELIEU-LA-NAPOULE",
     "perimetre": "Régional",
     "armes": [
@@ -4112,7 +4112,7 @@
     "niveau": "departemental",
     "niveau_raw": "Départemental(e)",
     "numero": "1.0",
-    "intitule": "nan",
+    "intitule": "TRAPPES",
     "lieu": "TRAPPES",
     "perimetre": "Départementale",
     "armes": [
@@ -4429,7 +4429,7 @@
     "niveau": "regional",
     "niveau_raw": "Régional(e)",
     "numero": "1.0",
-    "intitule": "nan",
+    "intitule": "THIONVILLE",
     "lieu": "THIONVILLE",
     "perimetre": "Challenge / Open",
     "armes": [
@@ -4548,7 +4548,7 @@
     "niveau": "regional",
     "niveau_raw": "Régional(e)",
     "numero": "1.0",
-    "intitule": "nan",
+    "intitule": "ÉPERNAY",
     "lieu": "ÉPERNAY",
     "perimetre": "Challenge / Open",
     "armes": [
@@ -4577,7 +4577,7 @@
     "niveau": "regional",
     "niveau_raw": "Régional(e)",
     "numero": "nan",
-    "intitule": "nan",
+    "intitule": "MANDELIEU-LA-NAPOULE",
     "lieu": "MANDELIEU-LA-NAPOULE",
     "perimetre": "Challenge / Open",
     "armes": [
@@ -4637,7 +4637,7 @@
     "niveau": "regional",
     "niveau_raw": "Régional(e)",
     "numero": "2.0",
-    "intitule": "nan",
+    "intitule": "CORTE",
     "lieu": "CORTE",
     "perimetre": "Régional",
     "armes": [
@@ -5118,7 +5118,7 @@
     "niveau": "regional",
     "niveau_raw": "Régional(e)",
     "numero": "1.0",
-    "intitule": "nan",
+    "intitule": "LONGVIC",
     "lieu": "LONGVIC",
     "perimetre": "Challenge / Open",
     "armes": [
@@ -5458,7 +5458,7 @@
     "niveau": "national",
     "niveau_raw": "National(e)",
     "numero": "1.0",
-    "intitule": "nan",
+    "intitule": "HÉROUVILLE-SAINT-CLAIR",
     "lieu": "HÉROUVILLE-SAINT-CLAIR",
     "perimetre": "National",
     "armes": [
@@ -5611,7 +5611,7 @@
     "niveau": "international",
     "niveau_raw": "International(e)",
     "numero": "1.0",
-    "intitule": "nan",
+    "intitule": "GOTEBORG",
     "lieu": "GOTEBORG",
     "perimetre": "Internationale",
     "armes": [
@@ -5938,7 +5938,7 @@
     "niveau": "national",
     "niveau_raw": "National(e)",
     "numero": "1.0",
-    "intitule": "nan",
+    "intitule": "BAILLY-ROMAINVILLIERS",
     "lieu": "BAILLY-ROMAINVILLIERS",
     "perimetre": "National",
     "armes": [
@@ -6128,7 +6128,7 @@
     "niveau": "international",
     "niveau_raw": "International(e)",
     "numero": "1.0",
-    "intitule": "nan",
+    "intitule": "ISTANBUL",
     "lieu": "ISTANBUL",
     "perimetre": "Internationale",
     "armes": [
@@ -6156,7 +6156,7 @@
     "niveau": "departemental",
     "niveau_raw": "Départemental(e)",
     "numero": "nan",
-    "intitule": "nan",
+    "intitule": "TARBES",
     "lieu": "TARBES",
     "perimetre": "Challenge / Open",
     "armes": [
@@ -6245,7 +6245,7 @@
     "niveau": "regional",
     "niveau_raw": "Régional(e)",
     "numero": "1.0",
-    "intitule": "nan",
+    "intitule": "CHARLEVILLE-MÉZIÈRES",
     "lieu": "CHARLEVILLE-MÉZIÈRES",
     "perimetre": "Challenge / Open",
     "armes": [
@@ -6434,7 +6434,7 @@
     "niveau": "national",
     "niveau_raw": "National(e)",
     "numero": "2.0",
-    "intitule": "nan",
+    "intitule": "LE HAVRE",
     "lieu": "LE HAVRE",
     "perimetre": "National",
     "armes": [
@@ -6462,7 +6462,7 @@
     "niveau": "national",
     "niveau_raw": "National(e)",
     "numero": "2.0",
-    "intitule": "nan",
+    "intitule": "HÉNIN-BEAUMONT",
     "lieu": "HÉNIN-BEAUMONT",
     "perimetre": "National",
     "armes": [
@@ -6490,7 +6490,7 @@
     "niveau": "national",
     "niveau_raw": "National(e)",
     "numero": "2.0",
-    "intitule": "nan",
+    "intitule": "MAISONS-ALFORT",
     "lieu": "MAISONS-ALFORT",
     "perimetre": "National",
     "armes": [
@@ -6641,7 +6641,7 @@
     "niveau": "international",
     "niveau_raw": "International(e)",
     "numero": "nan",
-    "intitule": "nan",
+    "intitule": "PALMA DE MAJORQUE",
     "lieu": "PALMA DE MAJORQUE",
     "perimetre": "Internationale",
     "armes": [
@@ -6669,7 +6669,7 @@
     "niveau": "international",
     "niveau_raw": "International(e)",
     "numero": "nan",
-    "intitule": "nan",
+    "intitule": "ALGER",
     "lieu": "ALGER",
     "perimetre": "Internationale",
     "armes": [
@@ -7078,7 +7078,7 @@
     "niveau": "regional",
     "niveau_raw": "Régional(e)",
     "numero": "2.0",
-    "intitule": "nan",
+    "intitule": "ARLES",
     "lieu": "ARLES",
     "perimetre": "Challenge / Open",
     "armes": [
@@ -7223,7 +7223,7 @@
     "niveau": "regional",
     "niveau_raw": "Régional(e)",
     "numero": "3.0",
-    "intitule": "nan",
+    "intitule": "CORTE",
     "lieu": "CORTE",
     "perimetre": "Régional",
     "armes": [
@@ -7313,7 +7313,7 @@
     "niveau": "national",
     "niveau_raw": "National(e)",
     "numero": "2.0",
-    "intitule": "nan",
+    "intitule": "MÂCON",
     "lieu": "MÂCON",
     "perimetre": "National",
     "armes": [
@@ -7397,7 +7397,7 @@
     "niveau": "national",
     "niveau_raw": "National(e)",
     "numero": "2.0",
-    "intitule": "nan",
+    "intitule": "VALENCE",
     "lieu": "VALENCE",
     "perimetre": "National",
     "armes": [
@@ -7425,7 +7425,7 @@
     "niveau": "national",
     "niveau_raw": "National(e)",
     "numero": "2.0",
-    "intitule": "nan",
+    "intitule": "MONTARGIS",
     "lieu": "MONTARGIS",
     "perimetre": "National",
     "armes": [
@@ -7600,7 +7600,7 @@
     "niveau": "regional",
     "niveau_raw": "Régional(e)",
     "numero": "1.0",
-    "intitule": "nan",
+    "intitule": "RETHEL",
     "lieu": "RETHEL",
     "perimetre": "Challenge / Open",
     "armes": [
@@ -8008,7 +8008,7 @@
     "niveau": "regional",
     "niveau_raw": "Régional(e)",
     "numero": "2.0",
-    "intitule": "nan",
+    "intitule": "DREUX",
     "lieu": "DREUX",
     "perimetre": "Challenge / Open",
     "armes": [
@@ -8040,7 +8040,7 @@
     "niveau": "international",
     "niveau_raw": "International(e)",
     "numero": "1.0",
-    "intitule": "nan",
+    "intitule": "BUDAPEST",
     "lieu": "BUDAPEST",
     "perimetre": "Internationale",
     "armes": [
@@ -8068,7 +8068,7 @@
     "niveau": "international",
     "niveau_raw": "International(e)",
     "numero": "1.0",
-    "intitule": "nan",
+    "intitule": "LAUSANNE",
     "lieu": "LAUSANNE",
     "perimetre": "Internationale",
     "armes": [
@@ -8515,7 +8515,7 @@
     "niveau": "regional",
     "niveau_raw": "Régional(e)",
     "numero": "1.0",
-    "intitule": "nan",
+    "intitule": "DRAGUIGNAN",
     "lieu": "DRAGUIGNAN",
     "perimetre": "Challenge / Open",
     "armes": [
@@ -8573,7 +8573,7 @@
     "niveau": "regional",
     "niveau_raw": "Régional(e)",
     "numero": "2.0",
-    "intitule": "nan",
+    "intitule": "DREUX",
     "lieu": "DREUX",
     "perimetre": "Challenge / Open",
     "armes": [
@@ -8997,7 +8997,7 @@
     "niveau": "national",
     "niveau_raw": "National(e)",
     "numero": "2.0",
-    "intitule": "nan",
+    "intitule": "PONT-À-MOUSSON",
     "lieu": "PONT-À-MOUSSON",
     "perimetre": "National",
     "armes": [
@@ -9208,7 +9208,7 @@
     "niveau": "regional",
     "niveau_raw": "Régional(e)",
     "numero": "2.0",
-    "intitule": "nan",
+    "intitule": "CABRIÈS",
     "lieu": "CABRIÈS",
     "perimetre": "Challenge / Open",
     "armes": [
@@ -9236,7 +9236,7 @@
     "niveau": "regional",
     "niveau_raw": "Régional(e)",
     "numero": "2.0",
-    "intitule": "nan",
+    "intitule": "BOURGES",
     "lieu": "BOURGES",
     "perimetre": "Challenge / Open",
     "armes": [
@@ -9269,7 +9269,7 @@
     "niveau": "regional",
     "niveau_raw": "Régional(e)",
     "numero": "nan",
-    "intitule": "nan",
+    "intitule": "—",
     "lieu": "nan",
     "perimetre": "Challenge / Open",
     "armes": [
@@ -9426,7 +9426,7 @@
     "niveau": "international",
     "niveau_raw": "International(e)",
     "numero": "2.0",
-    "intitule": "nan",
+    "intitule": "NUREMBERG",
     "lieu": "NUREMBERG",
     "perimetre": "Internationale",
     "armes": [
@@ -10072,7 +10072,7 @@
     "niveau": "regional",
     "niveau_raw": "Régional(e)",
     "numero": "2.0",
-    "intitule": "nan",
+    "intitule": "ST LEU",
     "lieu": "ST LEU",
     "perimetre": "Régional",
     "armes": [
@@ -10109,7 +10109,7 @@
     "niveau": "regional",
     "niveau_raw": "Régional(e)",
     "numero": "2.0",
-    "intitule": "nan",
+    "intitule": "CABRIÈS",
     "lieu": "CABRIÈS",
     "perimetre": "Régional",
     "armes": [
@@ -10196,7 +10196,7 @@
     "niveau": "regional",
     "niveau_raw": "Régional(e)",
     "numero": "2.0",
-    "intitule": "nan",
+    "intitule": "BOURGES",
     "lieu": "BOURGES",
     "perimetre": "Challenge / Open",
     "armes": [
@@ -10534,7 +10534,7 @@
     "niveau": "departemental",
     "niveau_raw": "Départemental(e)",
     "numero": "1.0",
-    "intitule": "nan",
+    "intitule": "LA GARDE",
     "lieu": "LA GARDE",
     "perimetre": "Départementale",
     "armes": [
@@ -10747,7 +10747,7 @@
     "niveau": "national",
     "niveau_raw": "National(e)",
     "numero": "2.0",
-    "intitule": "nan",
+    "intitule": "TOULOUSE",
     "lieu": "TOULOUSE",
     "perimetre": "National",
     "armes": [
@@ -11015,7 +11015,7 @@
     "niveau": "regional",
     "niveau_raw": "Régional(e)",
     "numero": "2.0",
-    "intitule": "nan",
+    "intitule": "BOURGES",
     "lieu": "BOURGES",
     "perimetre": "Challenge / Open",
     "armes": [
@@ -11079,7 +11079,7 @@
     "niveau": "regional",
     "niveau_raw": "Régional(e)",
     "numero": "3.0",
-    "intitule": "nan",
+    "intitule": "MONTLUÇON",
     "lieu": "MONTLUÇON",
     "perimetre": "Challenge / Open",
     "armes": [
@@ -11108,7 +11108,7 @@
     "niveau": "international",
     "niveau_raw": "International(e)",
     "numero": "2.0",
-    "intitule": "nan",
+    "intitule": "COPENHAGUE",
     "lieu": "COPENHAGUE",
     "perimetre": "Internationale",
     "armes": [
@@ -11224,7 +11224,7 @@
     "niveau": "international",
     "niveau_raw": "International(e)",
     "numero": "1.0",
-    "intitule": "nan",
+    "intitule": "HONG KONG",
     "lieu": "HONG KONG",
     "perimetre": "Internationale",
     "armes": [
@@ -11252,7 +11252,7 @@
     "niveau": "international",
     "niveau_raw": "International(e)",
     "numero": "2.0",
-    "intitule": "nan",
+    "intitule": "SAMORIN",
     "lieu": "SAMORIN",
     "perimetre": "Internationale",
     "armes": [
@@ -11280,7 +11280,7 @@
     "niveau": "international",
     "niveau_raw": "International(e)",
     "numero": "1.0",
-    "intitule": "nan",
+    "intitule": "HAMMAMET",
     "lieu": "HAMMAMET",
     "perimetre": "Internationale",
     "armes": [
@@ -11853,7 +11853,7 @@
     "niveau": "departemental",
     "niveau_raw": "Départemental(e)",
     "numero": "1.0",
-    "intitule": "nan",
+    "intitule": "MONTMORILLON",
     "lieu": "MONTMORILLON",
     "perimetre": "Challenge / Open",
     "armes": [
@@ -12629,7 +12629,7 @@
     "niveau": "regional",
     "niveau_raw": "Régional(e)",
     "numero": "2.0",
-    "intitule": "nan",
+    "intitule": "Tampon",
     "lieu": "Tampon",
     "perimetre": "Régional",
     "armes": [
@@ -12694,7 +12694,7 @@
     "niveau": "regional",
     "niveau_raw": "Régional(e)",
     "numero": "1.0",
-    "intitule": "nan",
+    "intitule": "CORTE",
     "lieu": "CORTE",
     "perimetre": "Régional",
     "armes": [
@@ -12795,7 +12795,7 @@
     "niveau": "regional",
     "niveau_raw": "Régional(e)",
     "numero": "2.0",
-    "intitule": "nan",
+    "intitule": "BOURGES",
     "lieu": "BOURGES",
     "perimetre": "Challenge / Open",
     "armes": [
@@ -12859,7 +12859,7 @@
     "niveau": "regional",
     "niveau_raw": "Régional(e)",
     "numero": "4.0",
-    "intitule": "nan",
+    "intitule": "CALUIRE-ET-CUIRE",
     "lieu": "CALUIRE-ET-CUIRE",
     "perimetre": "Challenge / Open",
     "armes": [
@@ -12887,7 +12887,7 @@
     "niveau": "regional",
     "niveau_raw": "Régional(e)",
     "numero": "1.0",
-    "intitule": "nan",
+    "intitule": "MONTLUÇON",
     "lieu": "MONTLUÇON",
     "perimetre": "Challenge / Open",
     "armes": [
@@ -13180,7 +13180,7 @@
     "niveau": "departemental",
     "niveau_raw": "Départemental(e)",
     "numero": "1.0",
-    "intitule": "nan",
+    "intitule": "MONTMORILLON",
     "lieu": "MONTMORILLON",
     "perimetre": "Challenge / Open",
     "armes": [
@@ -13325,7 +13325,7 @@
     "niveau": "national",
     "niveau_raw": "National(e)",
     "numero": "2.0",
-    "intitule": "nan",
+    "intitule": "LE HAVRE",
     "lieu": "LE HAVRE",
     "perimetre": "National",
     "armes": [
@@ -13509,7 +13509,7 @@
     "niveau": "zone",
     "niveau_raw": "De Zone",
     "numero": "1.0",
-    "intitule": "nan",
+    "intitule": "AIX-EN-PROVENCE",
     "lieu": "AIX-EN-PROVENCE",
     "perimetre": "Zone",
     "armes": [
@@ -13660,7 +13660,7 @@
     "niveau": "international",
     "niveau_raw": "International(e)",
     "numero": "1.0",
-    "intitule": "nan",
+    "intitule": "EISLINGEN",
     "lieu": "EISLINGEN",
     "perimetre": "Internationale",
     "armes": [
@@ -13688,7 +13688,7 @@
     "niveau": "international",
     "niveau_raw": "International(e)",
     "numero": "2.0",
-    "intitule": "nan",
+    "intitule": "LAUPHEIM",
     "lieu": "LAUPHEIM",
     "perimetre": "Internationale",
     "armes": [
@@ -13716,7 +13716,7 @@
     "niveau": "international",
     "niveau_raw": "International(e)",
     "numero": "1.0",
-    "intitule": "nan",
+    "intitule": "VANCOUVER",
     "lieu": "VANCOUVER",
     "perimetre": "Internationale",
     "armes": [
@@ -13744,7 +13744,7 @@
     "niveau": "international",
     "niveau_raw": "International(e)",
     "numero": "1.0",
-    "intitule": "nan",
+    "intitule": "BUSAN",
     "lieu": "BUSAN",
     "perimetre": "Internationale",
     "armes": [
@@ -13772,7 +13772,7 @@
     "niveau": "international",
     "niveau_raw": "International(e)",
     "numero": "1.0",
-    "intitule": "nan",
+    "intitule": "FUKUOKA",
     "lieu": "FUKUOKA",
     "perimetre": "Internationale",
     "armes": [
@@ -13800,7 +13800,7 @@
     "niveau": "international",
     "niveau_raw": "International(e)",
     "numero": "nan",
-    "intitule": "nan",
+    "intitule": "ORLÉANS",
     "lieu": "ORLÉANS",
     "perimetre": "Internationale",
     "armes": [
@@ -14141,7 +14141,7 @@
     "niveau": "autre",
     "niveau_raw": "nan",
     "numero": "nan",
-    "intitule": "nan",
+    "intitule": "PAU",
     "lieu": "PAU",
     "perimetre": "Challenge / Open",
     "armes": [
@@ -14470,7 +14470,7 @@
     "niveau": "departemental",
     "niveau_raw": "Départemental(e)",
     "numero": "nan",
-    "intitule": "nan",
+    "intitule": "CASTELNAU-LE-LEZ",
     "lieu": "CASTELNAU-LE-LEZ",
     "perimetre": "Challenge / Open",
     "armes": [
@@ -14765,7 +14765,7 @@
     "niveau": "regional",
     "niveau_raw": "Régional(e)",
     "numero": "3.0",
-    "intitule": "nan",
+    "intitule": "AIX-EN-PROVENCE",
     "lieu": "AIX-EN-PROVENCE",
     "perimetre": "Challenge / Open",
     "armes": [
@@ -14977,7 +14977,7 @@
     "niveau": "autre",
     "niveau_raw": "nan",
     "numero": "nan",
-    "intitule": "nan",
+    "intitule": "ÉTAMPES",
     "lieu": "ÉTAMPES",
     "perimetre": "Challenge / Open",
     "armes": [
@@ -15137,7 +15137,7 @@
     "niveau": "autre",
     "niveau_raw": "nan",
     "numero": "nan",
-    "intitule": "nan",
+    "intitule": "PAU",
     "lieu": "PAU",
     "perimetre": "Challenge / Open",
     "armes": [
@@ -15229,7 +15229,7 @@
     "niveau": "departemental",
     "niveau_raw": "Départemental(e)",
     "numero": "nan",
-    "intitule": "nan",
+    "intitule": "VILLEMOMBLE",
     "lieu": "VILLEMOMBLE",
     "perimetre": "Départementale",
     "armes": [
@@ -15287,7 +15287,7 @@
     "niveau": "departemental",
     "niveau_raw": "Départemental(e)",
     "numero": "nan",
-    "intitule": "nan",
+    "intitule": "BONDY",
     "lieu": "BONDY",
     "perimetre": "Départementale",
     "armes": [
@@ -15427,7 +15427,7 @@
     "niveau": "autre",
     "niveau_raw": "nan",
     "numero": "nan",
-    "intitule": "nan",
+    "intitule": "ANGERS",
     "lieu": "ANGERS",
     "perimetre": "Multi-départementale",
     "armes": [
@@ -15492,7 +15492,7 @@
     "niveau": "departemental",
     "niveau_raw": "Départemental(e)",
     "numero": "nan",
-    "intitule": "nan",
+    "intitule": "CASTELNAU-LE-LEZ",
     "lieu": "CASTELNAU-LE-LEZ",
     "perimetre": "Challenge / Open",
     "armes": [
@@ -15557,7 +15557,7 @@
     "niveau": "departemental",
     "niveau_raw": "Départemental(e)",
     "numero": "2.0",
-    "intitule": "nan",
+    "intitule": "NANTES",
     "lieu": "NANTES",
     "perimetre": "Départementale",
     "armes": [
@@ -15591,7 +15591,7 @@
     "niveau": "international",
     "niveau_raw": "International(e)",
     "numero": "2.0",
-    "intitule": "nan",
+    "intitule": "BUDAPEST",
     "lieu": "BUDAPEST",
     "perimetre": "Internationale",
     "armes": [
@@ -15683,7 +15683,7 @@
     "niveau": "national",
     "niveau_raw": "National(e)",
     "numero": "2.0",
-    "intitule": "nan",
+    "intitule": "LYON",
     "lieu": "LYON",
     "perimetre": "National",
     "armes": [
@@ -16006,7 +16006,7 @@
     "niveau": "international",
     "niveau_raw": "International(e)",
     "numero": "2.0",
-    "intitule": "nan",
+    "intitule": "BURGOS",
     "lieu": "BURGOS",
     "perimetre": "Internationale",
     "armes": [
@@ -16034,7 +16034,7 @@
     "niveau": "international",
     "niveau_raw": "International(e)",
     "numero": "3.0",
-    "intitule": "nan",
+    "intitule": "BANGKOK",
     "lieu": "BANGKOK",
     "perimetre": "Internationale",
     "armes": [
@@ -16062,7 +16062,7 @@
     "niveau": "international",
     "niveau_raw": "International(e)",
     "numero": "2.0",
-    "intitule": "nan",
+    "intitule": "BUDAPEST",
     "lieu": "BUDAPEST",
     "perimetre": "Internationale",
     "armes": [
@@ -16090,7 +16090,7 @@
     "niveau": "international",
     "niveau_raw": "International(e)",
     "numero": "2.0",
-    "intitule": "nan",
+    "intitule": "DORMAGEN",
     "lieu": "DORMAGEN",
     "perimetre": "Internationale",
     "armes": [
@@ -16203,7 +16203,7 @@
     "niveau": "departemental",
     "niveau_raw": "Départemental(e)",
     "numero": "nan",
-    "intitule": "nan",
+    "intitule": "TARBES",
     "lieu": "TARBES",
     "perimetre": "Challenge / Open",
     "armes": [
@@ -17074,7 +17074,7 @@
     "niveau": "regional",
     "niveau_raw": "Régional(e)",
     "numero": "2.0",
-    "intitule": "nan",
+    "intitule": "Le port",
     "lieu": "Le port",
     "perimetre": "Régional",
     "armes": [
@@ -17107,7 +17107,7 @@
     "niveau": "regional",
     "niveau_raw": "Régional(e)",
     "numero": "2.0",
-    "intitule": "nan",
+    "intitule": "CABRIÈS",
     "lieu": "CABRIÈS",
     "perimetre": "Challenge / Open",
     "armes": [
@@ -17331,7 +17331,7 @@
     "niveau": "departemental",
     "niveau_raw": "Départemental(e)",
     "numero": "1.0",
-    "intitule": "nan",
+    "intitule": "PARIS",
     "lieu": "PARIS",
     "perimetre": "Départementale",
     "armes": [
@@ -18526,7 +18526,7 @@
     "niveau": "departemental",
     "niveau_raw": "Départemental(e)",
     "numero": "1.0",
-    "intitule": "nan",
+    "intitule": "CAEN",
     "lieu": "CAEN",
     "perimetre": "Multi-départementale",
     "armes": [
@@ -18600,7 +18600,7 @@
     "niveau": "international",
     "niveau_raw": "International(e)",
     "numero": "3.0",
-    "intitule": "nan",
+    "intitule": "UDINE",
     "lieu": "UDINE",
     "perimetre": "Internationale",
     "armes": [
@@ -18628,7 +18628,7 @@
     "niveau": "international",
     "niveau_raw": "International(e)",
     "numero": "3.0",
-    "intitule": "nan",
+    "intitule": "BALE",
     "lieu": "BALE",
     "perimetre": "Internationale",
     "armes": [
@@ -18813,7 +18813,7 @@
     "niveau": "regional",
     "niveau_raw": "Régional(e)",
     "numero": "2.0",
-    "intitule": "nan",
+    "intitule": "BEAUNE",
     "lieu": "BEAUNE",
     "perimetre": "Challenge / Open",
     "armes": [
@@ -18907,7 +18907,7 @@
     "niveau": "regional",
     "niveau_raw": "Régional(e)",
     "numero": "2.0",
-    "intitule": "nan",
+    "intitule": "WISSEMBOURG",
     "lieu": "WISSEMBOURG",
     "perimetre": "Challenge / Open",
     "armes": [
@@ -19026,7 +19026,7 @@
     "niveau": "regional",
     "niveau_raw": "Régional(e)",
     "numero": "nan",
-    "intitule": "nan",
+    "intitule": "MONÉTEAU",
     "lieu": "MONÉTEAU",
     "perimetre": "Challenge / Open",
     "armes": [
@@ -19124,7 +19124,7 @@
     "niveau": "regional",
     "niveau_raw": "Régional(e)",
     "numero": "3.0",
-    "intitule": "nan",
+    "intitule": "MEUNG-SUR-LOIRE",
     "lieu": "MEUNG-SUR-LOIRE",
     "perimetre": "Challenge / Open",
     "armes": [
@@ -19153,7 +19153,7 @@
     "niveau": "regional",
     "niveau_raw": "Régional(e)",
     "numero": "6.0",
-    "intitule": "nan",
+    "intitule": "CAEN",
     "lieu": "CAEN",
     "perimetre": "Challenge / Open",
     "armes": [
@@ -19191,7 +19191,7 @@
     "niveau": "international",
     "niveau_raw": "International(e)",
     "numero": "2.0",
-    "intitule": "nan",
+    "intitule": "BRATISLAVA",
     "lieu": "BRATISLAVA",
     "perimetre": "Internationale",
     "armes": [
@@ -19219,7 +19219,7 @@
     "niveau": "international",
     "niveau_raw": "International(e)",
     "numero": "4.0",
-    "intitule": "nan",
+    "intitule": "POZNAN",
     "lieu": "POZNAN",
     "perimetre": "Internationale",
     "armes": [
@@ -19247,7 +19247,7 @@
     "niveau": "international",
     "niveau_raw": "International(e)",
     "numero": "3.0",
-    "intitule": "nan",
+    "intitule": "SEGOVIE",
     "lieu": "SEGOVIE",
     "perimetre": "Internationale",
     "armes": [
@@ -19275,7 +19275,7 @@
     "niveau": "international",
     "niveau_raw": "International(e)",
     "numero": "nan",
-    "intitule": "nan",
+    "intitule": "FUJAIRAH",
     "lieu": "FUJAIRAH",
     "perimetre": "Internationale",
     "armes": [
@@ -19303,7 +19303,7 @@
     "niveau": "international",
     "niveau_raw": "International(e)",
     "numero": "2.0",
-    "intitule": "nan",
+    "intitule": "HONG KONG",
     "lieu": "HONG KONG",
     "perimetre": "Internationale",
     "armes": [
@@ -19331,7 +19331,7 @@
     "niveau": "international",
     "niveau_raw": "International(e)",
     "numero": "2.0",
-    "intitule": "nan",
+    "intitule": "PARIS",
     "lieu": "PARIS",
     "perimetre": "Internationale",
     "armes": [
@@ -19359,7 +19359,7 @@
     "niveau": "international",
     "niveau_raw": "International(e)",
     "numero": "nan",
-    "intitule": "nan",
+    "intitule": "TUNIS",
     "lieu": "TUNIS",
     "perimetre": "Internationale",
     "armes": [
@@ -19387,7 +19387,7 @@
     "niveau": "international",
     "niveau_raw": "International(e)",
     "numero": "nan",
-    "intitule": "nan",
+    "intitule": "BERLIN",
     "lieu": "BERLIN",
     "perimetre": "Internationale",
     "armes": [
@@ -19444,7 +19444,7 @@
     "niveau": "regional",
     "niveau_raw": "Régional(e)",
     "numero": "3.0",
-    "intitule": "nan",
+    "intitule": "SAINT-JEAN-DE-LA-RUELLE",
     "lieu": "SAINT-JEAN-DE-LA-RUELLE",
     "perimetre": "Challenge / Open",
     "armes": [
@@ -19884,7 +19884,7 @@
     "niveau": "national",
     "niveau_raw": "National(e)",
     "numero": "3.0",
-    "intitule": "nan",
+    "intitule": "MONACO",
     "lieu": "MONACO",
     "perimetre": "National",
     "armes": [
@@ -19998,7 +19998,7 @@
     "niveau": "regional",
     "niveau_raw": "Régional(e)",
     "numero": "2.0",
-    "intitule": "nan",
+    "intitule": "WISSEMBOURG",
     "lieu": "WISSEMBOURG",
     "perimetre": "Challenge / Open",
     "armes": [
@@ -20149,7 +20149,7 @@
     "niveau": "regional",
     "niveau_raw": "Régional(e)",
     "numero": "3.0",
-    "intitule": "nan",
+    "intitule": "MEUNG-SUR-LOIRE",
     "lieu": "MEUNG-SUR-LOIRE",
     "perimetre": "Challenge / Open",
     "armes": [
@@ -20183,7 +20183,7 @@
     "niveau": "regional",
     "niveau_raw": "Régional(e)",
     "numero": "3.0",
-    "intitule": "nan",
+    "intitule": "SAINT-JEAN-DE-LA-RUELLE",
     "lieu": "SAINT-JEAN-DE-LA-RUELLE",
     "perimetre": "Challenge / Open",
     "armes": [
@@ -20616,7 +20616,7 @@
     "niveau": "national",
     "niveau_raw": "National(e)",
     "numero": "3.0",
-    "intitule": "nan",
+    "intitule": "HÉNIN-BEAUMONT",
     "lieu": "HÉNIN-BEAUMONT",
     "perimetre": "National",
     "armes": [
@@ -20644,7 +20644,7 @@
     "niveau": "national",
     "niveau_raw": "National(e)",
     "numero": "2.0",
-    "intitule": "nan",
+    "intitule": "CALAIS",
     "lieu": "CALAIS",
     "perimetre": "National",
     "armes": [
@@ -20759,7 +20759,7 @@
     "niveau": "international",
     "niveau_raw": "International(e)",
     "numero": "4.0",
-    "intitule": "nan",
+    "intitule": "MANAMA",
     "lieu": "MANAMA",
     "perimetre": "Internationale",
     "armes": [
@@ -20787,7 +20787,7 @@
     "niveau": "international",
     "niveau_raw": "International(e)",
     "numero": "4.0",
-    "intitule": "nan",
+    "intitule": "TBILISSI",
     "lieu": "TBILISSI",
     "perimetre": "Internationale",
     "armes": [
@@ -20815,7 +20815,7 @@
     "niveau": "international",
     "niveau_raw": "International(e)",
     "numero": "4.0",
-    "intitule": "nan",
+    "intitule": "MADRID",
     "lieu": "MADRID",
     "perimetre": "Internationale",
     "armes": [
@@ -20843,7 +20843,7 @@
     "niveau": "international",
     "niveau_raw": "International(e)",
     "numero": "3.0",
-    "intitule": "nan",
+    "intitule": "BOSTON",
     "lieu": "BOSTON",
     "perimetre": "Internationale",
     "armes": [
@@ -21136,7 +21136,7 @@
     "niveau": "departemental",
     "niveau_raw": "Départemental(e)",
     "numero": "2.0",
-    "intitule": "nan",
+    "intitule": "TALENCE",
     "lieu": "TALENCE",
     "perimetre": "Départementale",
     "armes": [
@@ -21350,7 +21350,7 @@
     "niveau": "regional",
     "niveau_raw": "Régional(e)",
     "numero": "2.0",
-    "intitule": "nan",
+    "intitule": "SAINT-MAX",
     "lieu": "SAINT-MAX",
     "perimetre": "Challenge / Open",
     "armes": [
@@ -21527,7 +21527,7 @@
     "niveau": "departemental",
     "niveau_raw": "Départemental(e)",
     "numero": "2.0",
-    "intitule": "nan",
+    "intitule": "COGOLIN",
     "lieu": "COGOLIN",
     "perimetre": "Départementale",
     "armes": [
@@ -21767,7 +21767,7 @@
     "niveau": "national",
     "niveau_raw": "National(e)",
     "numero": "3.0",
-    "intitule": "nan",
+    "intitule": "BOURG-LA-REINE",
     "lieu": "BOURG-LA-REINE",
     "perimetre": "National",
     "armes": [
@@ -21823,7 +21823,7 @@
     "niveau": "autre",
     "niveau_raw": "nan",
     "numero": "2.0",
-    "intitule": "nan",
+    "intitule": "THIONVILLE",
     "lieu": "THIONVILLE",
     "perimetre": "Régional",
     "armes": [
@@ -21916,7 +21916,7 @@
     "niveau": "regional",
     "niveau_raw": "Régional(e)",
     "numero": "3.0",
-    "intitule": "nan",
+    "intitule": "ORLÉANS",
     "lieu": "ORLÉANS",
     "perimetre": "Challenge / Open",
     "armes": [
@@ -22007,7 +22007,7 @@
     "niveau": "international",
     "niveau_raw": "International(e)",
     "numero": "5.0",
-    "intitule": "nan",
+    "intitule": "RIGA",
     "lieu": "RIGA",
     "perimetre": "Internationale",
     "armes": [
@@ -22035,7 +22035,7 @@
     "niveau": "international",
     "niveau_raw": "International(e)",
     "numero": "4.0",
-    "intitule": "nan",
+    "intitule": "KONIN",
     "lieu": "KONIN",
     "perimetre": "Internationale",
     "armes": [
@@ -22063,7 +22063,7 @@
     "niveau": "international",
     "niveau_raw": "International(e)",
     "numero": "2.0",
-    "intitule": "nan",
+    "intitule": "DOHA",
     "lieu": "DOHA",
     "perimetre": "Internationale",
     "armes": [
@@ -22091,7 +22091,7 @@
     "niveau": "international",
     "niveau_raw": "International(e)",
     "numero": "1.0",
-    "intitule": "nan",
+    "intitule": "SALT LAKE CITY",
     "lieu": "SALT LAKE CITY",
     "perimetre": "Internationale",
     "armes": [
@@ -22812,7 +22812,7 @@
     "niveau": "regional",
     "niveau_raw": "Régional(e)",
     "numero": "5.0",
-    "intitule": "nan",
+    "intitule": "ORLÉANS",
     "lieu": "ORLÉANS",
     "perimetre": "Challenge / Open",
     "armes": [
@@ -22902,7 +22902,7 @@
     "niveau": "regional",
     "niveau_raw": "Régional(e)",
     "numero": "5.0",
-    "intitule": "nan",
+    "intitule": "CORTE",
     "lieu": "CORTE",
     "perimetre": "Régional",
     "armes": [
@@ -23049,7 +23049,7 @@
     "niveau": "autre",
     "niveau_raw": "nan",
     "numero": "nan",
-    "intitule": "nan",
+    "intitule": "MONTDIDIER",
     "lieu": "MONTDIDIER",
     "perimetre": "Multi-départementale",
     "armes": [
@@ -23080,7 +23080,7 @@
     "niveau": "departemental",
     "niveau_raw": "Départemental(e)",
     "numero": "2.0",
-    "intitule": "nan",
+    "intitule": "SORGUES",
     "lieu": "SORGUES",
     "perimetre": "Multi-départementale",
     "armes": [
@@ -23336,7 +23336,7 @@
     "niveau": "regional",
     "niveau_raw": "Régional(e)",
     "numero": "2.0",
-    "intitule": "nan",
+    "intitule": "AUTUN",
     "lieu": "AUTUN",
     "perimetre": "Challenge / Open",
     "armes": [
@@ -23428,7 +23428,7 @@
     "niveau": "zone",
     "niveau_raw": "De Zone",
     "numero": "2.0",
-    "intitule": "nan",
+    "intitule": "TOULON",
     "lieu": "TOULON",
     "perimetre": "Zone",
     "armes": [
@@ -23485,7 +23485,7 @@
     "niveau": "regional",
     "niveau_raw": "Régional(e)",
     "numero": "nan",
-    "intitule": "nan",
+    "intitule": "SAINT-DENIS-DE-L'HÔTEL",
     "lieu": "SAINT-DENIS-DE-L'HÔTEL",
     "perimetre": "Régional",
     "armes": [
@@ -23518,7 +23518,7 @@
     "niveau": "international",
     "niveau_raw": "International(e)",
     "numero": "4.0",
-    "intitule": "nan",
+    "intitule": "LE CAIRE",
     "lieu": "LE CAIRE",
     "perimetre": "Internationale",
     "armes": [
@@ -23546,7 +23546,7 @@
     "niveau": "international",
     "niveau_raw": "International(e)",
     "numero": "4.0",
-    "intitule": "nan",
+    "intitule": "TBILISSI",
     "lieu": "TBILISSI",
     "perimetre": "Internationale",
     "armes": [
@@ -23574,7 +23574,7 @@
     "niveau": "international",
     "niveau_raw": "International(e)",
     "numero": "3.0",
-    "intitule": "nan",
+    "intitule": "PLOVDIV",
     "lieu": "PLOVDIV",
     "perimetre": "Internationale",
     "armes": [
@@ -23718,7 +23718,7 @@
     "niveau": "regional",
     "niveau_raw": "Régional(e)",
     "numero": "2.0",
-    "intitule": "nan",
+    "intitule": "GEISPOLSHEIM",
     "lieu": "GEISPOLSHEIM",
     "perimetre": "Challenge / Open",
     "armes": [
@@ -23746,7 +23746,7 @@
     "niveau": "departemental",
     "niveau_raw": "Départemental(e)",
     "numero": "nan",
-    "intitule": "nan",
+    "intitule": "LUNEL",
     "lieu": "LUNEL",
     "perimetre": "Challenge / Open",
     "armes": [
@@ -24488,7 +24488,7 @@
     "niveau": "regional",
     "niveau_raw": "Régional(e)",
     "numero": "3.0",
-    "intitule": "nan",
+    "intitule": "SAINT PIERRE",
     "lieu": "SAINT PIERRE",
     "perimetre": "Régional",
     "armes": [
@@ -24525,7 +24525,7 @@
     "niveau": "regional",
     "niveau_raw": "Régional(e)",
     "numero": "2.0",
-    "intitule": "nan",
+    "intitule": "AIX-EN-PROVENCE",
     "lieu": "AIX-EN-PROVENCE",
     "perimetre": "Régional",
     "armes": [
@@ -24582,7 +24582,7 @@
     "niveau": "zone",
     "niveau_raw": "De Zone",
     "numero": "nan",
-    "intitule": "nan",
+    "intitule": "TOULON",
     "lieu": "TOULON",
     "perimetre": "Zone",
     "armes": [
@@ -24613,7 +24613,7 @@
     "niveau": "regional",
     "niveau_raw": "Régional(e)",
     "numero": "nan",
-    "intitule": "nan",
+    "intitule": "SAINT-DENIS-DE-L'HÔTEL",
     "lieu": "SAINT-DENIS-DE-L'HÔTEL",
     "perimetre": "Régional",
     "armes": [
@@ -24787,7 +24787,7 @@
     "niveau": "regional",
     "niveau_raw": "Régional(e)",
     "numero": "2.0",
-    "intitule": "nan",
+    "intitule": "GEISPOLSHEIM",
     "lieu": "GEISPOLSHEIM",
     "perimetre": "Challenge / Open",
     "armes": [
@@ -24816,7 +24816,7 @@
     "niveau": "departemental",
     "niveau_raw": "Départemental(e)",
     "numero": "nan",
-    "intitule": "nan",
+    "intitule": "LUNEL",
     "lieu": "LUNEL",
     "perimetre": "Challenge / Open",
     "armes": [
@@ -25482,7 +25482,7 @@
     "niveau": "national",
     "niveau_raw": "National(e)",
     "numero": "3.0",
-    "intitule": "nan",
+    "intitule": "FACHES-THUMESNIL",
     "lieu": "FACHES-THUMESNIL",
     "perimetre": "National",
     "armes": [
@@ -25716,7 +25716,7 @@
     "niveau": "zone",
     "niveau_raw": "De Zone",
     "numero": "2.0",
-    "intitule": "nan",
+    "intitule": "AIX-EN-PROVENCE",
     "lieu": "AIX-EN-PROVENCE",
     "perimetre": "Zone",
     "armes": [
@@ -25808,7 +25808,7 @@
     "niveau": "international",
     "niveau_raw": "International(e)",
     "numero": "3.0",
-    "intitule": "nan",
+    "intitule": "CRACOVIE",
     "lieu": "CRACOVIE",
     "perimetre": "Internationale",
     "armes": [
@@ -25836,7 +25836,7 @@
     "niveau": "international",
     "niveau_raw": "International(e)",
     "numero": "3.0",
-    "intitule": "nan",
+    "intitule": "WUXI",
     "lieu": "WUXI",
     "perimetre": "Internationale",
     "armes": [
@@ -25864,7 +25864,7 @@
     "niveau": "international",
     "niveau_raw": "International(e)",
     "numero": "4.0",
-    "intitule": "nan",
+    "intitule": "HEIDENHEIM",
     "lieu": "HEIDENHEIM",
     "perimetre": "Internationale",
     "armes": [
@@ -25892,7 +25892,7 @@
     "niveau": "international",
     "niveau_raw": "International(e)",
     "numero": "3.0",
-    "intitule": "nan",
+    "intitule": "TURIN",
     "lieu": "TURIN",
     "perimetre": "Internationale",
     "armes": [
@@ -26595,7 +26595,7 @@
     "niveau": "regional",
     "niveau_raw": "Régional(e)",
     "numero": "3.0",
-    "intitule": "nan",
+    "intitule": "SAINT-DENIS",
     "lieu": "SAINT-DENIS",
     "perimetre": "Régional",
     "armes": [
@@ -26783,7 +26783,7 @@
     "niveau": "autre",
     "niveau_raw": "nan",
     "numero": "nan",
-    "intitule": "nan",
+    "intitule": "SAINT-HERBLAIN",
     "lieu": "SAINT-HERBLAIN",
     "perimetre": "Challenge / Open",
     "armes": [
@@ -26986,7 +26986,7 @@
     "niveau": "departemental",
     "niveau_raw": "Départemental(e)",
     "numero": "nan",
-    "intitule": "nan",
+    "intitule": "AUZEVILLE-TOLOSANE",
     "lieu": "AUZEVILLE-TOLOSANE",
     "perimetre": "Challenge / Open",
     "armes": [
@@ -27543,7 +27543,7 @@
     "niveau": "national",
     "niveau_raw": "National(e)",
     "numero": "3.0",
-    "intitule": "nan",
+    "intitule": "CHAUMONT",
     "lieu": "CHAUMONT",
     "perimetre": "National",
     "armes": [
@@ -27574,7 +27574,7 @@
     "niveau": "national",
     "niveau_raw": "National(e)",
     "numero": "4.0",
-    "intitule": "nan",
+    "intitule": "BORDEAUX",
     "lieu": "BORDEAUX",
     "perimetre": "National",
     "armes": [
@@ -27602,7 +27602,7 @@
     "niveau": "national",
     "niveau_raw": "National(e)",
     "numero": "3.0",
-    "intitule": "nan",
+    "intitule": "STRASBOURG",
     "lieu": "STRASBOURG",
     "perimetre": "National",
     "armes": [
@@ -27800,7 +27800,7 @@
     "niveau": "regional",
     "niveau_raw": "Régional(e)",
     "numero": "4.0",
-    "intitule": "nan",
+    "intitule": "GRASSE",
     "lieu": "GRASSE",
     "perimetre": "Événement",
     "armes": [
@@ -27828,7 +27828,7 @@
     "niveau": "international",
     "niveau_raw": "International(e)",
     "numero": "6.0",
-    "intitule": "nan",
+    "intitule": "VRSAC",
     "lieu": "VRSAC",
     "perimetre": "Internationale",
     "armes": [
@@ -27918,7 +27918,7 @@
     "niveau": "departemental",
     "niveau_raw": "Départemental(e)",
     "numero": "nan",
-    "intitule": "nan",
+    "intitule": "AUTUN",
     "lieu": "AUTUN",
     "perimetre": "Multi-départementale",
     "armes": [
@@ -28465,7 +28465,7 @@
     "niveau": "regional",
     "niveau_raw": "Régional(e)",
     "numero": "1.0",
-    "intitule": "nan",
+    "intitule": "GRASSE",
     "lieu": "GRASSE",
     "perimetre": "Événement",
     "armes": [
@@ -28763,7 +28763,7 @@
     "niveau": "national",
     "niveau_raw": "National(e)",
     "numero": "3.0",
-    "intitule": "nan",
+    "intitule": "MONTÉLIMAR",
     "lieu": "MONTÉLIMAR",
     "perimetre": "National",
     "armes": [
@@ -28914,7 +28914,7 @@
     "niveau": "regional",
     "niveau_raw": "Régional(e)",
     "numero": "3.0",
-    "intitule": "nan",
+    "intitule": "LE TAMPON",
     "lieu": "LE TAMPON",
     "perimetre": "Challenge / Open",
     "armes": [
@@ -29303,7 +29303,7 @@
     "niveau": "national",
     "niveau_raw": "National(e)",
     "numero": "4.0",
-    "intitule": "nan",
+    "intitule": "THIONVILLE",
     "lieu": "THIONVILLE",
     "perimetre": "National",
     "armes": [
@@ -29331,7 +29331,7 @@
     "niveau": "national",
     "niveau_raw": "National(e)",
     "numero": "3.0",
-    "intitule": "nan",
+    "intitule": "DIJON",
     "lieu": "DIJON",
     "perimetre": "National",
     "armes": [
@@ -29457,7 +29457,7 @@
     "niveau": "regional",
     "niveau_raw": "Régional(e)",
     "numero": "nan",
-    "intitule": "nan",
+    "intitule": "STRASBOURG",
     "lieu": "STRASBOURG",
     "perimetre": "Régional",
     "armes": [
@@ -29548,7 +29548,7 @@
     "niveau": "regional",
     "niveau_raw": "Régional(e)",
     "numero": "1.0",
-    "intitule": "nan",
+    "intitule": "AVIGNON",
     "lieu": "AVIGNON",
     "perimetre": "Challenge / Open",
     "armes": [
@@ -29873,7 +29873,7 @@
     "niveau": "regional",
     "niveau_raw": "Régional(e)",
     "numero": "1.0",
-    "intitule": "nan",
+    "intitule": "RILLIEUX-LA-PAPE",
     "lieu": "RILLIEUX-LA-PAPE",
     "perimetre": "Challenge / Open",
     "armes": [
@@ -30312,7 +30312,7 @@
     "niveau": "autre",
     "niveau_raw": "nan",
     "numero": "3.0",
-    "intitule": "nan",
+    "intitule": "VANDŒUVRE-LÈS-NANCY",
     "lieu": "VANDŒUVRE-LÈS-NANCY",
     "perimetre": "Challenge / Open",
     "armes": [
@@ -30340,7 +30340,7 @@
     "niveau": "regional",
     "niveau_raw": "Régional(e)",
     "numero": "nan",
-    "intitule": "nan",
+    "intitule": "STRASBOURG",
     "lieu": "STRASBOURG",
     "perimetre": "Régional",
     "armes": [
@@ -30370,7 +30370,7 @@
     "niveau": "regional",
     "niveau_raw": "Régional(e)",
     "numero": "1.0",
-    "intitule": "nan",
+    "intitule": "GÉMENOS",
     "lieu": "GÉMENOS",
     "perimetre": "Challenge / Open",
     "armes": [
@@ -30462,7 +30462,7 @@
     "niveau": "regional",
     "niveau_raw": "Régional(e)",
     "numero": "1.0",
-    "intitule": "nan",
+    "intitule": "AVIGNON",
     "lieu": "AVIGNON",
     "perimetre": "Challenge / Open",
     "armes": [
@@ -30789,7 +30789,7 @@
     "niveau": "departemental",
     "niveau_raw": "Départemental(e)",
     "numero": "nan",
-    "intitule": "nan",
+    "intitule": "HARNES",
     "lieu": "HARNES",
     "perimetre": "Challenge / Open",
     "armes": [
@@ -30907,7 +30907,7 @@
     "niveau": "national",
     "niveau_raw": "National(e)",
     "numero": "4.0",
-    "intitule": "nan",
+    "intitule": "DIJON",
     "lieu": "DIJON",
     "perimetre": "National",
     "armes": [
@@ -31182,7 +31182,7 @@
     "niveau": "regional",
     "niveau_raw": "Régional(e)",
     "numero": "3.0",
-    "intitule": "nan",
+    "intitule": "AVIGNON",
     "lieu": "AVIGNON",
     "perimetre": "Challenge / Open",
     "armes": [
@@ -31273,7 +31273,7 @@
     "niveau": "regional",
     "niveau_raw": "Régional(e)",
     "numero": "nan",
-    "intitule": "nan",
+    "intitule": "TOURS",
     "lieu": "TOURS",
     "perimetre": "Régional",
     "armes": [
@@ -31686,7 +31686,7 @@
     "niveau": "regional",
     "niveau_raw": "Régional(e)",
     "numero": "nan",
-    "intitule": "nan",
+    "intitule": "VITTEL",
     "lieu": "VITTEL",
     "perimetre": "Régional",
     "armes": [
@@ -32015,7 +32015,7 @@
     "niveau": "national",
     "niveau_raw": "National(e)",
     "numero": "4.0",
-    "intitule": "nan",
+    "intitule": "ROUBAIX",
     "lieu": "ROUBAIX",
     "perimetre": "National",
     "armes": [
@@ -32099,7 +32099,7 @@
     "niveau": "regional",
     "niveau_raw": "Régional(e)",
     "numero": "nan",
-    "intitule": "nan",
+    "intitule": "VITTEL",
     "lieu": "VITTEL",
     "perimetre": "Régional",
     "armes": [
@@ -32326,7 +32326,7 @@
     "niveau": "regional",
     "niveau_raw": "Régional(e)",
     "numero": "3.0",
-    "intitule": "nan",
+    "intitule": "AVIGNON",
     "lieu": "AVIGNON",
     "perimetre": "Challenge / Open",
     "armes": [
@@ -32355,7 +32355,7 @@
     "niveau": "regional",
     "niveau_raw": "Régional(e)",
     "numero": "2.0",
-    "intitule": "nan",
+    "intitule": "CORTE",
     "lieu": "CORTE",
     "perimetre": "Régional",
     "armes": [
@@ -32447,7 +32447,7 @@
     "niveau": "regional",
     "niveau_raw": "Régional(e)",
     "numero": "nan",
-    "intitule": "nan",
+    "intitule": "TOURS",
     "lieu": "TOURS",
     "perimetre": "Régional",
     "armes": [
@@ -33189,7 +33189,7 @@
     "niveau": "national",
     "niveau_raw": "National(e)",
     "numero": "3.0",
-    "intitule": "nan",
+    "intitule": "AIX-EN-PROVENCE",
     "lieu": "AIX-EN-PROVENCE",
     "perimetre": "National",
     "armes": [
@@ -33217,7 +33217,7 @@
     "niveau": "national",
     "niveau_raw": "National(e)",
     "numero": "4.0",
-    "intitule": "nan",
+    "intitule": "TARBES",
     "lieu": "TARBES",
     "perimetre": "National",
     "armes": [
@@ -33421,7 +33421,7 @@
     "niveau": "regional",
     "niveau_raw": "Régional(e)",
     "numero": "2.0",
-    "intitule": "nan",
+    "intitule": "ORANGE",
     "lieu": "ORANGE",
     "perimetre": "Challenge / Open",
     "armes": [
@@ -33517,7 +33517,7 @@
     "niveau": "regional",
     "niveau_raw": "Régional(e)",
     "numero": "nan",
-    "intitule": "nan",
+    "intitule": "VIERZON",
     "lieu": "VIERZON",
     "perimetre": "Régional",
     "armes": [
@@ -34467,7 +34467,7 @@
     "niveau": "regional",
     "niveau_raw": "Régional(e)",
     "numero": "1.0",
-    "intitule": "nan",
+    "intitule": "ORANGE",
     "lieu": "ORANGE",
     "perimetre": "Challenge / Open",
     "armes": [
@@ -34496,7 +34496,7 @@
     "niveau": "regional",
     "niveau_raw": "Régional(e)",
     "numero": "nan",
-    "intitule": "nan",
+    "intitule": "VIERZON",
     "lieu": "VIERZON",
     "perimetre": "Régional",
     "armes": [
@@ -35207,7 +35207,7 @@
     "niveau": "national",
     "niveau_raw": "National(e)",
     "numero": "3.0",
-    "intitule": "nan",
+    "intitule": "BREST",
     "lieu": "BREST",
     "perimetre": "National",
     "armes": [
@@ -35293,7 +35293,7 @@
     "niveau": "regional",
     "niveau_raw": "Régional(e)",
     "numero": "2.0",
-    "intitule": "nan",
+    "intitule": "LYON",
     "lieu": "LYON",
     "perimetre": "Challenge / Open",
     "armes": [
@@ -35328,7 +35328,7 @@
     "niveau": "international",
     "niveau_raw": "International(e)",
     "numero": "4.0",
-    "intitule": "nan",
+    "intitule": "LIMA",
     "lieu": "LIMA",
     "perimetre": "Internationale",
     "armes": [
@@ -35503,7 +35503,7 @@
     "niveau": "autre",
     "niveau_raw": "nan",
     "numero": "nan",
-    "intitule": "nan",
+    "intitule": "DIVONNE-LES-BAINS",
     "lieu": "DIVONNE-LES-BAINS",
     "perimetre": "Challenge / Open",
     "armes": [
@@ -35756,7 +35756,7 @@
     "niveau": "departemental",
     "niveau_raw": "Départemental(e)",
     "numero": "4.0",
-    "intitule": "nan",
+    "intitule": "TALENCE",
     "lieu": "TALENCE",
     "perimetre": "Départementale",
     "armes": [
@@ -36082,7 +36082,7 @@
     "niveau": "regional",
     "niveau_raw": "Régional(e)",
     "numero": "2.0",
-    "intitule": "nan",
+    "intitule": "DIVONNE-LES-BAINS",
     "lieu": "DIVONNE-LES-BAINS",
     "perimetre": "Challenge / Open",
     "armes": [
@@ -36110,7 +36110,7 @@
     "niveau": "regional",
     "niveau_raw": "Régional(e)",
     "numero": "2.0",
-    "intitule": "nan",
+    "intitule": "LYON",
     "lieu": "LYON",
     "perimetre": "Challenge / Open",
     "armes": [
@@ -36584,7 +36584,7 @@
     "niveau": "national",
     "niveau_raw": "National(e)",
     "numero": "3.0",
-    "intitule": "nan",
+    "intitule": "MURET",
     "lieu": "MURET",
     "perimetre": "National",
     "armes": [
@@ -36640,7 +36640,7 @@
     "niveau": "regional",
     "niveau_raw": "Régional(e)",
     "numero": "1.0",
-    "intitule": "nan",
+    "intitule": "ARLES",
     "lieu": "ARLES",
     "perimetre": "Challenge / Open",
     "armes": [
@@ -36671,7 +36671,7 @@
     "niveau": "international",
     "niveau_raw": "International(e)",
     "numero": "4.0",
-    "intitule": "nan",
+    "intitule": "ASTANA",
     "lieu": "ASTANA",
     "perimetre": "Internationale",
     "armes": [
@@ -36699,7 +36699,7 @@
     "niveau": "international",
     "niveau_raw": "International(e)",
     "numero": "nan",
-    "intitule": "nan",
+    "intitule": "TASHKENT",
     "lieu": "TASHKENT",
     "perimetre": "Internationale",
     "armes": [
@@ -36727,7 +36727,7 @@
     "niveau": "international",
     "niveau_raw": "International(e)",
     "numero": "3.0",
-    "intitule": "nan",
+    "intitule": "BUDAPEST",
     "lieu": "BUDAPEST",
     "perimetre": "Internationale",
     "armes": [
@@ -36755,7 +36755,7 @@
     "niveau": "regional",
     "niveau_raw": "Régional(e)",
     "numero": "7.0",
-    "intitule": "nan",
+    "intitule": "BASTIA",
     "lieu": "BASTIA",
     "perimetre": "Régional",
     "armes": [
@@ -37022,7 +37022,7 @@
     "niveau": "autre",
     "niveau_raw": "nan",
     "numero": "nan",
-    "intitule": "nan",
+    "intitule": "VÉNISSIEUX",
     "lieu": "VÉNISSIEUX",
     "perimetre": "Challenge / Open",
     "armes": [
@@ -37529,7 +37529,7 @@
     "niveau": "regional",
     "niveau_raw": "Régional(e)",
     "numero": "4.0",
-    "intitule": "nan",
+    "intitule": "LE TAMPON",
     "lieu": "LE TAMPON",
     "perimetre": "Régional",
     "armes": [
@@ -37557,7 +37557,7 @@
     "niveau": "regional",
     "niveau_raw": "Régional(e)",
     "numero": "7.0",
-    "intitule": "nan",
+    "intitule": "BASTIA",
     "lieu": "BASTIA",
     "perimetre": "Régional",
     "armes": [
@@ -37589,7 +37589,7 @@
     "niveau": "regional",
     "niveau_raw": "Régional(e)",
     "numero": "1.0",
-    "intitule": "nan",
+    "intitule": "ARLES",
     "lieu": "ARLES",
     "perimetre": "Challenge / Open",
     "armes": [
@@ -37939,7 +37939,7 @@
     "niveau": "departemental",
     "niveau_raw": "Départemental(e)",
     "numero": "3.0",
-    "intitule": "nan",
+    "intitule": "AVIGNON",
     "lieu": "AVIGNON",
     "perimetre": "Multi-départementale",
     "armes": [
@@ -38312,7 +38312,7 @@
     "niveau": "regional",
     "niveau_raw": "Régional(e)",
     "numero": "1.0",
-    "intitule": "nan",
+    "intitule": "MARSEILLE",
     "lieu": "MARSEILLE",
     "perimetre": "Régional",
     "armes": [
@@ -38599,7 +38599,7 @@
     "niveau": "autre",
     "niveau_raw": "nan",
     "numero": "nan",
-    "intitule": "nan",
+    "intitule": "SEYSSINS",
     "lieu": "SEYSSINS",
     "perimetre": "Challenge / Open",
     "armes": [
@@ -38847,7 +38847,7 @@
     "niveau": "regional",
     "niveau_raw": "Régional(e)",
     "numero": "4.0",
-    "intitule": "nan",
+    "intitule": "Le port",
     "lieu": "Le port",
     "perimetre": "Régional",
     "armes": [
@@ -38879,7 +38879,7 @@
     "niveau": "regional",
     "niveau_raw": "Régional(e)",
     "numero": "1.0",
-    "intitule": "nan",
+    "intitule": "MARSEILLE",
     "lieu": "MARSEILLE",
     "perimetre": "Régional",
     "armes": [
@@ -39535,7 +39535,7 @@
     "niveau": "departemental",
     "niveau_raw": "Départemental(e)",
     "numero": "2.0",
-    "intitule": "nan",
+    "intitule": "PARIS",
     "lieu": "PARIS",
     "perimetre": "Départementale",
     "armes": [
@@ -39563,7 +39563,7 @@
     "niveau": "national",
     "niveau_raw": "National(e)",
     "numero": "4.0",
-    "intitule": "nan",
+    "intitule": "CLERMONT-FERRAND",
     "lieu": "CLERMONT-FERRAND",
     "perimetre": "National",
     "armes": [
@@ -39594,7 +39594,7 @@
     "niveau": "national",
     "niveau_raw": "National(e)",
     "numero": "5.0",
-    "intitule": "nan",
+    "intitule": "MELUN",
     "lieu": "MELUN",
     "perimetre": "National",
     "armes": [
@@ -39622,7 +39622,7 @@
     "niveau": "national",
     "niveau_raw": "National(e)",
     "numero": "5.0",
-    "intitule": "nan",
+    "intitule": "BIARRITZ",
     "lieu": "BIARRITZ",
     "perimetre": "National",
     "armes": [
@@ -39957,7 +39957,7 @@
     "niveau": "departemental",
     "niveau_raw": "Départemental(e)",
     "numero": "5.0",
-    "intitule": "nan",
+    "intitule": "NANTES",
     "lieu": "NANTES",
     "perimetre": "Départementale",
     "armes": [
@@ -40223,7 +40223,7 @@
     "niveau": "regional",
     "niveau_raw": "Régional(e)",
     "numero": "4.0",
-    "intitule": "nan",
+    "intitule": "SAINT-DENIS",
     "lieu": "SAINT-DENIS",
     "perimetre": "Régional",
     "armes": [
@@ -40582,7 +40582,7 @@
     "niveau": "departemental",
     "niveau_raw": "Départemental(e)",
     "numero": "nan",
-    "intitule": "nan",
+    "intitule": "BAZIÈGE",
     "lieu": "BAZIÈGE",
     "perimetre": "Challenge / Open",
     "armes": [
@@ -41158,7 +41158,7 @@
     "niveau": "regional",
     "niveau_raw": "Régional(e)",
     "numero": "4.0",
-    "intitule": "nan",
+    "intitule": "SAINT-LEU",
     "lieu": "SAINT-LEU",
     "perimetre": "Régional",
     "armes": [
@@ -41195,7 +41195,7 @@
     "niveau": "international",
     "niveau_raw": "International(e)",
     "numero": "5.0",
-    "intitule": "nan",
+    "intitule": "BUDAPEST",
     "lieu": "BUDAPEST",
     "perimetre": "Internationale",
     "armes": [
@@ -41223,7 +41223,7 @@
     "niveau": "international",
     "niveau_raw": "International(e)",
     "numero": "5.0",
-    "intitule": "nan",
+    "intitule": "LE CAIRE",
     "lieu": "LE CAIRE",
     "perimetre": "Internationale",
     "armes": [
@@ -41251,7 +41251,7 @@
     "niveau": "international",
     "niveau_raw": "International(e)",
     "numero": "2.0",
-    "intitule": "nan",
+    "intitule": "ATHENES",
     "lieu": "ATHENES",
     "perimetre": "Internationale",
     "armes": [
@@ -41279,7 +41279,7 @@
     "niveau": "international",
     "niveau_raw": "International(e)",
     "numero": "4.0",
-    "intitule": "nan",
+    "intitule": "PADOUE",
     "lieu": "PADOUE",
     "perimetre": "Internationale",
     "armes": [
@@ -41832,7 +41832,7 @@
     "niveau": "departemental",
     "niveau_raw": "Départemental(e)",
     "numero": "3.0",
-    "intitule": "nan",
+    "intitule": "PARIS",
     "lieu": "PARIS",
     "perimetre": "Départementale",
     "armes": [
@@ -42020,7 +42020,7 @@
     "niveau": "national",
     "niveau_raw": "National(e)",
     "numero": "5.0",
-    "intitule": "nan",
+    "intitule": "CHÂLONS-EN-CHAMPAGNE",
     "lieu": "CHÂLONS-EN-CHAMPAGNE",
     "perimetre": "National",
     "armes": [
@@ -42854,7 +42854,7 @@
     "niveau": "regional",
     "niveau_raw": "Régional(e)",
     "numero": "4.0",
-    "intitule": "nan",
+    "intitule": "LA PLAINE-DES-PALMISTES",
     "lieu": "LA PLAINE-DES-PALMISTES",
     "perimetre": "Régional",
     "armes": [
@@ -42889,7 +42889,7 @@
     "niveau": "regional",
     "niveau_raw": "Régional(e)",
     "numero": "2.0",
-    "intitule": "nan",
+    "intitule": "BOURG-SAINT-ANDÉOL",
     "lieu": "BOURG-SAINT-ANDÉOL",
     "perimetre": "Challenge / Open",
     "armes": [
@@ -43385,7 +43385,7 @@
     "niveau": "national",
     "niveau_raw": "National(e)",
     "numero": "5.0",
-    "intitule": "nan",
+    "intitule": "L'AIGLE",
     "lieu": "L'AIGLE",
     "perimetre": "National",
     "armes": [
@@ -43479,7 +43479,7 @@
     "niveau": "international",
     "niveau_raw": "International(e)",
     "numero": "6.0",
-    "intitule": "nan",
+    "intitule": "ISTANBUL",
     "lieu": "ISTANBUL",
     "perimetre": "Internationale",
     "armes": [
@@ -43507,7 +43507,7 @@
     "niveau": "international",
     "niveau_raw": "International(e)",
     "numero": "3.0",
-    "intitule": "nan",
+    "intitule": "SEOUL",
     "lieu": "SEOUL",
     "perimetre": "Internationale",
     "armes": [
@@ -44656,7 +44656,7 @@
     "niveau": "departemental",
     "niveau_raw": "Départemental(e)",
     "numero": "nan",
-    "intitule": "nan",
+    "intitule": "VILLENEUVE-SUR-LOT",
     "lieu": "VILLENEUVE-SUR-LOT",
     "perimetre": "Départementale",
     "armes": [
@@ -45006,7 +45006,7 @@
     "niveau": "national",
     "niveau_raw": "National(e)",
     "numero": "5.0",
-    "intitule": "nan",
+    "intitule": "POITIERS",
     "lieu": "POITIERS",
     "perimetre": "National",
     "armes": [
@@ -45067,7 +45067,7 @@
     "niveau": "international",
     "niveau_raw": "International(e)",
     "numero": "6.0",
-    "intitule": "nan",
+    "intitule": "MEDELLIN",
     "lieu": "MEDELLIN",
     "perimetre": "Internationale",
     "armes": [
@@ -45655,7 +45655,7 @@
     "niveau": "national",
     "niveau_raw": "National(e)",
     "numero": "5.0",
-    "intitule": "nan",
+    "intitule": "LISIEUX",
     "lieu": "LISIEUX",
     "perimetre": "National",
     "armes": [
@@ -45823,7 +45823,7 @@
     "niveau": "international",
     "niveau_raw": "International(e)",
     "numero": "7.0",
-    "intitule": "nan",
+    "intitule": "SHANGHAI",
     "lieu": "SHANGHAI",
     "perimetre": "Internationale",
     "armes": [
@@ -46259,7 +46259,7 @@
     "niveau": "departemental",
     "niveau_raw": "Départemental(e)",
     "numero": "nan",
-    "intitule": "nan",
+    "intitule": "AGDE",
     "lieu": "AGDE",
     "perimetre": "Challenge / Open",
     "armes": [
@@ -46289,7 +46289,7 @@
     "niveau": "regional",
     "niveau_raw": "Régional(e)",
     "numero": "3.0",
-    "intitule": "nan",
+    "intitule": "PARIS",
     "lieu": "PARIS",
     "perimetre": "Régional",
     "armes": [
@@ -46379,7 +46379,7 @@
     "niveau": "regional",
     "niveau_raw": "Régional(e)",
     "numero": "2.0",
-    "intitule": "nan",
+    "intitule": "PARIS",
     "lieu": "PARIS",
     "perimetre": "Régional",
     "armes": [
@@ -46560,7 +46560,7 @@
     "niveau": "departemental",
     "niveau_raw": "Départemental(e)",
     "numero": "nan",
-    "intitule": "nan",
+    "intitule": "AGDE",
     "lieu": "AGDE",
     "perimetre": "Challenge / Open",
     "armes": [
@@ -46800,7 +46800,7 @@
     "niveau": "international",
     "niveau_raw": "International(e)",
     "numero": "7.0",
-    "intitule": "nan",
+    "intitule": "SAINT-MAUR-DES-FOSSÉS",
     "lieu": "SAINT-MAUR-DES-FOSSÉS",
     "perimetre": "Internationale",
     "armes": [
@@ -46828,7 +46828,7 @@
     "niveau": "international",
     "niveau_raw": "International(e)",
     "numero": "nan",
-    "intitule": "nan",
+    "intitule": "BERNE",
     "lieu": "BERNE",
     "perimetre": "Internationale",
     "armes": [
@@ -46856,7 +46856,7 @@
     "niveau": "international",
     "niveau_raw": "International(e)",
     "numero": "nan",
-    "intitule": "nan",
+    "intitule": "LIMA",
     "lieu": "LIMA",
     "perimetre": "Internationale",
     "armes": [
@@ -46884,7 +46884,7 @@
     "niveau": "international",
     "niveau_raw": "International(e)",
     "numero": "nan",
-    "intitule": "nan",
+    "intitule": "LE CAIRE",
     "lieu": "LE CAIRE",
     "perimetre": "Internationale",
     "armes": [
@@ -47492,7 +47492,7 @@
     "niveau": "regional",
     "niveau_raw": "Régional(e)",
     "numero": "3.0",
-    "intitule": "nan",
+    "intitule": "DRAGUIGNAN",
     "lieu": "DRAGUIGNAN",
     "perimetre": "Challenge / Open",
     "armes": [
@@ -48783,7 +48783,7 @@
     "niveau": "departemental",
     "niveau_raw": "Départemental(e)",
     "numero": "nan",
-    "intitule": "nan",
+    "intitule": "—",
     "lieu": "nan",
     "perimetre": "Événement",
     "armes": [
@@ -48811,7 +48811,7 @@
     "niveau": "departemental",
     "niveau_raw": "Départemental(e)",
     "numero": "nan",
-    "intitule": "nan",
+    "intitule": "SAINT-GAUDENS",
     "lieu": "SAINT-GAUDENS",
     "perimetre": "Challenge / Open",
     "armes": [
@@ -49094,7 +49094,7 @@
     "niveau": "regional",
     "niveau_raw": "Régional(e)",
     "numero": "4.0",
-    "intitule": "nan",
+    "intitule": "BLAGNAC",
     "lieu": "BLAGNAC",
     "perimetre": "Challenge / Open",
     "armes": [
@@ -50015,7 +50015,7 @@
     "niveau": "national",
     "niveau_raw": "National(e)",
     "numero": "nan",
-    "intitule": "nan",
+    "intitule": "LILLE",
     "lieu": "LILLE",
     "perimetre": "Championnat de France",
     "armes": [
@@ -50448,7 +50448,7 @@
     "niveau": "national",
     "niveau_raw": "National(e)",
     "numero": "nan",
-    "intitule": "nan",
+    "intitule": "MONTARGIS",
     "lieu": "MONTARGIS",
     "perimetre": "Championnat de France",
     "armes": [

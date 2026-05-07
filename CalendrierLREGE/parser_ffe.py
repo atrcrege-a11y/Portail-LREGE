@@ -47,8 +47,9 @@ def parse_xlsx(filepath):
     for _, row in df.iterrows():
         d0 = parse_date(row.get('Date début compétition'))
         if not d0: continue
-        intitule = str(row.get('Intitulé','') or '').strip()
+        intitule_raw = str(row.get('Intitulé','') or '').strip()
         lieu = str(row.get('Lieu','') or '').strip()
+        intitule = intitule_raw if intitule_raw.lower() not in ('nan','') else lieu or '—'
         key = (d0, intitule.lower(), lieu.lower())
         arme, sexe = parse_arme(row.get('Arme/Sexe'))
         cats = [c.strip() for c in str(row.get('Catégorie','') or '').split(',') if c.strip()]
