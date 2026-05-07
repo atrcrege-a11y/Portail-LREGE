@@ -5,7 +5,7 @@ import os, sys, subprocess, threading, webbrowser, time, json, tempfile
 import urllib.request as urlreq
 from flask import Flask, render_template_string, jsonify
 
-VERSION_LOCALE = "3.12"
+VERSION_LOCALE = "3.13"
 VERSION_JSON_URL = "https://raw.githubusercontent.com/atrcrege-a11y/Portail-LREGE/main/version.json"
 
 app = Flask(__name__)
@@ -357,6 +357,7 @@ HTML_PORTAIL = """<!DOCTYPE html>
   <span><span class="dot-live"></span><span id="ts">&mdash;</span></span>
 </footer>
 <script>
+{% raw %}
 const TYPES = {selecge:"web",synesc:"web",escritools:"tkinter",calendrier:"web",selecmaster:"web"};
 const PORTS = {selecge:5001,synesc:5002,calendrier:5003,selecmaster:5004};
 
@@ -433,6 +434,7 @@ setTimeout(verifierMaj, 4000);
 window.addEventListener('beforeunload', function() {
   navigator.sendBeacon('/api/arreter-tout');
 });
+{% endraw %}
 </script>
 </body>
 </html>"""
