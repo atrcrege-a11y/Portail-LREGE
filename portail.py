@@ -5,7 +5,7 @@ import os, sys, subprocess, threading, webbrowser, time, json, tempfile
 import urllib.request as urlreq
 from flask import Flask, render_template_string, jsonify
 
-VERSION_LOCALE = "3.14"
+VERSION_LOCALE = "3.15"
 VERSION_JSON_URL = "https://raw.githubusercontent.com/atrcrege-a11y/Portail-LREGE/main/version.json"
 
 app = Flask(__name__)
@@ -179,13 +179,13 @@ def installer_dependances():
 def _watchdog():
     """Tue automatiquement un outil si son onglet est fermé (heartbeat absent > 10s)."""
     while True:
-        time.sleep(5)
+        time.sleep(3)
         maintenant = time.time()
         for oid in list(_processus.keys()):
             if not outil_en_cours(oid):
                 continue
             derniere = _derniere_activite.get(oid)
-            if derniere is not None and (maintenant - derniere) > 10:
+            if derniere is not None and (maintenant - derniere) > 6:
                 print(f"[WATCHDOG] {oid} inactif depuis >10s — arrêt automatique")
                 _tuer_processus(oid)
                 _derniere_activite.pop(oid, None)
@@ -257,11 +257,19 @@ def installer_maj():
     return jsonify({"ok": True, "message": "Telechargement lance"})
 
 
-@app.route("/api/heartbeat/<outil_id>", methods=["POST"])
+@app.route("/api/heartbeat/<outil_id>", methods=["POST", "OPTIONS"])
 def heartbeat(outil_id):
+    from flask import make_response
+    if request.method == "OPTIONS":
+        r = make_response()
+        r.headers["Access-Control-Allow-Origin"] = "*"
+        r.headers["Access-Control-Allow-Methods"] = "POST"
+        return r
     if outil_id in OUTILS:
         _derniere_activite[outil_id] = time.time()
-    return jsonify({"ok": True})
+    resp = make_response(jsonify({"ok": True}))
+    resp.headers["Access-Control-Allow-Origin"] = "*"
+    return resp
 
 
 @app.route("/api/arreter/<outil_id>", methods=["POST"])

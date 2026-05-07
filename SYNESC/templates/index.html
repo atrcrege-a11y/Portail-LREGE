@@ -1714,7 +1714,7 @@ function toast(msg, type = 'info') {
     fetch(PORTAIL + "/api/heartbeat/" + OID, {method:"POST", keepalive:true}).catch(function(){});
   }
   ping();
-  setInterval(ping, 5000);
+  setInterval(ping, 3000);
 })();
 </script>
 </body>
