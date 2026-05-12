@@ -25,6 +25,13 @@ def date_avec_jour(d):
         dt = datetime.date(int(a), int(m), int(j))
         return f"{JOURS_SEMAINE[dt.weekday()]} {d}"
     except Exception:
+        pass
+    try:
+        # Format ISO : 2026-05-16
+        a, m, j = d.split("-")
+        dt = datetime.date(int(a), int(m), int(j))
+        return f"{JOURS_SEMAINE[dt.weekday()]} {j.zfill(2)}.{m.zfill(2)}.{a}"
+    except Exception:
         return d
 
 
