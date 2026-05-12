@@ -3,7 +3,7 @@
 
 import os, sys, subprocess, threading, webbrowser, time, json, tempfile
 import urllib.request as urlreq
-from flask import Flask, render_template_string, jsonify
+from flask import Flask, render_template_string, jsonify, request, make_response
 
 VERSION_LOCALE = "3.15"
 VERSION_JSON_URL = "https://raw.githubusercontent.com/atrcrege-a11y/Portail-LREGE/main/version.json"
@@ -259,7 +259,6 @@ def installer_maj():
 
 @app.route("/api/heartbeat/<outil_id>", methods=["POST", "OPTIONS"])
 def heartbeat(outil_id):
-    from flask import make_response
     if request.method == "OPTIONS":
         r = make_response()
         r.headers["Access-Control-Allow-Origin"] = "*"
