@@ -905,8 +905,58 @@ def _generer_corps_mail(titre_long, lieu, comp_type, fichiers_list,
         total_equipes = sum(1 for cats in groupes_equipe.get(date_str,{}).values()
                             for v in cats.values()
                             if v.get("tireurs_H",0)+v.get("tireurs_D",0)+v.get("tireurs_MX",0)>0)
-        besoin = (0 if total_tireurs<4 else (1 if total_tireurs<=8 else 2)) + \
-                 (0 if total_equipes==0 else (1 if total_equipes<=2 else (2 if total_equipes<=4 else 3)))
+
+        if comp_type == "lorraine" and horaires_idx:
+            # Besoin = nb poules du créneau du matin, par arme
+            # Grouper par arme → par appel → prendre le plus tôt → sommer les poules
+            import math as _math
+
+            def _nb_poules(n):
+                if n < 2: return 0
+                if n <= 9: return 1
+                return _math.ceil(n / 7)
+
+            besoin_par_arme = {}
+            cats_jour = groupes_indiv.get(date_str, {})
+            # Regrouper par arme
+            armes_cats = {}
+            for cat_key, clubs in cats_jour.items():
+                arme = cat_key.split("|")[1] if "|" in cat_key else ""
+                armes_cats.setdefault(arme, {})[cat_key] = clubs
+
+            for arme_code, cats_arme in armes_cats.items():
+                # Trouver l'horaire d'appel le plus tôt pour cette arme
+                appels = {}
+                for cat_key in cats_arme:
+                    cat_base = cat_key.split("|")[0]
+                    h = horaires_idx.get((f"{cat_base.upper()}|{arme_code}", _date_key(_daj(date_str))))
+                    if h and h.get("appel"):
+                        appels.setdefault(h["appel"], []).append(cat_key)
+                if not appels:
+                    besoin_par_arme[arme_code] = 0
+                    continue
+                # Trier les appels (format "9h30", "14h00")
+                def _heure_en_min(s):
+                    try:
+                        s = s.lower().replace("h",":")
+                        parts = s.split(":")
+                        return int(parts[0])*60 + (int(parts[1]) if len(parts)>1 and parts[1] else 0)
+                    except: return 9999
+                premier_appel = min(appels.keys(), key=_heure_en_min)
+                cats_matin = appels[premier_appel]
+                # Sommer les poules de ces catégories
+                total_poules = 0
+                for cat_key in cats_matin:
+                    clubs = cats_arme[cat_key]
+                    nb_h = sum(v.get("H",0) for v in clubs.values())
+                    nb_d = sum(v.get("D",0) for v in clubs.values())
+                    total_poules += _nb_poules(nb_h) + _nb_poules(nb_d)
+                besoin_par_arme[arme_code] = total_poules
+
+            besoin = sum(besoin_par_arme.values())
+        else:
+            besoin = (0 if total_tireurs<4 else (1 if total_tireurs<=8 else 2)) + \
+                     (0 if total_equipes==0 else (1 if total_equipes<=2 else (2 if total_equipes<=4 else 3)))
         lignes.append(f"ARBITRES INSCRITS — {nb_arb}")
         lignes.append(f"BESOIN ESTIMÉ — {besoin}")
         if nb_arb >= besoin:
