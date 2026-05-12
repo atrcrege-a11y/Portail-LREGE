@@ -818,11 +818,7 @@ def _generer_corps_mail(titre_long, lieu, comp_type, fichiers_list,
                 def _heure_lorraine(cat_base, arme_code, date_str):
                     """Retourne la proposition horaire pour cat+arme à date_str."""
                     date_lbl = _date_key(_daj(date_str))
-                    k_search = f"{cat_base.upper()}|{arme_code}"
-                    app.logger.debug(f"[HEURE] k={k_search!r} bytes={[hex(ord(c)) for c in k_search]} date={date_lbl!r} bytes={[hex(ord(c)) for c in date_lbl]}")
-                    k_idx_sample = list(horaires_idx.keys())[0] if horaires_idx else None
-                    if k_idx_sample:
-                        app.logger.debug(f"[HEURE] idx_sample k={k_idx_sample[0]!r} bytes={[hex(ord(c)) for c in k_idx_sample[0]]} date={k_idx_sample[1]!r} bytes={[hex(ord(c)) for c in k_idx_sample[1]]}")
+                    app.logger.debug(f"[HEURE] cherche ({cat_base.upper()}|{arme_code}, {date_lbl}) dans {list(horaires_idx.keys())[:3]}")
                     # Essayer les deux formes : "M11|F" et "M11"
                     for k in [f"{cat_base.upper()}|{arme_code}", cat_base.upper()]:
                         h = horaires_idx.get((k, date_lbl))
