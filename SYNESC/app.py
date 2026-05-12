@@ -784,6 +784,24 @@ def _generer_corps_mail(titre_long, lieu, comp_type, fichiers_list,
 
     SEP = "─" * 50
 
+    # Pré-calcul index horaires (Lorraine uniquement)
+    def _date_key(d):
+        """Retourne 'samedi 16.05' depuis 'samedi 16.05.2026' ou '16.05.2026'."""
+        parts = d.strip().lower().split()
+        for p in parts:
+            segs = p.split(".")
+            if len(segs) >= 2 and segs[0].isdigit() and segs[1].isdigit():
+                return f"{parts[0]} {segs[0].zfill(2)}.{segs[1].zfill(2)}" if len(parts) > 1 else f"{segs[0].zfill(2)}.{segs[1].zfill(2)}"
+        return d.strip().lower()
+
+    horaires_idx = {}
+    if comp_type == "lorraine" and programme_data:
+        for h in programme_data.get("categories", []):
+            k = (h.get("cat", "").strip().upper(),
+                 _date_key(h.get("date", "")))
+            horaires_idx[k] = h
+        app.logger.debug(f"[HORAIRES] {len(horaires_idx)} entrées : {list(horaires_idx.keys())}")
+
     lignes = []
     lignes.append("Bonjour,")
     lignes.append("")
@@ -797,29 +815,10 @@ def _generer_corps_mail(titre_long, lieu, comp_type, fichiers_list,
         cats_indiv = groupes_indiv.get(date_str, {})
         if cats_indiv:
             if comp_type == "lorraine":
-                # Index horaires depuis le programme PDF si chargé
-                # Clé date : "samedi 16.05" (sans année) — robuste aux fautes d'année dans les PDFs
-                # {(cat_norm, "jour DD.MM"): {appel, scratch, debut}}
-                def _date_key(d):
-                    """Retourne 'samedi 16.05' depuis 'samedi 16.05.2026' ou '16.05.2026'."""
-                    parts = d.strip().lower().split()
-                    # Extraire la partie DD.MM depuis le dernier token numérique
-                    for p in parts:
-                        segs = p.split(".")
-                        if len(segs) >= 2 and segs[0].isdigit() and segs[1].isdigit():
-                            return f"{parts[0]} {segs[0].zfill(2)}.{segs[1].zfill(2)}" if parts[0] not in ('',) else f"{segs[0].zfill(2)}.{segs[1].zfill(2)}"
-                    return d.strip().lower()
-
-                horaires_idx = {}
-                if programme_data:
-                    for h in programme_data.get("categories", []):
-                        k = (h.get("cat","").strip().upper(),
-                             _date_key(h.get("date","")))
-                        horaires_idx[k] = h
-
                 def _heure_lorraine(cat_base, arme_code, date_str):
                     """Retourne la proposition horaire pour cat+arme à date_str."""
                     date_lbl = _date_key(_daj(date_str))
+                    app.logger.debug(f"[HEURE] cherche ({cat_base.upper()}|{arme_code}, {date_lbl}) dans {list(horaires_idx.keys())[:3]}")
                     # Essayer les deux formes : "M11|F" et "M11"
                     for k in [f"{cat_base.upper()}|{arme_code}", cat_base.upper()]:
                         h = horaires_idx.get((k, date_lbl))
