@@ -699,6 +699,44 @@ def clear_programme():
 
 
 
+def _formule_poules(n):
+    """
+    Retourne une string décrivant la formule poules + tableau pour n tireurs.
+    Règle FFE : poules de 7 ou 6 (poule unique de 8 ou 9 tolérée en cas particulier).
+    Retourne '' si n < 2.
+    """
+    if n < 2:
+        return ""
+    import math
+
+    # Poule unique si effectif ≤ 9
+    if n <= 9:
+        t = 1
+        while t < n:
+            t *= 2
+        return f"  📊 1 poule de {n} → T{t}"
+
+    nb_poules = math.ceil(n / 7)
+    nb_7 = max(0, n - 6 * nb_poules)
+    nb_6 = nb_poules - nb_7
+
+    if nb_7 == 0:
+        poules_str = f"{nb_poules} poule{'s' if nb_poules > 1 else ''} de 6"
+    elif nb_6 == 0:
+        poules_str = f"{nb_poules} poule{'s' if nb_poules > 1 else ''} de 7"
+    else:
+        poules_str = f"{nb_poules} poules ({nb_6}×6 + {nb_7}×7)"
+
+    t = 1
+    while t < n:
+        t *= 2
+    return f"  📊 {poules_str} → T{t}"
+
+
+# Catégories sans tour de poules (tableau direct)
+_CATS_TABLEAU_DIRECT = {"M9", "M11"}
+
+
 def _generer_corps_mail(titre_long, lieu, comp_type, fichiers_list,
                         arbitres_statuts=None, programme_data=None):
     """
@@ -760,27 +798,41 @@ def _generer_corps_mail(titre_long, lieu, comp_type, fichiers_list,
         if cats_indiv:
             if comp_type == "lorraine":
                 # Index horaires depuis le programme PDF si chargé
-                # {(cat_norm, date_norm): {appel, scratch, debut}}
+                # Clé date : "samedi 16.05" (sans année) — robuste aux fautes d'année dans les PDFs
+                # {(cat_norm, "jour DD.MM"): {appel, scratch, debut}}
+                def _date_key(d):
+                    """Retourne 'samedi 16.05' depuis 'samedi 16.05.2026' ou '16.05.2026'."""
+                    parts = d.strip().lower().split()
+                    # Extraire la partie DD.MM depuis le dernier token numérique
+                    for p in parts:
+                        segs = p.split(".")
+                        if len(segs) >= 2 and segs[0].isdigit() and segs[1].isdigit():
+                            return f"{parts[0]} {segs[0].zfill(2)}.{segs[1].zfill(2)}" if parts[0] not in ('',) else f"{segs[0].zfill(2)}.{segs[1].zfill(2)}"
+                    return d.strip().lower()
+
                 horaires_idx = {}
                 if programme_data:
                     for h in programme_data.get("categories", []):
                         k = (h.get("cat","").strip().upper(),
-                             h.get("date","").strip().lower())
+                             _date_key(h.get("date","")))
                         horaires_idx[k] = h
 
                 def _heure_lorraine(cat_base, arme_code, date_str):
                     """Retourne la proposition horaire pour cat+arme à date_str."""
-                    date_lbl = _daj(date_str).lower()
+                    date_lbl = _date_key(_daj(date_str))
                     # Essayer les deux formes : "M11|F" et "M11"
                     for k in [f"{cat_base.upper()}|{arme_code}", cat_base.upper()]:
                         h = horaires_idx.get((k, date_lbl))
                         if h:
-                            appel = h.get("appel","")
-                            debut = h.get("debut","")
-                            if appel and debut:
-                                return f"  ⏰ Appel {appel} — Début {debut}"
-                            elif debut:
-                                return f"  ⏰ Début {debut}"
+                            appel   = h.get("appel","")
+                            scratch = h.get("scratch","")
+                            debut   = h.get("debut","")
+                            parts = []
+                            if appel:   parts.append(f"Appel {appel}")
+                            if scratch: parts.append(f"Scratch {scratch}")
+                            if debut:   parts.append(f"Début {debut}")
+                            if parts:
+                                return f"  ⏰ {' — '.join(parts)}"
                     return ""
 
                 armes_presentes = {}
@@ -795,19 +847,36 @@ def _generer_corps_mail(titre_long, lieu, comp_type, fichiers_list,
                         nb_h = sum(v.get("H",0) for v in clubs.values())
                         nb_d = sum(v.get("D",0) for v in clubs.values())
                         lbl = CAT_LBL_I.get(cat_base, cat_base)
-                        if nb_h: lignes.append(f"  • {lbl} H — {nb_h} tireur(s)")
-                        if nb_d: lignes.append(f"  • {lbl} D — {nb_d} tireur(s)")
+                        if nb_h:
+                            lignes.append(f"  • {lbl} H — {nb_h} tireur(s)")
+                            if cat_base not in _CATS_TABLEAU_DIRECT:
+                                f_line = _formule_poules(nb_h)
+                                if f_line: lignes.append(f_line)
+                        if nb_d:
+                            lignes.append(f"  • {lbl} D — {nb_d} tireur(s)")
+                            if cat_base not in _CATS_TABLEAU_DIRECT:
+                                f_line = _formule_poules(nb_d)
+                                if f_line: lignes.append(f_line)
                         h_line = _heure_lorraine(cat_base, arme_code, date_str)
                         if h_line: lignes.append(h_line)
                     lignes.append("")
             else:
                 lignes.append("ÉPREUVES INDIVIDUELLES")
                 for cat, clubs in cats_indiv.items():
+                    cat_base = cat.split("|")[0] if "|" in cat else cat
                     nb_h = sum(v.get("H",0) for v in clubs.values())
                     nb_d = sum(v.get("D",0) for v in clubs.values())
                     lbl  = CAT_LBL_I.get(cat, cat)
-                    if nb_h: lignes.append(f"  • {lbl} H — {nb_h} tireur(s)")
-                    if nb_d: lignes.append(f"  • {lbl} D — {nb_d} tireur(s)")
+                    if nb_h:
+                        lignes.append(f"  • {lbl} H — {nb_h} tireur(s)")
+                        if cat_base not in _CATS_TABLEAU_DIRECT:
+                            f_line = _formule_poules(nb_h)
+                            if f_line: lignes.append(f_line)
+                    if nb_d:
+                        lignes.append(f"  • {lbl} D — {nb_d} tireur(s)")
+                        if cat_base not in _CATS_TABLEAU_DIRECT:
+                            f_line = _formule_poules(nb_d)
+                            if f_line: lignes.append(f_line)
                 lignes.append("")
 
         cats_equipe = groupes_equipe.get(date_str, {})
