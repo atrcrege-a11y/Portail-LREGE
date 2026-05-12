@@ -4,10 +4,20 @@ Constantes partagées entre toutes les compétitions.
 """
 
 APP_NAME         = "SYNESC"
-APP_VERSION      = "2.4.3"
-APP_RELEASE_DATE = "2026-04-05"
+APP_VERSION      = "2.4.4"
+APP_RELEASE_DATE = "2026-05-12"
 
 CHANGELOG = [
+    {
+        "version": "2.4.4",
+        "date": "2026-05-12",
+        "label": "Extranet Lorraine par arme",
+        "notes": [
+            "Lorraine : feuilles Extranet séparées par arme (Extranet Fleuret / Épée / Sabre)",
+            "Remplace l'ancienne feuille 'Indiv Extranet' unique avec bandeau par arme",
+            "Seules les armes présentes dans les fichiers chargés génèrent une feuille",
+        ],
+    },
     {
         "version": "2.4.3",
         "date": "2026-04-05",

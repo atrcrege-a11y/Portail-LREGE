@@ -126,14 +126,23 @@ class Lorraine(CompetitionBase):
                 dates_ordonnees, arme_code,
             )
 
-        # 3. Extranet Indiv (toutes armes confondues)
-        ws_ext = wb.create_sheet("Indiv Extranet")
-        feuille_extranet(
-            ws_ext, fichiers_list,
-            self.CATS_EXTRANET_INDIV, self.CAT_LABEL_INDIV,
-            cat_map=self.CAT_MAP_INDIV,
-            is_equipe=False,
-        )
+        # 3. Extranet Indiv — une feuille par arme
+        for arme_code in ARME_ORDER:
+            fichiers_arme = [
+                (m, t, a) for m, t, a in fichiers_list
+                if m.get("arme", "?") == arme_code and m.get("type") != "E"
+            ]
+            if not fichiers_arme:
+                continue
+            nom_ext = f"Extranet {ARME_LABEL[arme_code]}"
+            ws_ext = wb.create_sheet(nom_ext)
+            feuille_extranet(
+                ws_ext, fichiers_arme,
+                self.CATS_EXTRANET_INDIV, self.CAT_LABEL_INDIV,
+                cat_map=self.CAT_MAP_INDIV,
+                is_equipe=False,
+                par_arme=False,
+            )
 
         # Déplacer Arbitres et Récap en fin de classeur
         n = len(wb.sheetnames)
