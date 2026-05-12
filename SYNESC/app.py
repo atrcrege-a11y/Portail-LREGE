@@ -733,8 +733,8 @@ def _formule_poules(n):
     return f"  📊 {poules_str} → T{t}"
 
 
-# Catégories sans tour de poules (tableau direct)
-_CATS_TABLEAU_DIRECT = {"M9", "M11"}
+# Toutes les catégories ont un tour de poules (y compris M9 et M11)
+_CATS_TABLEAU_DIRECT = set()
 
 
 def _generer_corps_mail(titre_long, lieu, comp_type, fichiers_list,
@@ -800,7 +800,6 @@ def _generer_corps_mail(titre_long, lieu, comp_type, fichiers_list,
             k = (h.get("cat", "").strip().upper(),
                  _date_key(h.get("date", "")))
             horaires_idx[k] = h
-        app.logger.debug(f"[HORAIRES] {len(horaires_idx)} entrées : {list(horaires_idx.keys())}")
 
     lignes = []
     lignes.append("Bonjour,")
@@ -818,11 +817,6 @@ def _generer_corps_mail(titre_long, lieu, comp_type, fichiers_list,
                 def _heure_lorraine(cat_base, arme_code, date_str):
                     """Retourne la proposition horaire pour cat+arme à date_str."""
                     date_lbl = _date_key(_daj(date_str))
-                    k_search = f"{cat_base.upper()}|{arme_code}"
-                    app.logger.debug(f"[HEURE] k={k_search!r} bytes={[hex(ord(c)) for c in k_search]} date={date_lbl!r} bytes={[hex(ord(c)) for c in date_lbl]}")
-                    k_idx_sample = list(horaires_idx.keys())[0] if horaires_idx else None
-                    if k_idx_sample:
-                        app.logger.debug(f"[HEURE] idx_sample k={k_idx_sample[0]!r} bytes={[hex(ord(c)) for c in k_idx_sample[0]]} date={k_idx_sample[1]!r} bytes={[hex(ord(c)) for c in k_idx_sample[1]]}")
                     # Essayer les deux formes : "M11|F" et "M11"
                     for k in [f"{cat_base.upper()}|{arme_code}", cat_base.upper()]:
                         h = horaires_idx.get((k, date_lbl))
@@ -838,6 +832,8 @@ def _generer_corps_mail(titre_long, lieu, comp_type, fichiers_list,
                                 return f"  ⏰ {' — '.join(parts)}"
                     return ""
 
+                CAT_ORDER = ["M9", "M11", "M13", "M15", "M17", "M20", "Seniors", "Vétérans"]
+
                 armes_presentes = {}
                 for cat_key, clubs in cats_indiv.items():
                     arme = cat_key.split("|")[1] if "|" in cat_key else ""
@@ -845,7 +841,10 @@ def _generer_corps_mail(titre_long, lieu, comp_type, fichiers_list,
                 for arme_code, cats_arme in sorted(armes_presentes.items()):
                     ARME_LBL = {"F": "── Fleuret ──", "E": "── Épée ──", "S": "── Sabre ──"}
                     lignes.append(f"ÉPREUVES INDIVIDUELLES {ARME_LBL.get(arme_code,'')}")
-                    for cat_key, clubs in cats_arme.items():
+                    cats_triees = sorted(cats_arme.items(),
+                        key=lambda x: CAT_ORDER.index(x[0].split("|")[0])
+                                      if x[0].split("|")[0] in CAT_ORDER else 99)
+                    for cat_key, clubs in cats_triees:
                         cat_base = cat_key.split("|")[0]
                         nb_h = sum(v.get("H",0) for v in clubs.values())
                         nb_d = sum(v.get("D",0) for v in clubs.values())
