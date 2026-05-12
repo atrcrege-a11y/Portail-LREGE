@@ -284,7 +284,12 @@ def upload_programme():
     def normaliser_cat(cat):
         """Normalise un libellé brut vers (cat_norm, arme_code).
         Ex: 'M11 Fleuret H/D' → ('M11', 'F')
-        Retourne une chaîne 'M11|F' si arme détectée, sinon juste 'M11'."""
+        Retourne une chaîne 'M11|F' si arme détectée, sinon juste 'M11'.
+        Retourne None pour les tournois loisir, handi, inauguration."""
+        cat_low = cat.strip().lower()
+        # Exclure les tournois non-officiels
+        if any(k in cat_low for k in ["loisir", "handi", "inaugur", "consolant", "convivial"]):
+            return None
         VET_MAP_ = {"V1":"Vétérans","V2":"Vétérans","V3":"Vétérans","V4":"Vétérans",
                     "V1/V2":"Vétérans","V3/V4":"Vétérans","Veteran":"Vétérans","Senior":"Seniors",
                     "Hommes":"Vétérans","Dames":"Vétérans","Hommes & Dames":"Vétérans"}
@@ -350,10 +355,16 @@ def upload_programme():
         return ""
 
     def detecter_lieu(text):
-        for line in text.splitlines():
-            l = line.strip()
-            if any(k in l.lower() for k in ["gymnase","complexe","salle","palais","halle","centre sportif"]):
-                return l
+        # Cherche d'abord les mots clés forts (gymnase, complexe, palais, halle, centre sportif)
+        # Puis en fallback les mots clés faibles (salle)
+        for keywords in (
+            ["gymnase", "complexe sportif", "palais des sports", "halle", "centre sportif", "espace sportif"],
+            ["salle d'armes", "salle des sports", "salle polyvalente"],
+        ):
+            for line in text.splitlines():
+                l = line.strip()
+                if any(k in l.lower() for k in keywords):
+                    return l
         return ""
 
     try:
@@ -444,9 +455,11 @@ def upload_programme():
 
                     if appels or debuts:
                         for ci, cat in cats_cols.items():
+                            cat_norm = normaliser_cat(cat)
+                            if not cat_norm: continue
                             eq = equipes.get(ci, "à l'issue des épreuves individuelles")
                             categories.append({
-                                "cat":          normaliser_cat(cat),
+                                "cat":          cat_norm,
                                 "date":         dates_cols.get(ci, date_globale),
                                 "appel":        appels.get(ci),
                                 "scratch":      scratchs.get(ci),
@@ -521,6 +534,7 @@ def upload_programme():
                         cat_raw = str(row[ci_cat] or "").strip().replace("\n", " ")
                         if not cat_raw or "arbitre" in cat_raw.lower(): continue
                         cat_norm = normaliser_cat(cat_raw)
+                        if not cat_norm: continue
                         categories.append({
                             "cat":          cat_norm,
                             "date":         date_tableau,
@@ -551,12 +565,13 @@ def upload_programme():
                 cat_m = CAT_LINE_RE.match(line)
                 if cat_m:
                     cat = cat_m.group(1)
-                    # Chercher les horaires dans les 3 lignes suivantes
+                    cat_norm = normaliser_cat(cat)
+                    if not cat_norm: continue
                     bloc = " ".join(lines[i:i+4])
                     bm = BLOC_RE.search(bloc)
                     if bm:
                         categories.append({
-                            "cat":          normaliser_cat(cat),
+                            "cat":          cat_norm,
                             "date":         date_globale,
                             "appel":        extraire_heure(bm.group(1)),
                             "scratch":      extraire_heure(bm.group(2)),
@@ -578,8 +593,10 @@ def upload_programme():
             for line in full_text.splitlines():
                 m = LINE_RE.search(line)
                 if m:
+                    cat_norm = normaliser_cat(m.group(1))
+                    if not cat_norm: continue
                     categories.append({
-                        "cat":          normaliser_cat(m.group(1)),
+                        "cat":          cat_norm,
                         "date":         date_globale,
                         "appel":        extraire_heure(m.group(2)),
                         "scratch":      extraire_heure(m.group(3)),
@@ -610,8 +627,9 @@ def upload_programme():
             _re.IGNORECASE
         )
 
-        annee_m = _re.search(r'\b(202\d)\b', full_text)
-        annee = annee_m.group(1) if annee_m else "2026"
+        # Prendre la plus grande année trouvée (évite de prendre 2024 si 2026 est présent)
+        toutes_annees = _re.findall(r'\b(202\d)\b', full_text)
+        annee = max(toutes_annees) if toutes_annees else "2026"
 
         categories_f4 = []
         current_date_f4 = date_globale or ""
@@ -681,7 +699,8 @@ def clear_programme():
 
 
 
-def _generer_corps_mail(titre_long, lieu, comp_type, fichiers_list, arbitres_statuts=None):
+def _generer_corps_mail(titre_long, lieu, comp_type, fichiers_list,
+                        arbitres_statuts=None, programme_data=None):
     """
     Génère le corps du mail (sujet, HTML, texte brut).
     Retourne (corps_html, sujet).
@@ -700,7 +719,7 @@ def _generer_corps_mail(titre_long, lieu, comp_type, fichiers_list, arbitres_sta
     (groupes_indiv, groupes_equipe, arbitres_all,
      _, _, plage_dates, dates_ordonnees) = construire_donnees(
         fichiers_list, comp_obj.CAT_MAP_INDIV, comp_obj.CAT_MAP_EQUIPE,
-        par_arme=(comp_type == "alsace"))
+        par_arme=(comp_type in ("alsace", "lorraine")))
 
     CAT_LBL_I = comp_obj.CAT_LABEL_INDIV
     CAT_LBL_E = comp_obj.CAT_LABEL_EQUIPE
@@ -740,6 +759,30 @@ def _generer_corps_mail(titre_long, lieu, comp_type, fichiers_list, arbitres_sta
         cats_indiv = groupes_indiv.get(date_str, {})
         if cats_indiv:
             if comp_type == "lorraine":
+                # Index horaires depuis le programme PDF si chargé
+                # {(cat_norm, date_norm): {appel, scratch, debut}}
+                horaires_idx = {}
+                if programme_data:
+                    for h in programme_data.get("categories", []):
+                        k = (h.get("cat","").strip().upper(),
+                             h.get("date","").strip().lower())
+                        horaires_idx[k] = h
+
+                def _heure_lorraine(cat_base, arme_code, date_str):
+                    """Retourne la proposition horaire pour cat+arme à date_str."""
+                    date_lbl = _daj(date_str).lower()
+                    # Essayer les deux formes : "M11|F" et "M11"
+                    for k in [f"{cat_base.upper()}|{arme_code}", cat_base.upper()]:
+                        h = horaires_idx.get((k, date_lbl))
+                        if h:
+                            appel = h.get("appel","")
+                            debut = h.get("debut","")
+                            if appel and debut:
+                                return f"  ⏰ Appel {appel} — Début {debut}"
+                            elif debut:
+                                return f"  ⏰ Début {debut}"
+                    return ""
+
                 armes_presentes = {}
                 for cat_key, clubs in cats_indiv.items():
                     arme = cat_key.split("|")[1] if "|" in cat_key else ""
@@ -754,6 +797,8 @@ def _generer_corps_mail(titre_long, lieu, comp_type, fichiers_list, arbitres_sta
                         lbl = CAT_LBL_I.get(cat_base, cat_base)
                         if nb_h: lignes.append(f"  • {lbl} H — {nb_h} tireur(s)")
                         if nb_d: lignes.append(f"  • {lbl} D — {nb_d} tireur(s)")
+                        h_line = _heure_lorraine(cat_base, arme_code, date_str)
+                        if h_line: lignes.append(h_line)
                     lignes.append("")
             else:
                 lignes.append("ÉPREUVES INDIVIDUELLES")
@@ -884,7 +929,8 @@ def _generer_corps_mail(titre_long, lieu, comp_type, fichiers_list, arbitres_sta
     # Rappels
     lignes += [SEP, "  RAPPELS", SEP, ""]
     lignes.append("• Tireurs absents : les engagements restent dus sauf motif valable.")
-    lignes.append('  Inscriptions hors délai majorées — <a href="https://tinyurl.com/hdlrege">https://tinyurl.com/hdlrege</a>')
+    if comp_type != "lorraine":
+        lignes.append('  Inscriptions hors délai majorées — <a href="https://tinyurl.com/hdlrege">https://tinyurl.com/hdlrege</a>')
     lignes.append('• Dérogations au niveau d\'arbitrage : contacter la Présidente de la CRA, Auxane Cholley — <a href="mailto:auxane.cholley@hotmail.fr">auxane.cholley@hotmail.fr</a>')
     lignes.append('• Fichiers résultats (*.cotcot, PDF, FFF) à transmettre à <a href="mailto:atrcrege@gmail.com">atrcrege@gmail.com</a>')
     lignes.append("")
@@ -934,6 +980,7 @@ def mail_body():
     corps_html, sujet, corps_txt_clean = _generer_corps_mail(
         titre_long=titre_long, lieu=lieu, comp_type=comp_type,
         fichiers_list=fichiers_list, arbitres_statuts=arbitres_statuts,
+        programme_data=session.get("programme"),
     )
     return jsonify({"sujet": sujet, "corps": corps_txt_clean, "corps_html": corps_html})
 
@@ -979,6 +1026,7 @@ def generate_mail():
         titre_long=titre_long, lieu=lieu, comp_type=comp_type,
         fichiers_list=fichiers_list,
         arbitres_statuts=session.get("arbitres_statuts"),
+        programme_data=session.get("programme"),
     )
 
     # Construire le .eml
