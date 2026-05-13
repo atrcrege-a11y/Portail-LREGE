@@ -486,17 +486,5 @@ function cacherErreur() {
   document.getElementById('msg-erreur-upload').style.display = 'none';
 }
 </script>
-<script>
-// Heartbeat -> portail (fermeture onglet = arret automatique)
-(function() {
-  var PORTAIL = "http://localhost:5000";
-  var OID = "selecmaster";
-  function ping() {
-    fetch(PORTAIL + "/api/heartbeat/" + OID, {method:"POST", keepalive:true}).catch(function(){});
-  }
-  ping();
-  setInterval(ping, 10000);
-})();
-</script>
 </body>
 </html>

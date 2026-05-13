@@ -58,15 +58,136 @@ def _parser_titre(titre):
     return arme, genre, categorie, territoire
 
 
+def _trouver_classement_competition(soup):
+    """
+    Cherche le div contenant le classement général dans un fichier résultat.
+    Retourne le tableau <table class='List'> avec colonne 'place', ou None.
+    """
+    for div in soup.find_all('div', class_='Round'):
+        h1 = div.find('h1')
+        if h1 and 'classement' in h1.get_text(strip=True).lower():
+            table = div.find('table', class_='List')
+            if table:
+                headers = [th.get_text(strip=True).lower() for th in table.find_all('th')]
+                if 'place' in headers:
+                    return table
+    return None
+
+
+def _detecter_format(soup):
+    """Retourne 'cumulatif' ou 'competition' selon le format BellePoule."""
+    if soup.find('table', id='TableClsst'):
+        return 'cumulatif'
+    if _trouver_classement_competition(soup):
+        return 'competition'
+    return 'cumulatif'  # fallback
+
+
+def _parser_titre_competition(soup):
+    """
+    Extrait arme, genre, catégorie depuis les <h1> du format compétition.
+    Ex: h1[0]="CDA Petites Catégories" h1[1]="15/03/2026" h1[2]="Sabre - Dames - M13"
+    """
+    h1s = [h.get_text(strip=True) for h in soup.find_all('h1')]
+    arme, genre, categorie, territoire = None, None, None, None
+
+    for h in h1s:
+        h_lower = h.lower()
+        # Arme
+        if 'sabre' in h_lower:   arme = 'Sabre'
+        if 'épée' in h_lower or 'epee' in h_lower: arme = 'Épée'
+        if 'fleuret' in h_lower: arme = 'Fleuret'
+        # Genre
+        if 'dames' in h_lower:   genre = 'D'
+        if 'hommes' in h_lower:  genre = 'H'
+        # Catégorie
+        if 'm13' in h_lower:     categorie = 'M13'
+        if 'm11' in h_lower:     categorie = 'M11'
+
+    # Territoire depuis colonne CID dans le tableau
+    return arme, genre, categorie
+
+
+def _parser_format_competition(soup):
+    """
+    Parse un fichier HTML résultat de compétition BellePoule (sabre Alsace).
+    Retourne les mêmes champs que parser_html() pour compatibilité totale.
+    """
+    arme, genre, categorie = _parser_titre_competition(soup)
+
+    table = _trouver_classement_competition(soup)
+    if not table:
+        raise ValueError("Tableau de classement introuvable (Classement général).")
+
+    rows = table.find_all('tr')
+
+    # Détecter territoire depuis la première ligne de données (colonne CID)
+    territoire = None
+    tireurs = []
+    vus = set()
+
+    for row in rows:
+        cells = [td.get_text(strip=True) for td in row.find_all('td')]
+        if not cells or not cells[0].isdigit():
+            continue
+
+        # place | nom | prénom | club | CID | région | nation
+        place  = int(cells[0])
+        nom    = cells[1] if len(cells) > 1 else ''
+        prenom = cells[2] if len(cells) > 2 else ''
+        club   = cells[3] if len(cells) > 3 else ''
+        cid    = cells[4] if len(cells) > 4 else ''
+
+        if not territoire and cid:
+            territoire = _detecter_territoire(cid)
+
+        # Dédupliquer (ex: ex-aequo en double dans certains exports)
+        cle = (place, nom.upper(), prenom.upper())
+        if cle not in vus:
+            vus.add(cle)
+            tireurs.append({
+                "place":           place,
+                "nom":             nom,
+                "prenom":          prenom,
+                "club":            club,
+                "annee_naissance": '',
+                "points_total":    0.0,
+                "participations":  1,
+                "resultats":       [],
+                "est_m11_dans_m13": False,
+            })
+
+    return {
+        "arme":              arme,
+        "genre":             genre,
+        "categorie":         categorie,
+        "territoire":        territoire,
+        "dates_competitions": [],
+        "nb_competitions":   1,
+        "tireurs":           tireurs,
+        "format":            "competition",
+    }
+
+
 def parser_html(contenu_bytes):
     """
     Parse un fichier HTML de classement BellePoule.
     Retourne un dict avec métadonnées + liste de tireurs.
     """
-    content = contenu_bytes.decode('latin-1')
+    # Essayer utf-8 puis latin-1
+    try:
+        content = contenu_bytes.decode('utf-8')
+    except UnicodeDecodeError:
+        content = contenu_bytes.decode('latin-1')
+
     soup = BeautifulSoup(content, 'html.parser')
 
-    # Titre
+    # Détecter le format et dispatcher
+    fmt = _detecter_format(soup)
+    if fmt == 'competition':
+        return _parser_format_competition(soup)
+
+    # Titre (format cumulatif)
     titre = soup.title.string if soup.title else ""
     arme, genre, categorie, territoire = _parser_titre(titre)
 
