@@ -1,5 +1,5 @@
 @echo off
 title Portail LREGE — CREGE Grand Est
 cd /d "%~dp0"
-python portail.py
+py -3.11 portail.py
 pause

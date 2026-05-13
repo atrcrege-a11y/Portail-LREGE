@@ -5,7 +5,7 @@ import os, sys, subprocess, threading, webbrowser, time, json, tempfile
 import urllib.request as urlreq
 from flask import Flask, render_template_string, jsonify, request, make_response
 
-VERSION_LOCALE = "4.8"
+VERSION_LOCALE = "4.9"
 VERSION_JSON_URL = "https://raw.githubusercontent.com/atrcrege-a11y/Portail-LREGE/main/version.json"
 
 app = Flask(__name__)
@@ -135,6 +135,11 @@ def _tuer_processus(oid):
 def _telecharger_et_installer(url, version):
     try:
         tmp = os.path.join(tempfile.gettempdir(), "PortailLREGE_Setup_v{}.exe".format(version))
+        if os.path.exists(tmp):
+            try:
+                os.remove(tmp)
+            except OSError:
+                tmp = os.path.join(tempfile.gettempdir(), "PortailLREGE_Setup_v{}_new.exe".format(version))
         urlreq.urlretrieve(url, tmp)
         # Arrêter tous les outils proprement
         for oid in list(_processus.keys()):
@@ -179,13 +184,13 @@ def installer_dependances():
 def _watchdog():
     """Tue automatiquement un outil si son onglet est fermé (heartbeat absent > 10s)."""
     while True:
-        time.sleep(3)
+        time.sleep(10)
         maintenant = time.time()
         for oid in list(_processus.keys()):
             if not outil_en_cours(oid):
                 continue
             derniere = _derniere_activite.get(oid)
-            if derniere is not None and (maintenant - derniere) > 6:
+            if derniere is not None and (maintenant - derniere) > 60:
                 print(f"[WATCHDOG] {oid} inactif depuis >10s — arrêt automatique")
                 _tuer_processus(oid)
                 _derniere_activite.pop(oid, None)

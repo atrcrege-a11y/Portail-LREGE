@@ -495,7 +495,7 @@ function cacherErreur() {
     fetch(PORTAIL + "/api/heartbeat/" + OID, {method:"POST", keepalive:true}).catch(function(){});
   }
   ping();
-  setInterval(ping, 3000);
+  setInterval(ping, 10000);
 })();
 </script>
 </body>
