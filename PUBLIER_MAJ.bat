@@ -45,6 +45,7 @@ if not exist "%EXE%" ( echo Fichier %EXE% introuvable. & pause & exit /b 1 )
 
 echo.
 echo --- Etape 4/6 : Sauvegarde GitHub ---
+git config gc.auto 0
 git add .
 git commit -m "Portail v%VERSION% - %DESC%"
 git push
