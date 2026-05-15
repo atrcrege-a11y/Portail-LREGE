@@ -1,0 +1,37 @@
+# ── Sorties générées ─────────────────────────────────────────────────
+sorties/
+
+# ── Python ───────────────────────────────────────────────────────────
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+.Python
+
+# ── Flask / uploads temporaires ──────────────────────────────────────
+instance/
+tmp*/
+uploads/
+*.tmp
+
+# ── Environnements virtuels ───────────────────────────────────────────
+venv/
+.venv/
+env/
+.env
+
+# ── IDE ───────────────────────────────────────────────────────────────
+.vscode/
+.idea/
+*.sublime-project
+*.sublime-workspace
+
+# ── OS ────────────────────────────────────────────────────────────────
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# ── Fichiers sensibles ────────────────────────────────────────────────
+config_selection.json
+*.key
+*.pem
