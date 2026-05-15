@@ -1,0 +1,3765 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SelecGE — Sélections CDF {{ saison }}</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap');
+
+:root {
+  --bleu-nuit:  #1a2744;
+  --bleu-ciel:  #2563a8;
+  --bleu-clair: #3b82c4;
+  --accent:     #e8a020;
+  --vert:       #22c55e;
+  --rouge:      #ef4444;
+  --bg:         #f0f4f9;
+  --surface:    #ffffff;
+  --surface2:   #e8eef5;
+  --border:     #c8d6e8;
+  --text:       #1a2744;
+  --text-muted: #5a6a84;
+  --radius:     10px;
+  --shadow:     0 2px 12px rgba(26,39,68,.10);
+  --shadow-lg:  0 8px 32px rgba(26,39,68,.15);
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  font-family: 'DM Sans', sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+/* ── HEADER ── */
+header {
+  background: var(--bleu-nuit);
+  padding: 0 32px;
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  height: 64px;
+  box-shadow: 0 2px 16px rgba(0,0,0,.25);
+  position: sticky; top: 0; z-index: 100;
+}
+.logo {
+  display: flex; align-items: center; gap: 12px;
+}
+.logo-badge {
+  width: 36px; height: 36px; border-radius: 8px;
+  background: var(--accent);
+  display: flex; align-items: center; justify-content: center;
+  font-weight: 700; font-size: 14px; color: var(--bleu-nuit);
+  letter-spacing: -.5px;
+}
+.logo-text { color: #fff; }
+.logo-text strong { display: block; font-size: 15px; font-weight: 600; }
+.logo-text span { font-size: 11px; opacity: .6; font-weight: 300; }
+.header-sep { flex: 1; }
+.header-status {
+  font-size: 12px; color: rgba(255,255,255,.5);
+  font-family: 'DM Mono', monospace;
+}
+
+/* ── LAYOUT ── */
+.layout {
+  display: grid;
+  grid-template-columns: 320px 1fr;
+  gap: 0;
+  flex: 1;
+  min-height: 0;
+  height: calc(100vh - 64px);
+}
+
+/* ── PANELS ── */
+.panel {
+  background: var(--surface);
+  border-right: 1px solid var(--border);
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+}
+.panel:last-child { border-right: none; }
+.panel-header {
+  padding: 20px 24px 16px;
+  border-bottom: 1px solid var(--border);
+  position: sticky; top: 0;
+  background: var(--surface);
+  z-index: 10;
+}
+.panel-header h2 {
+  font-size: 13px; font-weight: 600;
+  text-transform: uppercase; letter-spacing: .08em;
+  color: var(--bleu-nuit);
+}
+.panel-header p {
+  font-size: 12px; color: var(--text-muted); margin-top: 3px;
+}
+.panel-body { padding: 20px 24px; flex: 1; }
+
+/* ── CATÉGORIE CARD ── */
+ {
+  display: block;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: .4px;
+  margin-bottom: 5px;
+}
+/* ── Cartes discipline ── */
+.disc-cards {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 6px;
+}
+.disc-card {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 14px;
+  border: 2px solid var(--border);
+  border-radius: 10px;
+  cursor: pointer;
+  background: var(--surface);
+  transition: border-color .15s, background .15s;
+  user-select: none;
+}
+.disc-card:hover  { border-color: var(--bleu-ciel); background: var(--bg); }
+.disc-card.active { border-color: var(--bleu-nuit); background: var(--bg); }
+.disc-card.soon   { opacity: .55; cursor: default; pointer-events: none; }
+.disc-card .disc-icon { font-size: 22px; flex-shrink: 0; }
+.disc-card .disc-info { flex: 1; }
+.disc-card .disc-label { font-size: 13px; font-weight: 700; color: var(--bleu-nuit); line-height: 1.2; }
+.disc-card .disc-sub   { font-size: 11px; color: var(--text-muted); margin-top: 2px; }
+.disc-card .disc-badge {
+  font-size: 9px; font-weight: 700; padding: 2px 6px;
+  border-radius: 20px; background: var(--border); color: var(--text-muted);
+  text-transform: uppercase; letter-spacing: .3px;
+}
+.disc-card.active .disc-badge { background: var(--bleu-nuit); color: #fff; }
+
+.cascade-select {
+  width: 100%;
+  padding: 9px 12px;
+  border: 1.5px solid var(--border);
+  border-radius: 8px;
+  font-size: 13px;
+  font-family: inherit;
+  color: var(--text);
+  background: var(--surface);
+  cursor: pointer;
+  transition: border-color .15s;
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%236b7280' stroke-width='2'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 10px center;
+  padding-right: 32px;
+}
+.cascade-select:focus { outline: none; border-color: var(--bleu-ciel); }
+.cascade-select option { padding: 6px; }
+/* ── Boutons mode individuel/équipes ── */
+.mode-btn {
+  flex: 1; padding: 8px 6px; border: 1.5px solid var(--border);
+  border-radius: 8px; font-size: 12px; font-family: inherit;
+  font-weight: 600; cursor: pointer; background: var(--surface);
+  color: var(--text-muted); transition: all .15s;
+}
+.mode-btn:hover { border-color: var(--bleu-ciel); color: var(--bleu-ciel); }
+.mode-btn.active {
+  background: var(--bleu-ciel); border-color: var(--bleu-ciel);
+  color: #fff;
+}
+
+.hist-item {
+  display: flex; align-items: center; gap: 6px;
+  padding: 5px 8px; border-radius: 6px;
+  background: var(--bg); font-size: 11px; color: var(--text-muted);
+  cursor: pointer; transition: background .15s;
+}
+.hist-item:hover { background: var(--bleu-clair); color: var(--bleu-nuit); }
+.hist-dot { width:7px; height:7px; border-radius:50%; background:var(--vert); flex-shrink:0; }
+
+
+.cat-badge {
+  min-width: 48px; height: 26px;
+  border-radius: 6px;
+  background: var(--bleu-nuit);
+  color: #fff;
+  font-size: 11px; font-weight: 600;
+  display: flex; align-items: center; justify-content: center;
+  letter-spacing: .04em;
+}
+/* Bleu   */
+/* Vert   */
+/* Rouge  */
+/* Violet */
+/* Rouge foncé Master GE */
+
+
+/* ── FORMULAIRE CENTRAL ── */
+.form-section {
+  margin-bottom: 24px;
+}
+.form-section-title {
+  font-size: 11px; font-weight: 600;
+  text-transform: uppercase; letter-spacing: .08em;
+  color: var(--bleu-ciel);
+  margin-bottom: 12px;
+  padding-bottom: 6px;
+  border-bottom: 1px solid var(--border);
+}
+.field-row {
+  display: grid; grid-template-columns: 1fr 1fr; gap: 12px;
+  margin-bottom: 12px;
+}
+.field-row.single { grid-template-columns: 1fr; }
+.field-row.triple { grid-template-columns: 1fr 1fr 1fr; }
+.field {
+  display: flex; flex-direction: column; gap: 5px;
+}
+label {
+  font-size: 11px; font-weight: 500;
+  color: var(--text-muted); letter-spacing: .03em;
+}
+input[type="text"],
+input[type="number"],
+select {
+  padding: 9px 12px;
+  border: 1.5px solid var(--border);
+  border-radius: 7px;
+  font-size: 13px; font-family: 'DM Sans', sans-serif;
+  color: var(--text);
+  background: var(--surface);
+  transition: border-color .15s;
+  outline: none;
+}
+input:focus, select:focus {
+  border-color: var(--bleu-clair);
+  box-shadow: 0 0 0 3px rgba(59,130,196,.1);
+}
+
+/* ── UPLOAD ZONE ── */
+.upload-zone.mini {
+  min-height: 52px;
+  padding: 4px;
+  cursor: pointer;
+  border: 1.5px dashed var(--border);
+  border-radius: 8px;
+  transition: all .2s;
+  position: relative;
+}
+.upload-zone.mini:hover { border-color: var(--bleu-ciel); background: var(--bg); }
+.upload-zone.mini.loaded { border-color: var(--vert); border-style: solid; }
+.upload-zone.mini input[type="file"] {
+  position: absolute; inset: 0; opacity: 0; cursor: pointer; width: 100%; height: 100%;
+}
+.upload-zone {
+  border: 2px dashed var(--border);
+  border-radius: var(--radius);
+  padding: 16px;
+  text-align: center;
+  cursor: pointer;
+  transition: all .2s;
+  background: var(--bg);
+  position: relative;
+}
+.upload-zone:hover { border-color: var(--bleu-clair); background: #f0f5ff; }
+.upload-zone.drag-over { border-color: var(--bleu-ciel); background: #e8f0ff; }
+.upload-zone.loaded {
+  border-color: var(--vert); background: #f0fdf4;
+  border-style: solid;
+}
+.upload-zone input[type="file"] {
+  position: absolute; inset: 0; opacity: 0; cursor: pointer;
+}
+.upload-icon { font-size: 22px; margin-bottom: 4px; }
+.upload-label { font-size: 12px; font-weight: 500; color: var(--text-muted); }
+.upload-label strong { color: var(--bleu-ciel); }
+.upload-info { font-size: 11px; color: var(--text-muted); margin-top: 3px; }
+.upload-success {
+  font-size: 12px; font-weight: 500; color: #16a34a;
+}
+.upload-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.upload-pdf-zone {
+  border: 2px dashed var(--border);
+  border-radius: 8px;
+  padding: 10px 12px;
+  cursor: pointer;
+  text-align: center;
+  transition: border-color .15s, background .15s;
+  font-size: 12px;
+  color: var(--text-muted);
+  background: var(--surface);
+}
+.upload-pdf-zone:hover { border-color: var(--bleu-ciel); background: var(--bg); }
+.upload-pdf-zone.loaded { border-color: var(--vert); background: #f0fdf4; color: #166534; }
+.upload-pdf-zone .pdf-icon { font-size: 20px; margin-bottom: 4px; }
+
+/* ── TOGGLE ── */
+.toggle-row {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 10px 14px;
+  background: var(--bg); border-radius: 8px;
+  margin-bottom: 12px;
+}
+.toggle-label { font-size: 13px; font-weight: 500; }
+.toggle-sub { font-size: 11px; color: var(--text-muted); }
+.toggle {
+  position: relative; width: 40px; height: 22px;
+}
+.toggle input { opacity: 0; width: 0; height: 0; }
+.toggle-slider {
+  position: absolute; inset: 0;
+  background: var(--border); border-radius: 22px;
+  cursor: pointer; transition: background .2s;
+}
+.toggle-slider::before {
+  content: ''; position: absolute;
+  width: 16px; height: 16px; border-radius: 50%;
+  background: #fff; left: 3px; top: 3px;
+  transition: transform .2s;
+  box-shadow: 0 1px 4px rgba(0,0,0,.2);
+}
+.toggle input:checked + .toggle-slider { background: var(--bleu-ciel); }
+.toggle input:checked + .toggle-slider::before { transform: translateX(18px); }
+
+/* ── BOUTONS ── */
+.btn {
+  padding: 10px 20px;
+  border-radius: 8px; border: none;
+  font-size: 13px; font-weight: 600;
+  cursor: pointer; transition: all .15s;
+  font-family: 'DM Sans', sans-serif;
+  display: inline-flex; align-items: center; gap: 7px;
+}
+.btn-primary {
+  background: var(--bleu-ciel); color: #fff;
+}
+.btn-primary:hover { background: var(--bleu-nuit); }
+.btn-primary:disabled { background: var(--border); color: var(--text-muted); cursor: not-allowed; }
+.btn-secondary {
+  background: var(--bg); color: var(--bleu-ciel);
+  border: 1.5px solid var(--border);
+}
+.btn-secondary:hover { background: var(--surface2); border-color: var(--bleu-clair); }
+
+
+.btn-row {
+  display: flex; gap: 10px; margin-top: 20px;
+}
+
+/* ── APERÇU ── */
+.apercu-panel { background: var(--surface); }
+.apercu-empty {
+  padding: 40px 24px;
+  text-align: center;
+  color: var(--text-muted);
+}
+.apercu-empty .icon { font-size: 36px; margin-bottom: 12px; opacity: .4; }
+.apercu-empty p { font-size: 13px; }
+
+.section-block { margin-bottom: 20px; }
+.section-title {
+  font-size: 11px; font-weight: 600;
+  text-transform: uppercase; letter-spacing: .06em;
+  color: var(--bleu-ciel);
+  padding: 8px 12px;
+  background: #eef4ff;
+  border-radius: 6px;
+  margin-bottom: 8px;
+  display: flex; align-items: center; justify-content: space-between;
+}
+.section-count {
+  background: var(--bleu-ciel); color: #fff;
+  font-size: 10px; padding: 2px 7px; border-radius: 10px;
+  font-weight: 700;
+}
+.tireur-row {
+  display: grid;
+  grid-template-columns: 90px 1fr 1fr;
+  gap: 6px;
+  padding: 7px 10px;
+  border-radius: 6px;
+  font-size: 12px;
+  transition: background .1s;
+}
+.tireur-row:hover { background: var(--bg); }
+.tireur-rang {
+  font-family: 'DM Mono', monospace;
+  font-size: 11px; color: var(--text-muted);
+}
+.tireur-nom { font-weight: 600; }
+.tireur-club { color: var(--text-muted); font-size: 11px; }
+
+/* ── TOAST ── */
+.toast-container {
+  position: fixed; bottom: 24px; right: 24px;
+  display: flex; flex-direction: column; gap: 8px;
+  z-index: 1000;
+}
+.toast {
+  padding: 12px 18px;
+  border-radius: 10px;
+  font-size: 13px; font-weight: 500;
+  box-shadow: var(--shadow-lg);
+  display: flex; align-items: center; gap: 10px;
+  animation: slideIn .25s ease;
+  min-width: 280px;
+}
+.toast.success { background: #dcfce7; color: #15803d; border: 1px solid #bbf7d0; }
+.toast.error   { background: #fee2e2; color: #b91c1c; border: 1px solid #fecaca; }
+.toast.info    { background: #dbeafe; color: #1e40af; border: 1px solid #bfdbfe; }
+@keyframes slideIn {
+  from { opacity: 0; transform: translateY(12px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ── LOADER ── */
+.spinner {
+  width: 16px; height: 16px;
+  border: 2px solid rgba(255,255,255,.3);
+  border-top-color: #fff;
+  border-radius: 50%;
+  animation: spin .6s linear infinite;
+  display: inline-block;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* ── GENRE TABS ── */
+.genre-tabs {
+  display: flex; gap: 6px; margin-bottom: 20px;
+}
+.genre-tab {
+  flex: 1; padding: 9px;
+  border: 1.5px solid var(--border);
+  border-radius: 8px; background: none;
+  font-size: 13px; font-weight: 500;
+  cursor: pointer; transition: all .15s;
+  font-family: 'DM Sans', sans-serif;
+  color: var(--text-muted);
+}
+.genre-tab.active {
+  background: var(--bleu-nuit); border-color: var(--bleu-nuit);
+  color: #fff;
+}
+
+/* ── EMPTY STATE CENTRAL ── */
+.central-empty {
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  height: 100%; color: var(--text-muted);
+  gap: 12px;
+}
+.central-empty .icon { font-size: 48px; opacity: .2; }
+.central-empty p { font-size: 13px; max-width: 260px; text-align: center; }
+
+/* ── SCROLLBAR ── */
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: #a0b0c8; }
+
+.texte-tag {
+  display: inline-flex; align-items: center; gap: 6px;
+  background: var(--bg); border: 1px solid var(--border);
+  border-radius: 5px; padding: 5px 10px;
+  font-size: 12px; margin: 3px;
+}
+.texte-tag .remove {
+  cursor: pointer; color: var(--rouge); font-weight: 700;
+  line-height: 1;
+}
+.textes-container { min-height: 36px; flex-wrap: wrap; display: flex; }
+.add-texte-row { display: flex; gap: 8px; margin-top: 8px; }
+.add-texte-row input { flex: 1; }
+.add-texte-row button { flex-shrink: 0; }
+
+/* ── ARBITRAGE ── */
+.arb-source-btn {
+  display: flex; align-items: center; gap: 6px;
+  padding: 8px 14px;
+  border: 1.5px solid var(--border);
+  border-radius: 7px;
+  cursor: pointer;
+  font-size: 13px;
+  transition: all .15s;
+  user-select: none;
+}
+.arb-source-btn:hover { border-color: var(--bleu-clair); background: #f5f8ff; }
+.arb-source-btn input[type="radio"] { accent-color: var(--bleu-ciel); }
+.arb-source-btn.selected { border-color: var(--bleu-ciel); background: #eef4ff; font-weight: 500; }
+
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo">
+    <div class="logo-badge">GE</div>
+    <div class="logo-text">
+      <strong>SelecGE <span style="font-size:10px;font-weight:400;color:var(--text-muted);">v34</span></strong>
+      <span>Sélections CDF — Grand Est — <strong>{{ saison }}</strong></span>
+    </div>
+  </div>
+  <div class="header-sep"></div>
+  <div class="header-status" id="headerStatus">Prêt</div>
+</header>
+
+<div class="layout">
+
+  <!-- COLONNE GAUCHE : Sélecteur en cascade -->
+  <div class="panel">
+    <div class="panel-header">
+      <h2>Sélection</h2>
+      <p id="leftPanelSub">Choisissez une discipline</p>
+    </div>
+    <div class="panel-body" style="padding:16px;">
+
+      <!-- Sélecteur Discipline — cartes cliquables -->
+      <div style="margin-bottom:16px;">
+        <label class="select-label" style="margin-bottom:8px;">🥋 Discipline</label>
+        <div class="disc-cards" id="discCards">
+          <div class="disc-card" id="disc-olympique" onclick="onDiscChange('olympique')">
+            <div class="disc-icon">⚔️</div>
+            <div class="disc-info">
+              <div class="disc-label">Escrime Olympique</div>
+              <div class="disc-sub">Fleuret · Épée · Sabre</div>
+            </div>
+            <div class="disc-badge" id="badge-olympique">Actif</div>
+          </div>
+          <div class="disc-card" id="disc-laser" onclick="onDiscChange('laser')">
+            <div class="disc-icon">🔫</div>
+            <div class="disc-info">
+              <div class="disc-label">Sabre Laser</div>
+              <div class="disc-sub">CS · Technique · Chorégraphie</div>
+            </div>
+            <div class="disc-badge">Actif</div>
+          </div>
+          <div class="disc-card soon" id="disc-artistique" onclick="onDiscChange('artistique')">
+            <div class="disc-icon">🎭</div>
+            <div class="disc-info">
+              <div class="disc-label">Escrime Artistique</div>
+              <div class="disc-sub">Catégories à venir</div>
+            </div>
+            <div class="disc-badge">Bientôt</div>
+          </div>
+        </div>
+      </div>
+      <!-- Séparateur visuel entre discipline et catégorie -->
+      <div id="discSep" style="display:none;height:1px;background:var(--border);margin:0 0 14px;"></div>
+
+      <!-- Sélecteur Catégorie (masqué jusqu'à choix discipline) -->
+      <div id="selCatDiv" style="margin-bottom:14px;display:none;">
+        <label class="select-label">📋 Catégorie</label>
+        <select id="selCat" class="cascade-select" onchange="onCatChange()">
+          <option value="">— Choisir une catégorie —</option>
+          {% for cat in categories %}
+          <option value="{{ cat.id }}">{{ cat.label }}</option>
+          {% endfor %}
+        </select>
+      </div><!-- /selCatDiv -->
+
+      <!-- Sélecteur Compétition (affiché si catégorie choisie) -->
+      <div id="selCompDiv" style="margin-bottom:14px;display:none;">
+        <label class="select-label">🏆 Compétition</label>
+        <select id="selComp" class="cascade-select" onchange="onCompChange()">
+          <option value="">— Choisir —</option>
+        </select>
+      </div>
+
+      <!-- Sélecteur Arme (affiché si compétition choisie) -->
+      <div id="selArmeDiv" style="margin-bottom:14px;display:none;">
+        <label class="select-label">⚔️ Arme</label>
+        <select id="selArme" class="cascade-select" onchange="onArmeChange()">
+          <option value="">— Choisir une arme —</option>
+          {% for arme in armes %}
+          <option value="{{ arme.id }}">{{ arme.label }}</option>
+          {% endfor %}
+        </select>
+      </div>
+
+      <!-- Mode : Individuel / Équipes (si catégorie supporte les équipes) -->
+      <div id="selModeDiv" style="margin-bottom:14px;display:none;">
+        <label class="select-label">🏅 Type de sélection</label>
+        <div style="display:flex;gap:8px;">
+          <button class="mode-btn active" id="modeBtnInd" onclick="setMode('individuel')">
+            🤺 Individuel
+          </button>
+          <button class="mode-btn" id="modeBtnEq" onclick="setMode('equipes')">
+            👥 Équipes
+          </button>
+        </div>
+      </div>
+
+      <!-- Résumé sélection active -->
+      <div id="selResume" style="display:none;margin-top:18px;padding:12px;background:var(--bg);border-radius:8px;border-left:3px solid var(--bleu-ciel);">
+        <div id="selResumeText" style="font-size:12px;color:var(--bleu-nuit);font-weight:600;"></div>
+        <div id="selResumeComp" style="font-size:11px;color:var(--text-muted);margin-top:2px;"></div>
+      </div>
+
+      <!-- Historique des générations -->
+      <div id="historiqueDiv" style="margin-top:24px;display:none;">
+        <div style="font-size:11px;font-weight:600;color:var(--text-muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px;">Générés</div>
+        <div id="historiqueList" style="display:flex;flex-direction:column;gap:4px;"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- COLONNE CENTRALE : Formulaire -->
+  <div class="panel" id="centralPanel">
+    <div class="central-empty" id="centralEmpty">
+      <div class="icon">⚔️</div>
+      <p>Utilisez les menus à gauche pour choisir une catégorie et une arme.</p>
+    </div>
+
+    <!-- ═══════════════════════════════════════════════════════════
+         PANNEAU SABRE LASER
+    ═══════════════════════════════════════════════════════════ -->
+    <div id="panelSabreLaser" style="display:none;flex-direction:column;height:100%;overflow-y:auto;">
+      <div class="panel-header">
+        <h2>🔫 Sabre Laser</h2>
+        <p>Sélections Championnat de France — Grand Est</p>
+      </div>
+      <div style="padding:12px 16px;flex:1;">
+
+        <!-- Mode de génération -->
+        <div class="form-section-title" style="margin-bottom:8px;">⚙️ Mode de génération</div>
+        <div style="display:flex;gap:10px;margin-bottom:16px;">
+          <label style="display:flex;align-items:center;gap:6px;cursor:pointer;font-size:12px;">
+            <input type="radio" name="slMode" value="multi" checked id="slModeMulti">
+            <span>Un document multi-onglets</span>
+          </label>
+          <label style="display:flex;align-items:center;gap:6px;cursor:pointer;font-size:12px;">
+            <input type="radio" name="slMode" value="separes" id="slModeSepares">
+            <span>Documents séparés (1 par discipline)</span>
+          </label>
+        </div>
+
+        <!-- Disciplines -->
+        <div style="margin-bottom:12px;padding:8px 12px;background:#F0FDF4;border-radius:6px;border-left:3px solid #22C55E;font-size:11px;color:#166534;">
+          ℹ️ Chaque discipline est <strong>indépendante</strong> — importez uniquement les fichiers dont vous disposez. Seules les disciplines avec au moins un fichier chargé seront générées.
+        </div>
+        <div class="form-section-title" style="margin-bottom:10px;">📋 Disciplines à générer</div>
+        <div id="slDisciplines" style="display:flex;flex-direction:column;gap:14px;">
+          <!-- Généré dynamiquement par initSabreLaser() -->
+        </div>
+
+        <!-- Paramètres communs -->
+        <div class="form-section-title" style="margin-top:16px;margin-bottom:8px;">📅 Paramètres communs — Championnats de France</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:6px;">
+          <div>
+            <label class="select-label" style="font-size:10px;">Date compétition CDF</label>
+            <input id="slDateCDF" type="text" class="cascade-select" style="font-size:11px;" placeholder="jj/mm/aaaa">
+          </div>
+          <div>
+            <label class="select-label" style="font-size:10px;">Lieu CDF</label>
+            <input id="slLieuCDF" type="text" class="cascade-select" style="font-size:11px;" placeholder="Ville">
+          </div>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px;">
+          <div>
+            <label class="select-label" style="font-size:10px;">Date limite retour</label>
+            <input id="slDateLimite" type="text" class="cascade-select" style="font-size:11px;" placeholder="jj/mm/aaaa">
+          </div>
+          <div>
+            <label class="select-label" style="font-size:10px;">Clôture extranet</label>
+            <input id="slDateExtranet" type="text" class="cascade-select" style="font-size:11px;" placeholder="ex : mercredi 28 mai 23h59">
+          </div>
+        </div>
+        <div style="margin-bottom:12px;">
+          <label class="select-label" style="font-size:10px;">Mail retour</label>
+          <input id="slMailRetour" type="text" class="cascade-select" style="font-size:11px;"
+                 value="administration@crege.fr, copie thomas.ducourant@gmail.com">
+        </div>
+
+        <!-- Bouton générer -->
+        <div style="display:flex;gap:8px;margin-top:8px;align-items:center;">
+          <button class="btn-generer" onclick="slGenerer()" style="flex:1;">
+            🔫 Générer les sélections Sabre Laser
+          </button>
+          <button onclick="slPurgerTout()" title="Purger tous les fichiers importés"
+                  style="padding:8px 14px;background:#FEF2F2;border:1px solid #FECACA;border-radius:6px;cursor:pointer;font-size:12px;color:#DC2626;white-space:nowrap;">
+            🗑 Purger les imports
+          </button>
+        </div>
+        <div id="slStatus" style="margin-top:10px;font-size:11px;"></div>
+
+      </div>
+    </div>
+
+    <div id="centralForm" style="display:none; flex-direction:column; height:100%;">
+      <div class="panel-header">
+        <h2 id="formTitle">Configuration</h2>
+        <p id="formSubtitle">Paramètres de sélection</p>
+      </div>
+      <div class="panel-body" style="overflow-y:auto; flex:1;">
+
+
+        <!-- Mode Équipes -->
+        <div id="sectionEquipesAVenir" style="display:none;">
+
+          <!-- M15 : sélection équipes GE1/GE2/GE3 -->
+          <div id="sectionEquipesM15" style="display:none;">
+            <div class="form-section">
+              <div class="form-section-title">👥 Équipes M15 — Grand Est 1, 2, 3</div>
+
+              <!-- Rappel des règles -->
+              <div style="background:var(--bg);border-radius:8px;padding:12px;margin-bottom:14px;font-size:12px;line-height:1.7;color:var(--bleu-nuit);">
+                <strong>🔵 GE1</strong> — Top 4 tireurs Grand Est du classement national<br>
+                <strong>🔵 GE2</strong> — Tireurs 5→8 du classement régional (hors GE1)<br>
+                <strong>🔵 GE3</strong> — Tireurs 9→12 du classement régional (hors GE1)
+              </div>
+
+              <div class="field-row single">
+                <div class="field">
+                  <label>Taille des équipes (tireurs par équipe)</label>
+                  <input type="number" id="fTailleEquipe" value="4" min="2" max="8">
+                </div>
+              </div>
+
+              <div id="groupeEquipeInfo" style="display:none;padding:8px 12px;background:var(--surface);border-radius:8px;font-size:12px;color:var(--bleu-nuit);font-style:italic;margin-top:8px;"></div>
+            </div>
+
+            <!-- Actions équipes -->
+            <div class="btn-row">
+              <button class="btn btn-primary" style="width:100%;" onclick="genererEquipesM15()" id="btnGenererEquipes">
+                ⚡ Générer Équipes H+D (Excel 2 feuilles)
+              </button>
+            </div>
+          </div>
+
+          <!-- Autres catégories : à venir -->
+          <div id="sectionEquipesAVenirAutres">
+
+            <!-- Bannière règle N3 (mise à jour dynamiquement) -->
+            <div id="eqRegleBanniere" style="display:none;padding:8px 12px;background:var(--bg);border-radius:7px;font-size:11px;color:var(--text-muted);margin-bottom:12px;border-left:3px solid var(--bleu-nuit);line-height:1.7;"></div>
+
+            <!-- ── Import PDF ── -->
+            <div class="form-section-title" style="margin-bottom:8px;">📄 Import PDF</div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:16px;">
+              <!-- PDF FFE N1/N2 -->
+              <div>
+                <div style="font-size:11px;font-weight:600;color:var(--bleu-nuit);margin-bottom:5px;">📋 FFE — Équipes qualifiées CDF</div>
+                <div style="font-size:10px;color:var(--text-muted);margin-bottom:6px;">PDF FFE officiel — Remplit les équipes N1/N2 Grand Est</div>
+                <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;">
+                  <div>
+                    <div style="font-size:10px;font-weight:600;color:var(--bleu-nuit);margin-bottom:3px;">♂ Hommes</div>
+                    <label style="display:flex;align-items:center;gap:6px;padding:7px 10px;border:1.5px dashed var(--border);border-radius:7px;cursor:pointer;font-size:11px;color:var(--text-muted);">
+                      <span>📄</span><span id="pdfFfeHLabel">Importer...</span>
+                      <input type="file" accept=".pdf" style="display:none" onchange="uploadPdfEq(this,'ffe','H')" accept=".pdf,.fff,.xml">
+                    </label>
+                  </div>
+                  <div>
+                    <div style="font-size:10px;font-weight:600;color:var(--bleu-nuit);margin-bottom:3px;">♀ Dames</div>
+                    <label style="display:flex;align-items:center;gap:6px;padding:7px 10px;border:1.5px dashed var(--border);border-radius:7px;cursor:pointer;font-size:11px;color:var(--text-muted);">
+                      <span>📄</span><span id="pdfFfeDLabel">Importer...</span>
+                      <input type="file" accept=".pdf" style="display:none" onchange="uploadPdfEq(this,'ffe','D')" accept=".pdf,.fff,.xml">
+                    </label>
+                  </div>
+                </div>
+              </div>
+              <!-- PDF Engarde régional N3 -->
+              <div>
+                <div style="font-size:11px;font-weight:600;color:var(--bleu-nuit);margin-bottom:5px;">📊 Engarde — Classement régional GE</div>
+                <div style="font-size:10px;color:var(--text-muted);margin-bottom:6px;">PDF / FFF / XML — Remplit N3 et remplaçants</div>
+                <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;">
+                  <div>
+                    <div style="font-size:10px;font-weight:600;color:var(--bleu-nuit);margin-bottom:3px;">♂ Hommes</div>
+                    <label style="display:flex;align-items:center;gap:6px;padding:7px 10px;border:1.5px dashed var(--border);border-radius:7px;cursor:pointer;font-size:11px;color:var(--text-muted);">
+                      <span>📊</span><span id="pdfEngardeHLabel">Importer...</span>
+                      <input type="file" style="display:none" onchange="uploadPdfEq(this,'engarde','H')">
+                    </label>
+                  </div>
+                  <div>
+                    <div style="font-size:10px;font-weight:600;color:var(--bleu-nuit);margin-bottom:3px;">♀ Dames</div>
+                    <label style="display:flex;align-items:center;gap:6px;padding:7px 10px;border:1.5px dashed var(--border);border-radius:7px;cursor:pointer;font-size:11px;color:var(--text-muted);">
+                      <span>📊</span><span id="pdfEngardeDLabel">Importer...</span>
+                      <input type="file" style="display:none" onchange="uploadPdfEq(this,'engarde','D')">
+                    </label>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <!-- Résumé import -->
+            <div id="pdfImportResume" style="display:none;padding:8px 12px;background:var(--bg);border-radius:7px;font-size:11px;margin-bottom:12px;border-left:3px solid var(--vert);line-height:1.7;"></div>
+
+            <!-- ── Section N1/N2 ── -->
+            <div class="form-section-title" style="margin-bottom:8px;">🏆 N1/N2 — Équipes ½ finale FFE</div>
+            <div style="font-size:11px;color:var(--text-muted);margin-bottom:10px;padding:6px 10px;background:var(--bg);border-radius:6px;">
+              Équipes <strong>Grand Est</strong> parmi les 8 premières de la ½ finale nationale. Remplies automatiquement à l'import du PDF FFE.
+            </div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:14px;">
+              <!-- Hommes N1/N2 -->
+              <div>
+                <div style="font-size:11px;font-weight:700;color:var(--bleu-nuit);margin-bottom:6px;padding-bottom:3px;border-bottom:2px solid var(--bleu-ciel);">♂ Hommes</div>
+                <div id="eqN1H_list" style="display:flex;flex-direction:column;gap:4px;"></div>
+                <button onclick="ajouterLigneEquipe('N1H')" style="margin-top:6px;font-size:11px;color:var(--bleu-ciel);background:none;border:none;cursor:pointer;">+ Ajouter une équipe</button>
+              </div>
+              <!-- Dames N1/N2 -->
+              <div>
+                <div style="font-size:11px;font-weight:700;color:var(--bleu-nuit);margin-bottom:6px;padding-bottom:3px;border-bottom:2px solid var(--bleu-ciel);">♀ Dames</div>
+                <div id="eqN1D_list" style="display:flex;flex-direction:column;gap:4px;"></div>
+                <button onclick="ajouterLigneEquipe('N1D')" style="margin-top:6px;font-size:11px;color:var(--bleu-ciel);background:none;border:none;cursor:pointer;">+ Ajouter une équipe</button>
+              </div>
+            </div>
+
+            <!-- ── Section N3 FFE (rangs 9-12) ── -->
+            <div class="form-section-title" style="margin-bottom:8px;">🏅 N3 FFE — Rangs 9 à 12 (sélection nationale)</div>
+            <div style="font-size:11px;color:var(--text-muted);margin-bottom:10px;padding:6px 10px;background:var(--bg);border-radius:6px;">
+              Équipes <strong>Grand Est</strong> classées 9e à 12e de la ½ finale nationale. Remplies automatiquement à l'import du PDF FFE.
+            </div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:14px;">
+              <div>
+                <div style="font-size:11px;font-weight:700;color:var(--bleu-nuit);margin-bottom:6px;">♂ Hommes</div>
+                <div id="eqN3FfeH_list" style="display:flex;flex-direction:column;gap:4px;"></div>
+                <button onclick="ajouterLigneEquipe('N3FfeH')" style="margin-top:6px;font-size:11px;color:var(--bleu-ciel);background:none;border:none;cursor:pointer;">+ Ajouter</button>
+              </div>
+              <div>
+                <div style="font-size:11px;font-weight:700;color:var(--bleu-nuit);margin-bottom:6px;">♀ Dames</div>
+                <div id="eqN3FfeD_list" style="display:flex;flex-direction:column;gap:4px;"></div>
+                <button onclick="ajouterLigneEquipe('N3FfeD')" style="margin-top:6px;font-size:11px;color:var(--bleu-ciel);background:none;border:none;cursor:pointer;">+ Ajouter</button>
+              </div>
+            </div>
+
+            <!-- ── Section N3 GE ── -->
+            <div class="form-section-title" style="margin-bottom:8px;">➕ N3 — Quota LREGE Grand Est</div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:14px;">
+              <!-- Hommes N3 -->
+              <div>
+                <div style="font-size:11px;font-weight:700;color:var(--bleu-nuit);margin-bottom:4px;">♂ Hommes</div>
+                <div id="eqN3H_mode" style="font-size:11px;font-style:italic;color:var(--text-muted);margin-bottom:6px;"></div>
+                <div class="field" style="margin-bottom:6px;">
+                  <label style="font-size:11px;">Nombre de places quota N3</label>
+                  <input type="number" id="fQuotaN3EqH" value="0" min="0" max="15" style="width:60px;" oninput="syncN3Lignes('H')">
+                </div>
+                <div id="rowOpenN3H" style="display:none;" class="field" style="margin-bottom:6px;">
+                  <label style="font-size:11px;">Cases inscription open N3 ♂</label>
+                  <input type="number" id="fNbOpenN3H" value="5" min="0" max="20" style="width:60px;">
+                </div>
+                <div id="eqN3H_list" style="display:flex;flex-direction:column;gap:4px;"></div>
+              </div>
+              <!-- Dames N3 -->
+              <div>
+                <div style="font-size:11px;font-weight:700;color:var(--bleu-nuit);margin-bottom:4px;">♀ Dames</div>
+                <div id="eqN3D_mode" style="font-size:11px;font-style:italic;color:var(--text-muted);margin-bottom:6px;"></div>
+                <div class="field" style="margin-bottom:6px;">
+                  <label style="font-size:11px;">Nombre de places quota N3</label>
+                  <input type="number" id="fQuotaN3EqD" value="0" min="0" max="15" style="width:60px;" oninput="syncN3Lignes('D')">
+                </div>
+                <div id="rowOpenN3D" style="display:none;" class="field" style="margin-bottom:6px;">
+                  <label style="font-size:11px;">Cases inscription open N3 ♀</label>
+                  <input type="number" id="fNbOpenN3D" value="5" min="0" max="20" style="width:60px;">
+                </div>
+                <div id="eqN3D_list" style="display:flex;flex-direction:column;gap:4px;"></div>
+              </div>
+            </div>
+
+            <!-- ── Section Remplaçants ── -->
+            <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px;margin-top:4px;">
+              <div class="form-section-title" style="margin:0;">🔄 Équipes remplaçantes</div>
+              <div id="remplacBadgeH" style="display:none;font-size:10px;font-weight:700;padding:2px 8px;border-radius:12px;background:#fef3c7;color:#92400e;">♂ <span id="remplacCountH">0</span></div>
+              <div id="remplacBadgeD" style="display:none;font-size:10px;font-weight:700;padding:2px 8px;border-radius:12px;background:#fce7f3;color:#9d174d;">♀ <span id="remplacCountD">0</span></div>
+            </div>
+            <div style="font-size:11px;color:var(--text-muted);margin-bottom:10px;padding:6px 10px;background:var(--bg);border-radius:6px;">
+              Appelées dans l'ordre en cas de désistement d'une équipe N3 LREGE. Non affichées si épreuve open.
+            </div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:14px;">
+              <div>
+                <div style="font-size:11px;font-weight:700;color:var(--bleu-nuit);margin-bottom:6px;">♂ Hommes</div>
+                <div id="eqRemplacH_list" style="display:flex;flex-direction:column;gap:4px;" oninput="updateRemplacCount('H')"></div>
+                <button onclick="ajouterLigneEquipe('RemplacH'); updateRemplacCount('H');" style="margin-top:6px;font-size:11px;color:var(--bleu-ciel);background:none;border:none;cursor:pointer;">+ Ajouter un remplaçant</button>
+              </div>
+              <div>
+                <div style="font-size:11px;font-weight:700;color:var(--bleu-nuit);margin-bottom:6px;">♀ Dames</div>
+                <div id="eqRemplacD_list" style="display:flex;flex-direction:column;gap:4px;" oninput="updateRemplacCount('D')"></div>
+                <button onclick="ajouterLigneEquipe('RemplacD'); updateRemplacCount('D');" style="margin-top:6px;font-size:11px;color:var(--bleu-ciel);background:none;border:none;cursor:pointer;">+ Ajouter un remplaçant</button>
+              </div>
+            </div>
+
+            <!-- Taille des équipes -->
+            <div class="field-row single" style="margin-top:10px;margin-bottom:6px;">
+              <div class="field">
+                <label>Composition des équipes <span style="font-size:10px;color:var(--text-muted)">(tireurs par équipe)</span></label>
+                <div style="display:flex;align-items:center;gap:8px;">
+                  <input type="number" id="fTailleEquipeSen" value="4" min="2" max="8" style="width:64px;"
+                         oninput="this._userModified=true;this.value=Math.max(2,Math.min(8,parseInt(this.value)||4))">
+                  <span style="font-size:11px;color:var(--text-muted);">tireurs / équipe <em>(4 par défaut M17→Seniors, 5 Vétérans)</em></span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Bouton générer -->
+            <div class="btn-row" style="margin-top:4px;">
+              <button class="btn btn-primary" style="width:100%;" onclick="genererEquipesSeniors()" id="btnGenererEquipesSeniors">
+                ⚡ Générer la sélection équipes H+D
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Import classements H+D -->
+        <div class="form-section" id="sectionImportFFE">
+          <div class="form-section-title">📥 Import des classements FFE</div>
+          <!-- M13 : classement national optionnel -->
+          <div id="m13NatToggleRow" style="display:none;margin-bottom:12px;">
+            <div class="toggle-row" style="background:var(--bg);border-radius:8px;padding:10px 12px;">
+              <div>
+                <div class="toggle-label" style="font-size:12px;">Utiliser un classement national</div>
+                <div class="toggle-sub">M13 Challenge de France : classement régional uniquement par défaut</div>
+              </div>
+              <label class="toggle">
+                <input type="checkbox" id="fM13UseNat" onchange="toggleM13Nat()">
+                <span class="toggle-slider"></span>
+              </label>
+            </div>
+          </div>
+          <!-- M23 : classement national optionnel -->
+          <div id="m23NatInfo" style="display:none;margin-bottom:12px;padding:8px 12px;background:#EFF6FF;border-radius:8px;border-left:3px solid #3B82F6;font-size:11px;color:#1E40AF;">
+            <strong>✦ M23 — Import PDF FFE prioritaire</strong><br>
+            Importez le <strong>PDF FFE liste des qualifiés</strong> (ci-dessous) pour alimenter le classement national.<br>
+            Le fichier Excel national et le classement régional sont optionnels.
+          </div>
+
+          <!-- Zones upload : structure uniforme 2 colonnes H / D -->
+          <!-- Chaque colonne : National en haut, Régional en bas -->
+          <div id="zoneNatHD">
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;">
+
+              <!-- ♂ Hommes -->
+              <div>
+                <div style="font-size:12px;font-weight:700;color:var(--bleu-nuit);margin-bottom:8px;padding-bottom:4px;border-bottom:2px solid var(--bleu-ciel);">♂ Hommes</div>
+                <div style="display:flex;flex-direction:column;gap:8px;">
+                  <div id="zoneNatHDiv">
+                    <label style="margin-bottom:4px;display:block;font-size:11px;color:var(--text-muted);">National</label>
+                    <div class="upload-zone" id="uploadNatH" ondragover="dragOver(event,'uploadNatH')" ondragleave="dragLeave('uploadNatH')" ondrop="dropFileMulti(event,'nat','H')">
+                      <input type="file" accept=".xlsx,.csv" onchange="uploadFileMulti(this,'nat','H')">
+                      <div class="upload-icon">📊</div>
+                      <div class="upload-label"><strong>Cliquer</strong> ou déposer</div>
+                      <div class="upload-info" id="infoNatH">Export FFE .xlsx</div>
+                    </div>
+                  </div>
+                  <div>
+                    <label style="margin-bottom:4px;display:block;font-size:11px;color:var(--text-muted);">Régional GE</label>
+                    <div class="upload-zone" id="uploadRegH" ondragover="dragOver(event,'uploadRegH')" ondragleave="dragLeave('uploadRegH')" ondrop="dropFileMulti(event,'reg','H')">
+                      <input type="file" accept=".xlsx,.csv" onchange="uploadFileMulti(this,'reg','H')">
+                      <div class="upload-icon">🗺️</div>
+                      <div class="upload-label"><strong>Cliquer</strong> ou déposer</div>
+                      <div class="upload-info" id="infoRegH">Export FFE GE .xlsx</div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- ♀ Dames -->
+              <div>
+                <div style="font-size:12px;font-weight:700;color:var(--bleu-nuit);margin-bottom:8px;padding-bottom:4px;border-bottom:2px solid var(--bleu-ciel);">♀ Dames</div>
+                <div style="display:flex;flex-direction:column;gap:8px;">
+                  <div id="zoneNatDDiv">
+                    <label style="margin-bottom:4px;display:block;font-size:11px;color:var(--text-muted);">National</label>
+                    <div class="upload-zone" id="uploadNatD" ondragover="dragOver(event,'uploadNatD')" ondragleave="dragLeave('uploadNatD')" ondrop="dropFileMulti(event,'nat','D')">
+                      <input type="file" accept=".xlsx,.csv" onchange="uploadFileMulti(this,'nat','D')">
+                      <div class="upload-icon">📊</div>
+                      <div class="upload-label"><strong>Cliquer</strong> ou déposer</div>
+                      <div class="upload-info" id="infoNatD">Export FFE .xlsx</div>
+                    </div>
+                  </div>
+                  <div>
+                    <label style="margin-bottom:4px;display:block;font-size:11px;color:var(--text-muted);">Régional GE</label>
+                    <div class="upload-zone" id="uploadRegD" ondragover="dragOver(event,'uploadRegD')" ondragleave="dragLeave('uploadRegD')" ondrop="dropFileMulti(event,'reg','D')">
+                      <input type="file" accept=".xlsx,.csv" onchange="uploadFileMulti(this,'reg','D')">
+                      <div class="upload-icon">🗺️</div>
+                      <div class="upload-label"><strong>Cliquer</strong> ou déposer</div>
+                      <div class="upload-info" id="infoRegD">Export FFE GE .xlsx</div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+            </div>
+          </div>
+
+        <!-- Zone upload PDF FFE (M17→Seniors, visible selon catégorie) -->
+        <div id="zoneUploadPdfFfe" style="display:none;margin-top:14px;padding:10px 14px;background:#FFFBEB;border-radius:8px;border-left:3px solid #D97706;">
+          <div id="pdfFfeTitre" style="font-size:11px;font-weight:700;color:#92400e;margin-bottom:6px;">📄 Liste qualifiés (PDF officiel FFE)</div>
+          <div id="pdfFfeDesc" style="font-size:11px;color:var(--text-muted);margin-bottom:10px;">
+            Importez le PDF FFE de la liste des qualifiés nationaux (un fichier par genre).
+          </div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+            <div>
+              <div style="font-size:11px;font-weight:600;color:var(--bleu-nuit);margin-bottom:5px;">♂ Hommes</div>
+              <div class="upload-zone" id="uploadPdfFfeH"
+                   ondragover="dragOver(event,'uploadPdfFfeH')" ondragleave="dragLeave('uploadPdfFfeH')"
+                   onclick="this.querySelector('input').click()" style="min-height:64px;">
+                <input type="file" accept=".pdf" style="display:none" onchange="uploadFichierPdfFfe(this,'H')">
+                <div class="upload-icon">📄</div>
+                <div class="upload-label"><strong>Cliquer</strong> ou déposer</div>
+                <div class="upload-info" id="infoPdfFfeH">Liste qualifiés H (.pdf)</div>
+              </div>
+            </div>
+            <div>
+              <div style="font-size:11px;font-weight:600;color:var(--bleu-nuit);margin-bottom:5px;">♀ Dames</div>
+              <div class="upload-zone" id="uploadPdfFfeD"
+                   ondragover="dragOver(event,'uploadPdfFfeD')" ondragleave="dragLeave('uploadPdfFfeD')"
+                   onclick="this.querySelector('input').click()" style="min-height:64px;">
+                <input type="file" accept=".pdf" style="display:none" onchange="uploadFichierPdfFfe(this,'D')">
+                <div class="upload-icon">📄</div>
+                <div class="upload-label"><strong>Cliquer</strong> ou déposer</div>
+                <div class="upload-info" id="infoPdfFfeD">Liste qualifiés D (.pdf)</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Infos compétition -->
+        <div class="form-section">
+          <div class="form-section-title">🏆 Compétition</div>
+          <div class="field-row">
+            <div class="field">
+              <label>Nom de la compétition</label>
+              <input type="text" id="fCompetition" placeholder="Championnat de France">
+            </div>
+            <div class="field">
+              <label>Discipline (affiché en titre)</label>
+              <input type="text" id="fDiscipline" placeholder="SABRE HOMMES SENIORS">
+            </div>
+          </div>
+          <div class="field-row">
+            <div class="field">
+              <label>Date de la compétition</label>
+              <input type="text" id="fDate" placeholder="07/06/2025" oninput="state.date=this.value">
+            </div>
+            <div class="field">
+              <label>Lieu</label>
+              <input type="text" id="fLieu" placeholder="Courbevoie" oninput="state.lieu=this.value">
+            </div>
+          </div>
+        </div>
+
+        <!-- Informations pratiques -->
+        <div class="form-section">
+          <div class="form-section-title">📋 Informations pratiques</div>
+          <div class="field-row single">
+            <div class="field">
+              <label>Adresse mail de retour des confirmations</label>
+              <input type="text" id="fMailRetour" placeholder="administration@crege.fr, copie thomas.ducourant@gmail.com">
+            </div>
+          </div>
+          <div class="field-row">
+            <div class="field">
+              <label>Date limite de retour des confirmations</label>
+              <input type="text" id="fDateLimite" placeholder="ex : vendredi 23 mai 2025" oninput="state.date_limite=this.value">
+            </div>
+            <div class="field">
+              <label>Clôture des engagements sur l'extranet</label>
+              <input type="text" id="fDateExtranet" placeholder="ex : mercredi 28 mai 2025 23h59" oninput="state.date_extranet=this.value">
+            </div>
+          </div>
+        </div>
+
+        <!-- Arbitrage -->
+        <div class="form-section">
+          <div class="form-section-title">⚖️ Arbitrage</div>
+
+          <!-- Source -->
+          <div style="margin-bottom:12px;">
+            <label style="display:block;margin-bottom:6px;">Source des arbitres</label>
+            <div style="display:flex;gap:8px;flex-wrap:wrap;">
+              <label class="arb-source-btn" data-val="aucun">
+                <input type="radio" name="arbSource" value="aucun"> Pas d'arbitre requis
+              </label>
+              <label class="arb-source-btn" data-val="club">
+                <input type="radio" name="arbSource" value="club"> Fourni par le club
+              </label>
+              <label class="arb-source-btn" data-val="ligue">
+                <input type="radio" name="arbSource" value="ligue"> Fourni par la ligue
+              </label>
+            </div>
+          </div>
+
+          <!-- Détails (masqués si "aucun") -->
+          <div id="arbDetails" style="display:none;">
+
+            <!-- Seuil 1 arbitre -->
+            <div class="field-row" style="margin-bottom:10px;">
+              <div class="field">
+                <label>1 arbitre à partir de</label>
+                <div style="display:flex;align-items:center;gap:8px;">
+                  <input type="number" id="fArbSeuil1" value="4" min="1" max="50" style="width:70px;">
+                  <span style="font-size:12px;color:var(--text-muted);">tireurs engagés (H+D confondus)</span>
+                </div>
+              </div>
+              <div class="field">
+                <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;">
+                  <label style="margin-bottom:0;">2 arbitres à partir de</label>
+                  <label class="toggle" style="transform:scale(0.85);">
+                    <input type="checkbox" id="fArbSeuil2Toggle" onchange="toggleArbSeuil2()">
+                    <span class="toggle-slider"></span>
+                  </label>
+                </div>
+                <div id="fArbSeuil2Row" style="display:none;align-items:center;gap:8px;">
+                  <input type="number" id="fArbSeuil2" value="9" min="1" max="100" style="width:70px;">
+                  <span style="font-size:12px;color:var(--text-muted);">tireurs engagés (H+D confondus)</span>
+                </div>
+                <div id="fArbSeuil2Off" style="font-size:12px;color:var(--text-muted);font-style:italic;">Non requis</div>
+              </div>
+            </div>
+
+          </div>
+
+          <!-- Aperçu texte arbitrage -->
+          <div id="arbApercu" style="margin-top:10px;padding:10px 12px;background:var(--bg);border-radius:7px;font-size:12px;color:var(--text-muted);font-style:italic;"></div>
+        </div>
+
+        <!-- Participation -->
+        <div class="form-section" id="sectionParticipation" style="display:none;">
+          <div class="form-section-title">🏅 Critère de participation</div>
+          <div class="toggle-row">
+            <div>
+              <div class="toggle-label">Exiger un minimum de compétitions nationales</div>
+              <div class="toggle-sub">S'applique aux tireurs qualifiés N2 — les non-éligibles sont exclus</div>
+            </div>
+            <label class="toggle">
+              <input type="checkbox" id="fParticiToggle" onchange="toggleParticipation()">
+              <span class="toggle-slider"></span>
+            </label>
+          </div>
+          <div id="participationDetails" style="display:none;">
+            <div class="field-row single">
+              <div class="field">
+                <label>Nombre minimum de compétitions nationales (EN / CN)</label>
+                <div style="display:flex;align-items:center;gap:10px;">
+                  <input type="number" id="fMinCompNat" value="1" min="1" max="20" style="width:80px;">
+                  <span style="font-size:13px;color:var(--text-muted);">compétition(s) nationale(s) minimum</span>
+                </div>
+              </div>
+            </div>
+            <div style="padding:10px 12px;background:var(--bg);border-radius:7px;font-size:12px;color:var(--text-muted);font-style:italic;margin-top:8px;">
+              ⚠️ Les tireurs n'ayant pas participé au minimum requis seront exclus de la section N2 et listés dans une section "Non éligibles" du document.
+            </div>
+          </div>
+        </div>
+
+        <!-- Quotas (commun) -->
+        <div class="form-section" id="sectionQuotaSeniors">
+          <div class="form-section-title">🎯 Quotas — Format Seniors / M17 / M20 / Vétérans</div>
+
+          <!-- Import optionnel PDF liste FFE -->
+          <div id="sectionPdfImport" style="margin-bottom:12px;padding:10px 12px;background:var(--bg);border-radius:8px;border-left:3px solid #f59e0b;">
+            <div style="font-size:11px;font-weight:700;color:#92400e;margin-bottom:8px;">📄 Import optionnel — Liste qualifiés FFE (PDF)</div>
+            <div style="font-size:11px;color:var(--text-muted);margin-bottom:10px;">
+              Uploadez le PDF FFE des qualifiés N1 (un PDF par genre). Les tireurs seront utilisés à la place du classement Excel pour la section N1.
+            </div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+              <div>
+                <div style="font-size:11px;font-weight:600;color:var(--bleu-nuit);margin-bottom:5px;">♂ Hommes — PDF N1</div>
+                <div class="upload-pdf-zone" id="pdfZoneH" onclick="document.getElementById('pdfInputH').click()">
+                  <div class="pdf-icon">📄</div>
+                  <div id="pdfInfoH">Cliquez pour importer</div>
+                  <input type="file" id="pdfInputH" accept=".pdf" style="display:none" onchange="uploadPdf('H')">
+                </div>
+              </div>
+              <div>
+                <div style="font-size:11px;font-weight:600;color:var(--bleu-nuit);margin-bottom:5px;">♀ Dames — PDF N1</div>
+                <div class="upload-pdf-zone" id="pdfZoneD" onclick="document.getElementById('pdfInputD').click()">
+                  <div class="pdf-icon">📄</div>
+                  <div id="pdfInfoD">Cliquez pour importer</div>
+                  <input type="file" id="pdfInputD" accept=".pdf" style="display:none" onchange="uploadPdf('D')">
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Import open_circuit : PDF N2 + classement national (M20 Sabre) -->
+          <div id="sectionOpenCircuit" style="display:none;margin-bottom:12px;padding:10px 12px;background:var(--bg);border-radius:8px;border-left:3px solid #7c3aed;">
+            <div style="font-size:11px;font-weight:700;color:#5b21b6;margin-bottom:8px;">🟣 Mode open circuit — liste GES uniquement (N1 + N2)</div>
+            <div style="font-size:11px;color:var(--text-muted);margin-bottom:10px;">
+              Compétition ouverte sous condition de participation nationale. Importez les listes PDF FFE N1 et N2 et optionnellement le classement national pour les rangs.
+            </div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px;">
+              <div>
+                <div style="font-size:11px;font-weight:600;color:var(--bleu-nuit);margin-bottom:5px;">♂ Hommes — PDF N2 FFE</div>
+                <div class="upload-pdf-zone" id="pdfZoneN2H" onclick="document.getElementById('pdfInputN2H').click()">
+                  <div class="pdf-icon">📄</div>
+                  <div id="pdfInfoN2H">Cliquez pour importer</div>
+                  <input type="file" id="pdfInputN2H" accept=".pdf" style="display:none" onchange="uploadPdfN2('H')">
+                </div>
+              </div>
+              <div>
+                <div style="font-size:11px;font-weight:600;color:var(--bleu-nuit);margin-bottom:5px;">♀ Dames — PDF N2 FFE</div>
+                <div class="upload-pdf-zone" id="pdfZoneN2D" onclick="document.getElementById('pdfInputN2D').click()">
+                  <div class="pdf-icon">📄</div>
+                  <div id="pdfInfoN2D">Cliquez pour importer</div>
+                  <input type="file" id="pdfInputN2D" accept=".pdf" style="display:none" onchange="uploadPdfN2('D')">
+                </div>
+              </div>
+            </div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+              <div>
+                <div style="font-size:11px;font-weight:600;color:var(--bleu-nuit);margin-bottom:5px;">♂ Classement national H (XLSX — optionnel)</div>
+                <div class="upload-pdf-zone" id="natZoneH" onclick="document.getElementById('natInputH').click()" style="border-color:#6b7280;">
+                  <div class="pdf-icon">📊</div>
+                  <div id="natInfoH">Cliquez pour importer</div>
+                  <input type="file" id="natInputH" accept=".xlsx,.xls,.csv" style="display:none" onchange="uploadClassementNat('H')">
+                </div>
+              </div>
+              <div>
+                <div style="font-size:11px;font-weight:600;color:var(--bleu-nuit);margin-bottom:5px;">♀ Classement national D (XLSX — optionnel)</div>
+                <div class="upload-pdf-zone" id="natZoneD" onclick="document.getElementById('natInputD').click()" style="border-color:#6b7280;">
+                  <div class="pdf-icon">📊</div>
+                  <div id="natInfoD">Cliquez pour importer</div>
+                  <input type="file" id="natInputD" accept=".xlsx,.xls,.csv" style="display:none" onchange="uploadClassementNat('D')">
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Bannière réglementaire dynamique -->
+          <div id="regleBanniere" style="display:none;padding:8px 12px;background:var(--bg);border-radius:7px;font-size:11px;color:var(--text-muted);margin-bottom:10px;border-left:3px solid var(--bleu-nuit);line-height:1.7;"></div>
+          <!-- Règle LREGE -->
+          <div style="padding:8px 12px;background:var(--bg);border-radius:7px;font-size:11px;color:var(--text-muted);margin-bottom:14px;border-left:3px solid var(--bleu-ciel);">
+            <strong style="color:var(--bleu-nuit);">Règle LREGE :</strong>
+            Quota total GE = ⅓ classement FFE (au-delà du N1) + ⅔ classement régional GE
+          </div>
+
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;">
+            <!-- Hommes -->
+            <div>
+              <div style="font-size:11px;font-weight:700;color:var(--bleu-nuit);margin-bottom:8px;padding-bottom:4px;border-bottom:2px solid var(--bleu-ciel);">♂ Hommes</div>
+              <div class="field" style="margin-bottom:4px;">
+                <label>Quota N1 — Sélection directe FFE</label>
+                <input type="number" id="fQuotaN1H" value="32" min="0" max="200" oninput="updateWcTotal()">
+              </div>
+              <div id="rowWcH" style="display:flex;align-items:center;gap:8px;margin-bottom:8px;padding:5px 8px;background:var(--bg);border-radius:6px;font-size:12px;"><span style="color:var(--text-muted);">+ Wild Cards DTN :</span>
+                <input type="number" id="fWcH" value="4" min="0" max="4" style="width:48px;font-size:12px;padding:2px 6px;" oninput="updateWcTotal()">
+                <span style="color:var(--text-muted);">max 4</span>
+                <span id="totalN1H" style="margin-left:auto;font-weight:700;color:var(--bleu-nuit);font-size:12px;"></span>
+              </div>
+              <div class="field" style="margin-bottom:6px;">
+                <label>Quota total LREGE Grand Est</label>
+                <input type="number" id="fQuotaLregeH" value="0" min="0" max="50" oninput="updateRepartition()">
+              </div>
+              <div id="repartitionH" style="display:none;padding:7px 10px;background:var(--bg);border-radius:6px;font-size:11px;color:var(--bleu-nuit);margin-bottom:4px;">
+                <span id="repartitionHTexte"></span>
+              </div>
+              <!-- Champs cachés pour compatibilité avec buildParams -->
+              <input type="hidden" id="fQuotaN2RegH" value="0">
+            </div>
+            <!-- Dames -->
+            <div>
+              <div style="font-size:11px;font-weight:700;color:var(--bleu-nuit);margin-bottom:8px;padding-bottom:4px;border-bottom:2px solid var(--bleu-ciel);">♀ Dames</div>
+              <div class="field" style="margin-bottom:4px;">
+                <label>Quota N1 — Sélection directe FFE</label>
+                <input type="number" id="fQuotaN1D" value="32" min="0" max="200" oninput="updateWcTotal()">
+              </div>
+              <div id="rowWcD" style="display:flex;align-items:center;gap:8px;margin-bottom:8px;padding:5px 8px;background:var(--bg);border-radius:6px;font-size:12px;"><span style="color:var(--text-muted);">+ Wild Cards DTN :</span>
+                <input type="number" id="fWcD" value="4" min="0" max="4" style="width:48px;font-size:12px;padding:2px 6px;" oninput="updateWcTotal()">
+                <span style="color:var(--text-muted);">max 4</span>
+                <span id="totalN1D" style="margin-left:auto;font-weight:700;color:var(--bleu-nuit);font-size:12px;"></span>
+              </div>
+              <div class="field" style="margin-bottom:6px;">
+                <label>Quota total LREGE Grand Est</label>
+                <input type="number" id="fQuotaLregeD" value="0" min="0" max="50" oninput="updateRepartition()">
+              </div>
+              <div id="repartitionD" style="display:none;padding:7px 10px;background:var(--bg);border-radius:6px;font-size:11px;color:var(--bleu-nuit);margin-bottom:4px;">
+                <span id="repartitionDTexte"></span>
+              </div>
+              <!-- Champ caché -->
+              <input type="hidden" id="fQuotaN2RegD" value="0">
+            </div>
+          </div>
+        </div>
+
+        <div class="form-section" id="sectionQuotaJeunes" style="display:none;">
+          <div class="form-section-title">🎯 Quotas — Format Jeunes</div>
+
+          <!-- Toggles M13 : critères optionnels -->
+          <div id="m13OptionsRow" style="display:none;margin-bottom:14px;padding:10px 12px;background:var(--bg);border-radius:8px;border-left:3px solid var(--bleu-ciel);">
+            <div style="font-size:11px;font-weight:700;color:var(--bleu-nuit);margin-bottom:8px;">⚙️ Options M13 — Critères actifs</div>
+            <div style="display:flex;flex-direction:column;gap:8px;">
+              <div class="toggle-row" style="padding:0;">
+                <div>
+                  <div class="toggle-label" style="font-size:12px;">Quota fédéral (filtrage national)</div>
+                  <div class="toggle-sub">Filtre les tireurs dans le top N du classement national</div>
+                </div>
+                <label class="toggle">
+                  <input type="checkbox" id="fM13UseQuotaFed" onchange="toggleM13QuotaFed()">
+                  <span class="toggle-slider"></span>
+                </label>
+              </div>
+              <div class="toggle-row" style="padding:0;">
+                <div>
+                  <div class="toggle-label" style="font-size:12px;">Quota LREGE national</div>
+                  <div class="toggle-sub">Sélectionne des tireurs GE au-delà du quota fédéral</div>
+                </div>
+                <label class="toggle">
+                  <input type="checkbox" id="fM13UseQuotaNat" onchange="toggleM13QuotaNat()">
+                  <span class="toggle-slider"></span>
+                </label>
+              </div>
+            </div>
+          </div>
+
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;">
+            <!-- Hommes -->
+            <div>
+              <div style="font-size:11px;font-weight:700;color:var(--bleu-nuit);margin-bottom:8px;padding-bottom:4px;border-bottom:2px solid var(--bleu-ciel);">♂ Hommes</div>
+              <div id="zoneQuotaFedH">
+                <div class="field" style="margin-bottom:8px;">
+                  <label>Quota fédéral <span style="font-size:10px;color:var(--text-muted)">(filtrage)</span></label>
+                  <input type="number" id="fQuotaFedH" value="40" min="1" max="200">
+                </div>
+                <div class="field" style="margin-bottom:8px;">
+                  <label>Quota affiché dans le document <span style="font-size:10px;color:var(--text-muted)">(texte)</span></label>
+                  <input type="number" id="fQuotaFedHDisplay" value="40" min="1" max="200">
+                </div>
+              </div>
+              <div id="zoneQuotaNatH">
+                <div class="field" style="margin-bottom:8px;">
+                  <label>Quota LREGE national</label>
+                  <input type="number" id="fQuotaCNH" value="2" min="0" max="20">
+                </div>
+              </div>
+              <div class="field" style="margin-bottom:8px;">
+                <label>Quota LREGE régional</label>
+                <input type="number" id="fQuotaCRH" value="2" min="0" max="20">
+              </div>
+              <div class="field">
+                <label>Remplaçants</label>
+                <input type="number" id="fNbRemplH" value="10" min="0" max="50">
+              </div>
+            </div>
+            <!-- Dames -->
+            <div>
+              <div style="font-size:11px;font-weight:700;color:var(--bleu-nuit);margin-bottom:8px;padding-bottom:4px;border-bottom:2px solid var(--bleu-ciel);">♀ Dames</div>
+              <div id="zoneQuotaFedD">
+                <div class="field" style="margin-bottom:8px;">
+                  <label>Quota fédéral <span style="font-size:10px;color:var(--text-muted)">(filtrage)</span></label>
+                  <input type="number" id="fQuotaFedD" value="40" min="1" max="200">
+                </div>
+                <div class="field" style="margin-bottom:8px;">
+                  <label>Quota affiché dans le document <span style="font-size:10px;color:var(--text-muted)">(texte)</span></label>
+                  <input type="number" id="fQuotaFedDDisplay" value="40" min="1" max="200">
+                </div>
+              </div>
+              <div id="zoneQuotaNatD">
+                <div class="field" style="margin-bottom:8px;">
+                  <label>Quota LREGE national</label>
+                  <input type="number" id="fQuotaCND" value="2" min="0" max="20">
+                </div>
+              </div>
+              <div class="field" style="margin-bottom:8px;">
+                <label>Quota LREGE régional</label>
+                <input type="number" id="fQuotaCRD" value="2" min="0" max="20">
+              </div>
+              <div class="field">
+                <label>Remplaçants</label>
+                <input type="number" id="fNbRemplD" value="10" min="0" max="50">
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Nationalité -->
+        <div class="form-section">
+          <div class="form-section-title">🇫🇷 Critères d'éligibilité</div>
+          <div class="toggle-row">
+            <div>
+              <div class="toggle-label">Nationalité française uniquement</div>
+              <div class="toggle-sub">Exclut les tireurs de nationalité étrangère</div>
+            </div>
+            <label class="toggle">
+              <input type="checkbox" id="fNatFr">
+              <span class="toggle-slider"></span>
+            </label>
+          </div>
+        </div>
+
+        <!-- Textes N1 / Fédéral -->
+        <div class="form-section">
+          <div class="form-section-title" id="labelTextesN1">📝 Textes — Section N1</div>
+          <div class="textes-container" id="textesN1Container"></div>
+          <div class="add-texte-row">
+            <input type="text" id="newTexteN1" placeholder="Ajouter un critère..." onkeydown="if(event.key==='Enter') addTexte('n1')">
+            <button class="btn btn-secondary" onclick="addTexte('n1')">+ Ajouter</button>
+          </div>
+        </div>
+
+        <!-- Textes N2 / CREGE -->
+        <div class="form-section">
+          <div class="form-section-title" id="labelTextesN2">📝 Textes — Section N2</div>
+          <div class="textes-container" id="textesN2Container"></div>
+          <div class="add-texte-row">
+            <input type="text" id="newTexteN2" placeholder="Ajouter un critère..." onkeydown="if(event.key==='Enter') addTexte('n2')">
+            <button class="btn btn-secondary" onclick="addTexte('n2')">+ Ajouter</button>
+          </div>
+        </div>
+        <!-- Actions individuel H+D -->
+        <div class="btn-row" id="sectionActions">
+          <button class="btn btn-primary" style="width:100%;" onclick="genererHD()" id="btnGenererHD">
+            ⚡ Générer H+D (Excel 2 feuilles)
+          </button>
+        </div>
+        <!-- Actions Master GE -->
+        <div class="btn-row" id="sectionActionsMGE" style="display:none;"></div>
+
+      </div>
+
+      <!-- Zone téléchargements — fichiers générés -->
+      <div id="zoneTelechargement" style="display:none;padding:14px 24px 18px;border-top:2px solid var(--border);background:var(--bg);">
+        <div style="font-size:11px;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:10px;">📥 Fichiers générés</div>
+        <div id="dlList" style="display:flex;flex-direction:column;gap:8px;"></div>
+      </div>
+
+    </div>
+  </div>
+
+
+</div>
+
+<div class="toast-container" id="toastContainer"></div>
+
+<script>
+// ── État global ──
+// ── Caches globaux (déclarés tôt pour éviter ReferenceError) ──────
+const multiCache  = {};   // "nat_H"|"reg_H"|"nat_D"|"reg_D" → clé cache
+const pdfFfeCache = {};   // pdfFfeCache[genre] → clé PDF FFE (open_circuit)
+const pdfCache    = {};   // pdfCache[genre] → clé PDF Engarde indiv
+const pdfEqCache  = {};   // pdfEqCache[genre] → clé PDF équipes
+const pdfRegCache = {};   // pdfRegCache[genre] → clé PDF classement régional
+
+const state = {
+  disc:         null,   // discipline active ('olympique'|'laser'|'artistique')
+  cat:          null,   // catégorie active (ex: "Seniors")
+  arme:         null,   // arme active (ex: "S")
+  genre:        'H',
+  mode:         'individuel',
+  competition:  null,
+  date:         '',     // persisté entre switches de mode
+  lieu:         '',
+  date_limite:  '',     // persisté entre switches de mode
+  date_extranet:'',
+  textes: { n1: [], n2: [] },
+  uploads: {},
+};
+
+const CATS = {{ categories | tojson }};
+const cat_map = {};
+CATS.forEach(c => cat_map[c.id] = c);
+
+// ── Sélection catégorie ──
+// ── Sélecteurs en cascade ──────────────────────────────
+const COMPETITIONS_PAR_CAT = {};   // rempli dynamiquement depuis cat_map
+
+// ── Sélection discipline ───────────────────────────────
+function onDiscChange(disc) {
+  const catDiv = document.getElementById('selCatDiv');
+  const sep    = document.getElementById('discSep');
+
+  // Réinitialiser la cascade aval
+  document.getElementById('selCat').value = '';
+  document.getElementById('selCompDiv').style.display = 'none';
+  document.getElementById('selArmeDiv').style.display = 'none';
+  document.getElementById('selModeDiv').style.display = 'none';
+  document.getElementById('selResume').style.display  = 'none';
+
+  // Basculer l'état actif si on reclique sur la discipline active
+  if (state.disc === disc) {
+    disc = null;   // désélectionner
+  }
+
+  state.disc = disc || null;
+  state.cat  = null;
+  state.arme = null;
+  // Vider les caches mémoire (pas les zones visuelles — évite les erreurs DOM)
+  ['nat_H','reg_H','nat_D','reg_D','nat_h','reg_h','nat_d','reg_d'].forEach(k => {
+    delete multiCache[k];
+  });
+  ['H','D'].forEach(g => {
+    delete pdfCache[g]; delete pdfEqCache[g]; delete pdfRegCache[g];
+    delete multiCache[`nat_${g}`];
+  });
+
+  // Mettre à jour les cartes
+  document.querySelectorAll('.disc-card').forEach(c => c.classList.remove('active'));
+  if (disc) {
+    const card = document.getElementById(`disc-${disc}`);
+    if (card) card.classList.add('active');
+  }
+
+  if (!disc) {
+    catDiv.style.display = 'none';
+    sep.style.display    = 'none';
+    const psl = document.getElementById('panelSabreLaser');
+    if (psl) psl.style.display = 'none';
+    showCentralEmpty();
+    return;
+  }
+  // Masquer le panneau SL si on ne sélectionne pas laser
+  const pslEl = document.getElementById('panelSabreLaser');
+  if (disc !== 'laser' && pslEl) pslEl.style.display = 'none';
+
+  if (disc === 'olympique') {
+    catDiv.style.display = '';
+    sep.style.display    = '';
+    showCentralEmpty();
+  } else if (disc === 'laser') {
+    catDiv.style.display = 'none';
+    sep.style.display    = '';
+    document.getElementById('centralEmpty').style.display  = 'none';
+    document.getElementById('centralForm').style.display   = 'none';
+    document.getElementById('panelSabreLaser').style.display = 'flex';
+    initSabreLaser();
+  } else {
+    catDiv.style.display = 'none';
+    sep.style.display    = '';
+    document.getElementById('panelSabreLaser').style.display = 'none';
+    showCentralMessage(disc);
+  }
+}
+
+function showCentralMessage(disc) {
+  const DISC_INFO = {
+    laser:      { icon: '🔫', label: 'Sabre Laser',       msg: 'Les catégories et règles de sélection seront ajoutées prochainement.' },
+    artistique: { icon: '🎭', label: 'Escrime Artistique', msg: 'Les catégories et règles de sélection seront ajoutées prochainement.' },
+  };
+  const info = DISC_INFO[disc] || { icon: '❓', label: disc, msg: '' };
+  document.getElementById('centralEmpty').style.display = 'flex';
+  document.getElementById('centralForm').style.display  = 'none';
+  const icon = document.querySelector('#centralEmpty .icon');
+  const txt  = document.querySelector('#centralEmpty p');
+  if (icon) icon.textContent = info.icon;
+  if (txt)  txt.innerHTML    = `<strong>${info.label}</strong><br><span style="font-size:12px;color:var(--text-muted)">${info.msg}</span>`;
+}
+
+function onCatChange() {
+  const catId = document.getElementById('selCat').value;
+  const compDiv  = document.getElementById('selCompDiv');
+  const armeDiv  = document.getElementById('selArmeDiv');
+  const resume   = document.getElementById('selResume');
+
+  // Réinitialiser les sélecteurs suivants
+  document.getElementById('selComp').innerHTML = '<option value="">— Choisir —</option>';
+  document.getElementById('selArme').selectedIndex = 0;
+  compDiv.style.display  = 'none';
+  armeDiv.style.display  = 'none';
+  resume.style.display   = 'none';
+  document.getElementById('selModeDiv').style.display = 'none';
+  state.cat = catId; state.arme = null; state.mode = 'individuel';
+  document.getElementById('modeBtnInd').classList.add('active');
+  document.getElementById('modeBtnEq').classList.remove('active');
+  purgeUploads();
+
+  // Taille équipe par défaut : 5 pour Vétérans, 4 pour M17→Seniors
+  const elTailleEq = document.getElementById('fTailleEquipeSen');
+  if (elTailleEq) {
+    const isVetCat = ['V1','V2','V3','V4'].includes(catId);
+    if (!elTailleEq._userModified) elTailleEq.value = isVetCat ? 5 : 4;
+  }
+
+  // Wild Cards : visibles pour M17, M20 et Seniors uniquement
+  const catsAvecWC = ['M17','M20','M23','Seniors'];
+  const hasWC = catsAvecWC.includes(catId);
+  ['rowWcH','rowWcD'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.style.display = hasWC ? 'flex' : 'none';
+  });
+  if (!hasWC) {
+    const wH = document.getElementById('fWcH');
+    const wD = document.getElementById('fWcD');
+    if (wH) wH.value = 0;
+    if (wD) wD.value = 0;
+  }
+
+  if (!catId) { showCentralEmpty(); return; }
+
+  const cat = cat_map[catId];
+  if (!cat) return;
+
+  // Peupler le select compétition (liste ou valeur unique)
+  const selComp = document.getElementById('selComp');
+  const comps = cat.competitions || [cat.competition];
+  if (comps.length === 1) {
+    // Une seule compétition : sélection automatique
+    selComp.innerHTML = `<option value="${comps[0]}">${comps[0]}</option>`;
+    compDiv.style.display = 'none';   // inutile d'afficher
+    state.competition = comps[0];
+  } else {
+    selComp.innerHTML = '<option value="">— Choisir une compétition —</option>'
+      + comps.map(c => `<option value="${c}">${c}</option>`).join('');
+    compDiv.style.display = '';
+    state.competition = null;
+  }
+
+  armeDiv.style.display = comps.length === 1 ? '' : 'none';
+}
+
+function onCompChange() {
+  const catId = document.getElementById('selCat').value;
+  const comp  = document.getElementById('selComp').value;
+  const armeDiv = document.getElementById('selArmeDiv');
+  if (!comp) { armeDiv.style.display = 'none'; return; }
+  state.competition = comp;
+  armeDiv.style.display = '';
+  // Si une arme était déjà sélectionnée, déclencher le formulaire
+  if (state.arme) { updateResume(); renderForm(); }
+}
+
+function onArmeChange() {
+  const arme = document.getElementById('selArme').value;
+  if (!arme) return;
+  if (arme !== state.arme) purgeUploads();   // purger si l'arme change
+  state.arme = arme;
+  // Afficher le sélecteur de mode si équipes disponibles
+  const cat = cat_map[state.cat];
+  const modeDiv = document.getElementById('selModeDiv');
+  if (cat && cat.equipes) {
+    modeDiv.style.display = '';
+  } else {
+    modeDiv.style.display = 'none';
+    state.mode = 'individuel';
+  }
+  updateResume();
+  renderForm();
+}
+
+// ── Équipes M15 ────────────────────────────────────────
+async function genererEquipesM15() {
+  const btn = document.getElementById('btnGenererEquipes');
+  btn.innerHTML = '<span class="spinner"></span> Génération...';
+  btn.disabled = true;
+
+  const params = buildParams();
+  params.taille_equipe    = parseInt(document.getElementById('fTailleEquipe')?.value || 4);
+  params.cle_national_h   = multiCache['nat_H'] || null;
+  params.cle_regional_h   = multiCache['reg_H'] || null;
+  params.cle_national_d   = multiCache['nat_D'] || null;
+  params.cle_regional_d   = multiCache['reg_D'] || null;
+  params.cat        = 'M15';
+  params.arme       = state.arme;
+
+  if (!params.cle_regional_h && !params.cle_regional_d) {
+    toast('Chargez au moins un classement régional H ou D', 'error');
+    btn.innerHTML = '⚡ Générer Équipes H+D (Excel 2 feuilles)'; btn.disabled = false; return;
+  }
+  // S'assurer que date et lieu sont bien transmis
+  params.date                    = document.getElementById('fDate')?.value        || state.date        || '';
+  params.lieu                    = document.getElementById('fLieu')?.value        || state.lieu        || '';
+  params.date_limite_retour      = document.getElementById('fDateLimite')?.value  || state.date_limite || '';
+  params.date_engagement_extranet= document.getElementById('fDateExtranet')?.value|| state.date_extranet || '';
+  if (!params.date) {
+    toast("⚠️ Renseignez la date de l'épreuve individuelle (la date équipes sera J+1)", 'error');
+    btn.innerHTML = '⚡ Générer Équipes H+D (Excel 2 feuilles)'; btn.disabled = false; return;
+  }
+
+  try {
+    const res = await fetch('/api/generer_equipes_m15', {
+      method: 'POST', headers: {'Content-Type':'application/json'},
+      body: JSON.stringify(params)
+    });
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({error: `Erreur HTTP ${res.status}`}));
+      toast('Erreur serveur : ' + (err.error || res.statusText), 'error');
+      return;
+    }
+    const data = await res.json();
+    if (data.error) { toast('Erreur : ' + data.error, 'error'); return; }
+
+    const feuilles = data.feuilles || ['Hommes','Dames'];
+    toast(`✅ Équipes M15 — ${feuilles.join(' + ')} — fichier prêt`, 'success');
+    ajouterTelechargement(data.fichier, feuilles.join(' + '));
+    ajouterHistorique(`M15 Équipes · ${feuilles.join('+')} → ${data.fichier}`);
+  } catch(e) { toast('Erreur : ' + e.message, 'error'); }
+  finally { btn.innerHTML = '⚡ Générer Équipes H+D (Excel 2 feuilles)'; btn.disabled = false; }
+}
+
+// ── Purge des classements uploadés ────────────────────
+function purgeUploads() {
+  // Vider le cache mémoire
+  ['nat_H','reg_H','nat_D','reg_D'].forEach(k => delete multiCache[k]);
+  // Réinitialiser les PDF
+  ['H','D'].forEach(g => {
+    delete pdfCache[g];
+    delete pdfEqCache[g];
+    delete pdfRegCache[g];
+    const zr = document.getElementById(`pdfRegZone${g}`);
+    const ir = document.getElementById(`pdfRegInfo${g}`);
+    const inr = document.getElementById(`pdfRegInput${g}`);
+    if (zr) zr.classList.remove('loaded');
+    if (ir) ir.textContent = 'PDF Engarde (optionnel)';
+    if (inr) inr.value = '';
+    const ze = document.getElementById(`pdfEqZone${g}`);
+    const ie = document.getElementById(`pdfEqInfo${g}`);
+    const ine = document.getElementById(`pdfEqInput${g}`);
+    if (ze) ze.classList.remove('loaded');
+    if (ie) ie.textContent = 'Cliquez pour importer';
+    if (ine) ine.value = '';
+    const z = document.getElementById(`pdfZone${g}`);
+    const i = document.getElementById(`pdfInfo${g}`);
+    const inp = document.getElementById(`pdfInput${g}`);
+    if (z) z.classList.remove('loaded');
+    if (i) i.textContent = 'Cliquez pour importer';
+    if (inp) inp.value = '';
+  });
+
+  // Réinitialiser chaque zone upload visuellement
+  [['uploadNatH','infoNatH','Export FFE .xlsx'],
+   ['uploadRegH','infoRegH','Export FFE GE .xlsx'],
+   ['uploadNatD','infoNatD','Export FFE .xlsx'],
+   ['uploadRegD','infoRegD','Export FFE GE .xlsx']].forEach(([zoneId, infoId, placeholder]) => {
+    const zone = document.getElementById(zoneId);
+    const info = document.getElementById(infoId);
+    if (zone) {
+      zone.classList.remove('loaded');
+      // Remettre l'input file à zéro
+      const input = zone.querySelector('input[type="file"]');
+      if (input) input.value = '';
+    }
+    if (info) info.textContent = placeholder;
+  });
+  // Réinitialiser les zones PDF FFE individuel (liste qualifiés N1)
+  ['H','D'].forEach(g => {
+    const zone = document.getElementById(`uploadPdfFfe${g}`);
+    const info = document.getElementById(`infoPdfFfe${g}`);
+    if (zone) { zone.classList.remove('loaded'); const inp = zone.querySelector('input[type="file"]'); if (inp) inp.value = ''; }
+    if (info) info.textContent = `Liste qualifiés ${g} (.pdf)`;
+    delete multiCache[`nat_${g}`];
+  });
+}
+
+// ── M13 : toggle classement national ──────────────────
+function toggleM13Nat() {
+  const active = document.getElementById('fM13UseNat').checked;
+  const zoneH  = document.getElementById('zoneNatHDiv');
+  const zoneD  = document.getElementById('zoneNatDDiv');
+  if (zoneH) zoneH.style.display = active ? '' : 'none';
+  if (zoneD) zoneD.style.display = active ? '' : 'none';
+  if (!active) { delete multiCache['nat_H']; delete multiCache['nat_D']; }
+}
+
+// ── M13 : toggle quota fédéral ─────────────────────────
+function toggleM13QuotaFed() {
+  const active = document.getElementById('fM13UseQuotaFed').checked;
+  ['zoneQuotaFedH','zoneQuotaFedD'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.style.display = active ? '' : 'none';
+  });
+}
+
+// ── M13 : toggle quota LREGE national ──────────────────
+function toggleM13QuotaNat() {
+  const active = document.getElementById('fM13UseQuotaNat').checked;
+  ['zoneQuotaNatH','zoneQuotaNatD'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.style.display = active ? '' : 'none';
+  });
+}
+
+function setMode(mode) {
+  state.mode = mode;
+  document.getElementById('modeBtnInd').classList.toggle('active', mode === 'individuel');
+  document.getElementById('modeBtnEq').classList.toggle('active',  mode === 'equipes');
+  if (state.arme) {
+    updateResume();
+    renderForm();
+  }
+}
+
+function updateResume() {
+  const cat = cat_map[state.cat];
+  if (!cat) return;
+  const armeLabels = { S: 'Sabre', F: 'Fleuret', E: 'Épée' };
+  const resume = document.getElementById('selResume');
+  const text   = document.getElementById('selResumeText');
+  const comp   = document.getElementById('selResumeComp');
+  const badge  = `<span style="display:inline-block;padding:2px 8px;border-radius:12px;font-size:10px;font-weight:700;color:#fff;background:var(--bleu-ciel);margin-right:4px;">${cat.label}</span>`;
+  const arme   = state.arme ? ` · ${armeLabels[state.arme] || state.arme}` : '';
+  const modeLabel = state.mode === 'equipes' ? ' · 👥 Équipes' : ' · 🤺 Individuel';
+  text.innerHTML = badge + cat.label + arme + (cat.equipes ? modeLabel : '');
+  comp.textContent = state.competition || cat.competition;
+  resume.style.display = '';
+}
+
+function ajouterHistorique(label) {
+  const div = document.getElementById('historiqueDiv');
+  const list = document.getElementById('historiqueList');
+  div.style.display = '';
+  const item = document.createElement('div');
+  item.className = 'hist-item';
+  item.innerHTML = `<span class="hist-dot"></span><span>${label}</span>`;
+  list.prepend(item);
+  // Garder max 8 entrées
+  while (list.children.length > 8) list.removeChild(list.lastChild);
+}
+
+// Compatibilité : selectCat/selectArme appelés depuis d'autres endroits
+function selectCat(catId) {
+  document.getElementById('selCat').value = catId;
+  onCatChange();
+}
+function selectArme(catId, arme, genre) {
+  document.getElementById('selCat').value = catId;
+  document.getElementById('selArme').value = arme;
+  onCatChange();
+  state.arme = arme;
+  renderForm();
+}
+
+
+// ── Rendu formulaire ──
+function renderForm() {
+  document.getElementById('centralEmpty').style.display = 'none';
+  document.getElementById('centralForm').style.display = 'flex';
+
+  const cat = cat_map[state.cat];
+  const armeLabel = { S: 'Sabre', F: 'Fleuret', E: 'Épée' }[state.arme] || '';
+
+  document.getElementById('formTitle').textContent = `${cat.label} — ${armeLabel}`;
+  document.getElementById('formSubtitle').textContent = cat.competition;
+
+  // Tabs genre
+
+  // Format
+  const isJeunes = cat.format === 'jeunes';
+  const isVetSenior = ['Seniors','V1','V2','V3','V4'].includes(state.cat);
+  const isEquipes  = state.mode === 'equipes';
+  document.getElementById('sectionImportFFE').style.display       = isEquipes ? 'none' : '';
+  document.getElementById('sectionParticipation').style.display   = (isVetSenior && !isEquipes) ? '' : 'none';
+  document.getElementById('sectionEquipesAVenir').style.display   = isEquipes ? '' : 'none';
+  // Infos groupe équipe vétérans
+  const groupeInfo  = document.getElementById('groupeEquipeInfo');
+  const groupeInfoA = document.getElementById('groupeEquipeInfoAutres');
+  const isM15Equipes = isEquipes && state.cat === 'M15';
+  if (isEquipes && !isM15Equipes && state.arme) setTimeout(initEquipesSeniors, 50);
+  // Afficher le bon sous-panneau
+  const panelM15   = document.getElementById('sectionEquipesM15');
+  const panelAutres= document.getElementById('sectionEquipesAVenirAutres');
+  if (panelM15)    panelM15.style.display    = isM15Equipes ? '' : 'none';
+  if (panelAutres) panelAutres.style.display = (isEquipes && !isM15Equipes) ? '' : 'none';
+  // Infos groupe
+  if (isM15Equipes && cat.groupe_equipe && groupeInfo) {
+    groupeInfo.textContent = `Groupe : ${cat.groupe_equipe}`; groupeInfo.style.display = '';
+  } else if (groupeInfo) { groupeInfo.style.display = 'none'; }
+  if (isEquipes && !isM15Equipes && cat.groupe_equipe && groupeInfoA) {
+    groupeInfoA.textContent = `Groupe : ${cat.groupe_equipe}`; groupeInfoA.style.display = '';
+  } else if (groupeInfoA) { groupeInfoA.style.display = 'none'; }
+  // Masquer les autres sections si mode équipes
+  document.getElementById('sectionQuotaSeniors').style.display    = (isJeunes || isEquipes) ? 'none' : '';
+  const pdfSec = document.getElementById('sectionPdfImport');
+  if (pdfSec) pdfSec.style.display = (isJeunes || isEquipes) ? 'none' : '';
+  document.getElementById('sectionQuotaJeunes').style.display     = (isJeunes && !isEquipes) ? '' : 'none';
+
+  // Open circuit : M20/M17/M23 Sabre
+  const isOpenCircuit = !isEquipes && ['M20','M17','M23'].includes(state.cat) && state.arme === 'S';
+  const ocSec = document.getElementById('sectionOpenCircuit');
+  if (ocSec) ocSec.style.display = isOpenCircuit ? '' : 'none';
+  // Masquer les champs quota LREGE en mode open_circuit
+  ['sectionQuotaJeunes'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el && isOpenCircuit) el.style.display = 'none';
+  });
+
+  // M23 : PDF FFE prioritaire, Excel optionnel
+  const m23Info = document.getElementById('m23NatInfo');
+  if (m23Info) m23Info.style.display = (state.cat === 'M23' && !isEquipes) ? '' : 'none';
+  ['H','D'].forEach(g => {
+    const infoNat = document.getElementById(`infoNat${g}`);
+    const zoneNat = document.getElementById(`uploadNat${g}`);
+    const infoPdf = document.getElementById(`infoPdfFfe${g}`);
+    const zonePdf = document.getElementById(`uploadPdfFfe${g}`);
+    const isM23      = state.cat === 'M23' && !isEquipes;
+    const isFfeN1N2  = !isEquipes && ['M17','M20'].includes(state.cat) && ['F','E'].includes(state.arme);
+    if (infoNat) {
+      infoNat.textContent = isM23 ? 'Export FFE .xlsx (optionnel)' : isFfeN1N2 ? '✦ Export FFE .xlsx (obligatoire N3/N2)' : 'Export FFE .xlsx';
+      infoNat.style.fontStyle  = isM23 ? 'italic' : '';
+      infoNat.style.fontWeight = isFfeN1N2 ? '700' : '';
+      infoNat.style.color      = isFfeN1N2 ? 'var(--bleu-nuit)' : '';
+    }
+    if (zoneNat) {
+      zoneNat.style.opacity     = isM23 ? '0.5' : '1';
+      zoneNat.style.borderStyle = isM23 ? 'dashed' : '';
+      zoneNat.style.borderColor = isFfeN1N2 ? '#3B82F6' : '';
+      zoneNat.style.borderWidth = isFfeN1N2 ? '2px' : '';
+    }
+    if (infoPdf) {
+      infoPdf.textContent = isM23 ? '✦ Liste qualifiés FFE (prioritaire)' : `Liste qualifiés ${g} (.pdf)`;
+      infoPdf.style.color = isM23 ? 'var(--bleu-nuit)' : '';
+      infoPdf.style.fontWeight = isM23 ? '600' : '';
+    }
+    if (zonePdf && isM23) {
+      zonePdf.style.borderColor = 'var(--bleu-ciel)';
+      zonePdf.style.borderWidth = '2px';
+    } else if (zonePdf) {
+      zonePdf.style.borderColor = '';
+      zonePdf.style.borderWidth = '';
+    }
+  });
+
+  // Zone PDF FFE : M17→Vétérans, individuel uniquement
+  const catsAvecPdfFfe = ['M17','M20','M23','Seniors','V1','V2','V3','V4'];
+  const zonePdfFfe = document.getElementById('zoneUploadPdfFfe');
+  if (zonePdfFfe) zonePdfFfe.style.display = (catsAvecPdfFfe.includes(state.cat) && !isEquipes) ? '' : 'none';
+
+  // M23 : adapter le titre et le style de la section PDF FFE
+  const pdfFfeTitre = document.getElementById('pdfFfeTitre');
+  const pdfFfeDesc  = document.getElementById('pdfFfeDesc');
+  const pdfFfeZone  = document.getElementById('zoneUploadPdfFfe');
+  if (pdfFfeTitre) {
+    const isM23      = state.cat === 'M23' && !isEquipes;
+    const isFfeN1N2  = !isEquipes && ['M17','M20'].includes(state.cat) && ['F','E'].includes(state.arme);
+    if (isM23) {
+      pdfFfeTitre.innerHTML = '✦ Import prioritaire — Liste qualifiés (PDF officiel FFE)';
+      pdfFfeTitre.style.color = '#1E40AF';
+      if (pdfFfeZone) { pdfFfeZone.style.borderLeftColor = '#3B82F6'; pdfFfeZone.style.background = '#EFF6FF'; }
+      if (pdfFfeDesc) pdfFfeDesc.innerHTML = 'Pour M23, importez le <strong>PDF FFE liste des qualifiés</strong>.<br>Le classement Excel national n\'est pas nécessaire.';
+    } else if (isFfeN1N2) {
+      pdfFfeTitre.innerHTML = '✦ Import obligatoire — Liste qualifiés N1 + N2 (PDF officiel FFE)';
+      pdfFfeTitre.style.color = '#1E40AF';
+      if (pdfFfeZone) { pdfFfeZone.style.borderLeftColor = '#3B82F6'; pdfFfeZone.style.background = '#EFF6FF'; }
+      if (pdfFfeDesc) pdfFfeDesc.innerHTML = 'Ce PDF contient les listes N1 et N2 FFE.<br><strong>Hommes</strong> : N1 + N2 sur liste FFE, N3 sur quotas LREGE.<br><strong>Dames</strong> : N1 sur liste FFE, N2 sur quotas LREGE.';
+    } else {
+      pdfFfeTitre.innerHTML = '📄 Alternative — Liste qualifiés N1 (PDF officiel FFE)';
+      pdfFfeTitre.style.color = '#92400e';
+      if (pdfFfeZone) { pdfFfeZone.style.borderLeftColor = '#D97706'; pdfFfeZone.style.background = '#FFFBEB'; }
+      if (pdfFfeDesc) pdfFfeDesc.innerHTML = 'Importez le PDF FFE de la liste des qualifiés nationaux.<br>Il remplace le classement Excel national pour identifier les tireurs GE qualifiés en N1.';
+    }
+  }
+
+  // ── Pré-remplir les quotas selon cat+arme ──
+  if (state.arme && !isEquipes) {
+    appliquerDefautsReglementaires(state.cat, state.arme);
+  }
+  document.getElementById('sectionActions').style.display         = isEquipes ? 'none' : '';
+
+  document.getElementById('labelTextesN1').textContent = isJeunes ? '📝 Textes — Quota Fédéral' : '📝 Textes — Section N1';
+  document.getElementById('labelTextesN2').textContent = isJeunes ? '📝 Textes — Quota LREGE' : '📝 Textes — Section N2';
+
+  // Masquer les blocs textes pour M17→Vétérans (générés automatiquement côté serveur)
+  const showTextes = ['M13','M15'].includes(state.cat) && !isEquipes;
+  ['labelTextesN1','labelTextesN2'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el && el.closest('.form-section')) el.closest('.form-section').style.display = showTextes ? '' : 'none';
+  });
+
+  // M13 : toggle classement national
+  const isM13 = state.cat === 'M13';
+  const m13Row = document.getElementById('m13NatToggleRow');
+  const zoneNat = document.getElementById('zoneNatHD');
+  if (m13Row) m13Row.style.display = isM13 ? '' : 'none';
+  if (zoneNat) zoneNat.style.display = (!isM13 || document.getElementById('fM13UseNat')?.checked) ? '' : 'none';
+  const m13Opts = document.getElementById('m13OptionsRow');
+  if (isM13) {
+    const natCheck = document.getElementById('fM13UseNat');
+    if (natCheck) natCheck.checked = false;
+    const zH = document.getElementById('zoneNatHDiv');
+    const zD = document.getElementById('zoneNatDDiv');
+    if (zH) zH.style.display = 'none';
+    if (zD) zD.style.display = 'none';
+    if (zoneNat) zoneNat.style.display = '';
+    // Afficher les options M13
+    if (m13Opts) m13Opts.style.display = '';
+    // Remettre les toggles à actif par défaut
+    const fedCheck = document.getElementById('fM13UseQuotaFed');
+    const natLregeCheck = document.getElementById('fM13UseQuotaNat');
+    if (fedCheck) { fedCheck.checked = false; toggleM13QuotaFed(); }
+    if (natLregeCheck) { natLregeCheck.checked = false; toggleM13QuotaNat(); }
+  } else {
+    const zH = document.getElementById('zoneNatHDiv');
+    const zD = document.getElementById('zoneNatDDiv');
+    if (zH) zH.style.display = '';
+    if (zD) zD.style.display = '';
+    if (m13Opts) m13Opts.style.display = 'none';
+    // Toutes les zones quota visibles
+    ['zoneQuotaFedH','zoneQuotaFedD','zoneQuotaNatH','zoneQuotaNatD'].forEach(id => {
+      const el = document.getElementById(id);
+      if (el) el.style.display = '';
+    });
+  }
+
+  // Pré-remplir depuis config sauvegardée ou defaults
+  // date/lieu : préserver la valeur déjà saisie (ex: switch individuel → équipes)
+  const saved = getSavedConfig();
+  document.getElementById('fNatFr').checked      = saved.nationalite_francaise !== undefined ? saved.nationalite_francaise : cat.nationalite_fr;
+  // Priorité : champ actuel > state > config sauvegardée > calendrier CDF
+  const currentDate = document.getElementById('fDate')?.value || '';
+  const currentLieu = document.getElementById('fLieu')?.value || '';
+  const restoredDate = currentDate || state.date || saved.date || '';
+  const restoredLieu = currentLieu || state.lieu || saved.lieu || '';
+  const restoredComp = saved.competition || state.competition || cat.competition || '';
+  document.getElementById('fDate').value = restoredDate;
+  document.getElementById('fLieu').value = restoredLieu;
+  document.getElementById('fCompetition').value = restoredComp;
+  state.date = restoredDate;
+  state.lieu = restoredLieu;
+  // Charger depuis le calendrier si les champs sont vides
+  if (!restoredDate || !restoredLieu) {
+    chargerDatesCDF(state.cat, state.arme, state.mode);
+  }
+  document.getElementById('fMailRetour').value    = saved.mail_retour || 'administration@crege.fr, copie thomas.ducourant@gmail.com';
+  const restoredLimite   = state.date_limite   || document.getElementById('fDateLimite').value   || saved.date_limite_retour || '';
+  const restoredExtranet = state.date_extranet || document.getElementById('fDateExtranet').value || saved.date_engagement_extranet || '';
+  document.getElementById('fDateLimite').value   = restoredLimite;
+  document.getElementById('fDateExtranet').value = restoredExtranet;
+  state.date_limite   = restoredLimite;
+  state.date_extranet = restoredExtranet;
+  // Arbitrage
+  const arbSaved = saved.arbitrage_config || { source: 'aucun', seuil1: 4, seuil2: 9 };
+  setArbSource(arbSaved.source || 'aucun');
+  document.getElementById('fArbSeuil1').value = arbSaved.seuil1 ?? arbSaved.ratio ?? 4;
+  const use2saved = arbSaved.use_seuil2 ?? false;
+  const tog2 = document.getElementById('fArbSeuil2Toggle');
+  if (tog2) { tog2.checked = use2saved; toggleArbSeuil2(); }
+  document.getElementById('fArbSeuil2').value = arbSaved.seuil2 ?? 9;
+  updateArbApercu();
+
+  // Participation
+  const minComp = saved.min_participations_nationales || 0;
+  document.getElementById('fParticiToggle').checked = minComp > 0;
+  document.getElementById('fMinCompNat').value = minComp > 0 ? minComp : 1;
+  document.getElementById('participationDetails').style.display = minComp > 0 ? '' : 'none';
+
+  // Quotas H/D (Jeunes et Seniors)
+  document.getElementById('fQuotaFedH').value        = saved.quota_federal_h         ?? saved.quota_federal         ?? 40;
+  document.getElementById('fQuotaFedHDisplay').value = saved.quota_federal_h_display ?? saved.quota_federal_h ?? saved.quota_federal ?? 40;
+  document.getElementById('fQuotaCNH').value    = saved.quota_crege_nat_h ?? saved.quota_crege_nat ?? 2;
+  document.getElementById('fQuotaCRH').value    = saved.quota_crege_reg_h ?? saved.quota_crege_reg ?? 2;
+  document.getElementById('fNbRemplH').value    = saved.nb_remplacants_h  ?? saved.nb_remplacants  ?? 10;
+  document.getElementById('fQuotaFedD').value        = saved.quota_federal_d         ?? saved.quota_federal         ?? 40;
+  document.getElementById('fQuotaFedDDisplay').value = saved.quota_federal_d_display ?? saved.quota_federal_d ?? saved.quota_federal ?? 40;
+  document.getElementById('fQuotaCND').value    = saved.quota_crege_nat_d ?? saved.quota_crege_nat ?? 2;
+  document.getElementById('fQuotaCRD').value    = saved.quota_crege_reg_d ?? saved.quota_crege_reg ?? 2;
+  document.getElementById('fNbRemplD').value    = saved.nb_remplacants_d  ?? saved.nb_remplacants  ?? 10;
+  document.getElementById('fQuotaN1H').value    = saved.quota_n1_h ?? saved.quota_n1 ?? 32;
+  const elWcH = document.getElementById('fWcH');
+  const elWcD = document.getElementById('fWcD');
+  if (elWcH) elWcH.value = saved.nb_wildcards_h ?? 4;
+  if (elWcD) elWcD.value = saved.nb_wildcards_d ?? 4;
+  updateWcTotal();
+  document.getElementById('fQuotaN1D').value    = saved.quota_n1_d ?? saved.quota_n1 ?? 32;
+  // Quota LREGE : recalculer depuis quota_n2_reg si déjà sauvegardé
+  const lregeH = saved.quota_lrege_h ?? (saved.quota_n2_reg_h ? (saved.quota_n2_reg_h + Math.round(saved.quota_n2_reg_h/2)) : 0);
+  const lregeD = saved.quota_lrege_d ?? (saved.quota_n2_reg_d ? (saved.quota_n2_reg_d + Math.round(saved.quota_n2_reg_d/2)) : 0);
+  const elLH = document.getElementById('fQuotaLregeH');
+  const elLD = document.getElementById('fQuotaLregeD');
+  if (elLH) elLH.value = lregeH;
+  if (elLD) elLD.value = lregeD;
+  updateRepartition();
+
+  // Discipline auto
+  updateDiscipline();
+
+  // Textes
+  state.textes.n1 = saved.textes_n1 || (isJeunes
+    ? ['Les 40 premiers du classement national hors DOM/TOM', 'Les absents ne sont pas remplacés']
+    : ['Les 32 premiers du classement national hors DOM/TOM', 'Les absents ne sont pas remplacés']);
+  state.textes.n2 = saved.textes_n2 || (isJeunes
+    ? [`Quota LREGE : ${(saved.quota_crege_nat_h??2)+(saved.quota_crege_reg_h??2)} places réparties de la façon suivante :`]
+    : ["Épreuve open sous réserve d'avoir participé à au moins une épreuve nationale"]);
+  renderTextes();
+}
+
+function showCentralEmpty() {
+  document.getElementById('centralEmpty').style.display = 'flex';
+  document.getElementById('centralForm').style.display  = 'none';
+  // Restaurer le message par défaut
+  const icon = document.querySelector('#centralEmpty .icon');
+  const txt  = document.querySelector('#centralEmpty p');
+  if (icon) icon.textContent = '⚔️';
+  if (txt)  txt.innerHTML    = 'Utilisez les menus à gauche pour choisir<br>une catégorie et une arme.';
+}
+
+function updateDiscipline() {
+  if (!state.cat || !state.arme) return;
+  const armeLabel = { S: 'SABRE', F: 'FLEURET', E: 'ÉPÉE' }[state.arme];
+  const cat = cat_map[state.cat];
+  // Pour les vétérans, inclure le niveau (V1, V2, V3, V4) dans le libellé
+  let catLabel;
+  if (['V1','V2','V3','V4'].includes(state.cat)) {
+    catLabel = `VÉTÉRANS ${state.cat}`;
+  } else {
+    catLabel = cat.label.toUpperCase();
+  }
+  document.getElementById('fDiscipline').value = `${armeLabel} ${'H/D'} ${catLabel}`;
+  // Mettre à jour le nom de fichier de sortie
+  document.getElementById('fNomFichier') && (document.getElementById('fNomFichier').value =
+    `CDF_${state.arme}${state.genre}_${state.cat}`);
+}
+
+
+// ── Clé unique par classement ──
+
+
+// ── Upload ──
+
+
+function dragOver(e, id) { e.preventDefault(); document.getElementById(id).classList.add('drag-over'); }
+function dragLeave(id) { document.getElementById(id).classList.remove('drag-over'); }
+
+
+// ── Textes ──
+function renderTextes() {
+  ['n1','n2'].forEach(k => {
+    const container = document.getElementById(`textes${k.toUpperCase()}Container`);
+    container.innerHTML = '';
+    (state.textes[k] || []).forEach((t, i) => {
+      const tag = document.createElement('div');
+      tag.className = 'texte-tag';
+      tag.innerHTML = `<span>${t}</span><span class="remove" onclick="removeTexte('${k}',${i})">×</span>`;
+      container.appendChild(tag);
+    });
+  });
+}
+
+function addTexte(key) {
+  const input = document.getElementById(`newTexte${key.toUpperCase()}`);
+  const val = input.value.trim();
+  if (!val) return;
+  state.textes[key].push(val);
+  renderTextes();
+  input.value = '';
+}
+
+function removeTexte(key, idx) {
+  state.textes[key].splice(idx, 1);
+  renderTextes();
+}
+
+
+// ── Récupérer la config sauvegardée ──
+function getSavedConfig() {
+  const key = `${state.cat}_${state.arme}_${state.genre}`;
+  return (window._savedConfigs || {})[key] || {};
+}
+
+
+
+// ── Matrice réglementaire LREGE 2025-2026 ─────────────────────────
+// Source : RS FFE + Règlement LREGE Grand Est
+const N2_QUOTA_LREGE  = "quota_lrege";
+const N2_OPEN         = "open";
+const N2_OPEN_CIRCUIT = "open_circuit";
+const N2_QUOTA_FFE    = "quota_ffe";
+
+const MATRICE_REGLEMENTAIRE = {
+  // M17
+  "M17|E|H": {n1:32, n2:N2_QUOTA_LREGE,  cond:"Participation à au moins 3 épreuves de territoire"},
+  "M17|E|D": {n1:32, n2:N2_QUOTA_LREGE,  cond:"Participation à au moins 3 épreuves de territoire"},
+  "M17|F|H": {n1:32, n2:N2_QUOTA_LREGE,  cond:"Participation à au moins 3 épreuves de territoire"},
+  "M17|F|D": {n1:32, n2:N2_QUOTA_LREGE,  cond:"Participation à au moins 3 épreuves de territoire"},
+  "M17|S|H": {n1:32, n2:N2_OPEN_CIRCUIT, cond:"Participation à au moins 1 circuit national"},
+  "M17|S|D": {n1:32, n2:N2_OPEN_CIRCUIT, cond:"Participation à au moins 1 circuit national"},
+  // M20
+  "M20|E|H": {n1:32, n2:N2_QUOTA_LREGE,  cond:"Participation à au moins 3 épreuves de territoire"},
+  "M20|E|D": {n1:32, n2:N2_QUOTA_LREGE,  cond:"Participation à au moins 3 épreuves de territoire"},
+  "M20|F|H": {n1:32, n2:N2_QUOTA_LREGE,  cond:"Participation à au moins 3 épreuves de territoire"},
+  "M20|F|D": {n1:32, n2:N2_QUOTA_LREGE,  cond:"Participation à au moins 3 épreuves de territoire"},
+  "M20|S|H": {n1:32, n2:N2_OPEN_CIRCUIT, cond:"Participation à au moins 1 circuit national"},
+  "M20|S|D": {n1:32, n2:N2_OPEN_CIRCUIT, cond:"Participation à au moins 1 circuit national"},
+  // M23
+  "M23|E|H": {n1:32, n2:N2_QUOTA_LREGE,  cond:"Participation à au moins 3 épreuves de territoire"},
+  "M23|E|D": {n1:32, n2:N2_QUOTA_LREGE,  cond:"Participation à au moins 3 épreuves de territoire"},
+  "M23|F|H": {n1:32, n2:N2_QUOTA_LREGE,  cond:"Participation à au moins 3 épreuves de territoire"},
+  "M23|F|D": {n1:32, n2:N2_QUOTA_LREGE,  cond:"Participation à au moins 3 épreuves de territoire"},
+  "M23|S|H": {n1:32, n2:N2_OPEN_CIRCUIT, cond:"Participation à au moins 1 circuit national"},
+  "M23|S|D": {n1:32, n2:N2_OPEN_CIRCUIT, cond:"Participation à au moins 1 circuit national"},
+  // Seniors
+  "Seniors|E|H": {n1:32, n2:N2_QUOTA_LREGE,  cond:""},
+  "Seniors|E|D": {n1:32, n2:N2_QUOTA_LREGE,  cond:""},
+  "Seniors|F|H": {n1:32, n2:N2_QUOTA_LREGE,  cond:""},
+  "Seniors|F|D": {n1:32, n2:N2_QUOTA_FFE,    cond:""},
+  "Seniors|S|H": {n1:32, n2:N2_OPEN_CIRCUIT, cond:"Participation à au moins 1 circuit national"},
+  "Seniors|S|D": {n1:32, n2:N2_OPEN_CIRCUIT, cond:"Participation à au moins 1 circuit national"},
+  // Vétérans V1/V2/V3 Épée Hommes
+  "V1|E|H": {n1:32, n2:N2_QUOTA_LREGE,  cond:""},
+  "V2|E|H": {n1:32, n2:N2_QUOTA_LREGE,  cond:""},
+  "V3|E|H": {n1:32, n2:N2_QUOTA_LREGE,  cond:""},
+  // V4 Épée Hommes : open
+  "V4|E|H": {n1:0,  n2:N2_OPEN, cond:""},
+  // Vétérans Épée Dames : open avec 2 circuits
+  "V1|E|D": {n1:0, n2:N2_OPEN_CIRCUIT, cond:"Participation à au moins 2 circuits nationaux"},
+  "V2|E|D": {n1:0, n2:N2_OPEN_CIRCUIT, cond:"Participation à au moins 2 circuits nationaux"},
+  "V3|E|D": {n1:0, n2:N2_OPEN_CIRCUIT, cond:"Participation à au moins 2 circuits nationaux"},
+  "V4|E|D": {n1:0, n2:N2_OPEN_CIRCUIT, cond:"Participation à au moins 2 circuits nationaux"},
+  // Vétérans Fleuret & Sabre : open
+  "V1|F|H": {n1:0, n2:N2_OPEN, cond:""}, "V1|F|D": {n1:0, n2:N2_OPEN, cond:""},
+  "V2|F|H": {n1:0, n2:N2_OPEN, cond:""}, "V2|F|D": {n1:0, n2:N2_OPEN, cond:""},
+  "V3|F|H": {n1:0, n2:N2_OPEN, cond:""}, "V3|F|D": {n1:0, n2:N2_OPEN, cond:""},
+  "V4|F|H": {n1:0, n2:N2_OPEN, cond:""}, "V4|F|D": {n1:0, n2:N2_OPEN, cond:""},
+  "V1|S|H": {n1:0, n2:N2_OPEN, cond:""}, "V1|S|D": {n1:0, n2:N2_OPEN, cond:""},
+  "V2|S|H": {n1:0, n2:N2_OPEN, cond:""}, "V2|S|D": {n1:0, n2:N2_OPEN, cond:""},
+  "V3|S|H": {n1:0, n2:N2_OPEN, cond:""}, "V3|S|D": {n1:0, n2:N2_OPEN, cond:""},
+  "V4|S|H": {n1:0, n2:N2_OPEN, cond:""}, "V4|S|D": {n1:0, n2:N2_OPEN, cond:""},
+};
+
+function getRegle(catId, armeId, genre) {
+  const key = `${catId}|${armeId}|${genre}`;
+  return MATRICE_REGLEMENTAIRE[key] || {n1:32, n2:N2_QUOTA_LREGE, cond:""};
+}
+
+async function appliquerDefautsReglementaires(catId, armeId) {
+  if (!catId || !armeId) return;
+  const fmt = (cat_map[catId]||{}).format || 'seniors';
+  const catsAvecWC = ['M17','M20','M23','Seniors'];
+
+  // ── Pré-remplir depuis la matrice réglementaire ──
+  ["H","D"].forEach(g => {
+    const regle = getRegle(catId, armeId, g);
+
+    // N1 (seniors/vétérans)
+    const elN1 = document.getElementById(`fQuotaN1${g}`);
+    if (elN1) elN1.value = regle.n1 ?? 32;
+
+    // WC : remettre à 4 si cat avec WC, sinon 0
+    const elWc = document.getElementById(`fWc${g}`);
+    if (elWc) elWc.value = catsAvecWC.includes(catId) ? 4 : 0;
+  });
+
+  // ── Charger les quotas LREGE depuis le serveur ──
+  try {
+    const res = await fetch(`/api/quotas_defaut?cat=${catId}&arme=${armeId}`);
+    const q   = await res.json();
+    if (!q.error) {
+      ["H","D"].forEach(g => {
+        const gl = g.toLowerCase();
+        const qTotal = q[`indiv_${gl}`];  // quota total GE
+
+        if (fmt === 'seniors') {
+          // Seniors/Vétérans : remplir fQuotaLregeH/D
+          const elLrege = document.getElementById(`fQuotaLrege${g}`);
+          if (elLrege && qTotal !== null && qTotal !== undefined) {
+            elLrege.value = qTotal;
+          }
+        } else {
+          // Jeunes : répartir quota total → FFE + régional
+          if (qTotal !== null && qTotal !== undefined) {
+            // M13 Épée/Fleuret : 100% régional, pas de split FFE
+            const isM13RegOnly = catId === 'M13' && ['E','F'].includes(armeId);
+            const [ffe, reg] = isM13RegOnly ? [0, qTotal] : repartitionLrege(qTotal);
+            // Quota fédéral (filtrage) = top FFE du classement national
+            const elFed = document.getElementById(`fQuotaFed${g}`);
+            const elFedDisp = document.getElementById(`fQuotaFed${g}Display`);
+            if (elFed) elFed.value = isM13RegOnly ? 0 : 32;
+            if (elFedDisp) elFedDisp.value = isM13RegOnly ? 0 : 32;
+            // Quota national LREGE (FFE part)
+            const elCN = document.getElementById(`fQuotaCN${g}`);
+            if (elCN) elCN.value = ffe;
+            // Quota régional LREGE
+            const elCR = document.getElementById(`fQuotaCR${g}`);
+            if (elCR) elCR.value = reg;
+          }
+        }
+
+        // Quotas équipes N3
+        const qEq = q[`equipes_${gl}`];
+        const elEq = document.getElementById(`fQuotaN3Eq${g}`);
+        if (elEq && qEq !== undefined) {
+          elEq.value = qEq;
+          if (typeof syncN3Lignes === 'function') syncN3Lignes(g);
+        }
+      });
+    }
+  } catch(e) { console.warn('Erreur quotas_defaut', e); }
+
+  // ── Mise à jour UI ──
+  afficherBanniereRegle(catId, armeId);
+  updateRepartition();
+  updateWcTotal();
+}
+
+async function chargerDatesCDF(catId, armeId, mode) {
+  if (!catId || !armeId) return;
+  try {
+    const res = await fetch(`/api/quotas_defaut?cat=${catId}&arme=${armeId}&mode=${mode||'individuel'}`);
+    const q   = await res.json();
+    if (!q.error && q.cdf) {
+      const cdf = q.cdf;
+      // Pré-remplir seulement si le champ est vide
+      const fDate = document.getElementById('fDate');
+      const fLieu = document.getElementById('fLieu');
+      const fComp = document.getElementById('fCompetition');
+      if (fDate && !fDate.value && cdf.date) { fDate.value = cdf.date; state.date = cdf.date; }
+      if (fLieu && !fLieu.value && cdf.lieu) { fLieu.value = cdf.lieu; state.lieu = cdf.lieu; }
+      if (fComp && !fComp.value && cdf.competition) fComp.value = cdf.competition;
+    }
+  } catch(e) {}
+}
+
+function afficherBanniereRegle(catId, armeId) {
+  const banner = document.getElementById('regleBanniere');
+  if (!banner) return;
+
+  const regH = getRegle(catId, armeId, "H");
+  const regD = getRegle(catId, armeId, "D");
+
+  const modeLabel = {
+    [N2_QUOTA_LREGE]:  "Quota LREGE (⅓ FFE + ⅔ régional)",
+    [N2_OPEN]:         "Open — pas de quota",
+    [N2_OPEN_CIRCUIT]: "Open avec condition circuit national",
+    [N2_QUOTA_FFE]:    "Quota FFE + quota LREGE",
+  };
+
+  let html = '<strong style="color:var(--bleu-nuit);">📋 Règle applicable :</strong><br>';
+  html += `♂ Hommes — N1 : ${regH.n1>0?`Top ${regH.n1} FFE`:"Pas de N1 direct"} | N2 : ${modeLabel[regH.n2]||regH.n2}`;
+  if (regH.cond) html += ` <em>(${regH.cond})</em>`;
+  html += '<br>';
+  html += `♀ Dames — N1 : ${regD.n1>0?`Top ${regD.n1} FFE`:"Pas de N1 direct"} | N2 : ${modeLabel[regD.n2]||regD.n2}`;
+  if (regD.cond) html += ` <em>(${regD.cond})</em>`;
+
+  banner.innerHTML = html;
+  banner.style.display = '';
+}
+
+
+// ── Upload PDF équipes ─────────────────────────────────────────────
+async function uploadPdfEq(input, typePdf, genre) {
+  if (!input.files[0]) return;
+  const file = input.files[0];
+  const labelId = typePdf === 'ffe'
+    ? `pdfFfe${genre}Label`
+    : `pdfEngarde${genre}Label`;
+  const label = document.getElementById(labelId);
+  if (label) label.textContent = '⏳ Analyse...';
+
+  const fd = new FormData();
+  fd.append('fichier', file);
+  try {
+    const res  = await fetch('/api/upload_pdf_equipes', {method:'POST', body: fd});
+    const data = await res.json();
+    if (data.error) { toast('Erreur PDF : ' + data.error, 'error'); return; }
+
+    if (typePdf === 'ffe' && data.format === 'ffe') {
+      // Uniquement les équipes GRAND EST
+      const ge_n1 = data.n1n2_ge || [];
+      const ge_n3 = data.n3_ge   || [];
+
+      // N1/N2 : équipes GE parmi les rangs 1-8
+      const listN1 = document.getElementById(`eqN1${genre}_list`);
+      if (listN1) {
+        listN1.innerHTML = '';
+        ge_n1.forEach(eq => {
+          ajouterLigneEquipe(`N1${genre}`, eq.rang);
+          const inputs = listN1.lastElementChild?.querySelectorAll('input');
+          if (inputs) { inputs[0].value = eq.nom_equipe; inputs[1].value = eq.ligue || ''; }
+        });
+        // Compléter jusqu'à 8 lignes vides
+        while (listN1.children.length < 8) ajouterLigneEquipe(`N1${genre}`, listN1.children.length + 1);
+      }
+
+      // N3 FFE : équipes GE parmi les rangs 9-12
+      const listN3Ffe = document.getElementById(`eqN3Ffe${genre}_list`);
+      if (listN3Ffe) {
+        listN3Ffe.innerHTML = '';
+        ge_n3.forEach(eq => {
+          ajouterLigneEquipe(`N3Ffe${genre}`, eq.rang);
+          const inputs = listN3Ffe.lastElementChild?.querySelectorAll('input');
+          if (inputs) { inputs[0].value = eq.nom_equipe; inputs[1].value = eq.ligue || ''; }
+        });
+      }
+
+      const nb_n1 = ge_n1.length;
+      const nb_n3 = ge_n3.length;
+      if (label) label.textContent = `✅ GE : ${nb_n1} en N1/N2 + ${nb_n3} en N3 FFE (${data.categorie||''})`;
+      afficherResumeImport(`PDF FFE ${genre==='H'?'Hommes':'Dames'} : ${nb_n1} équipe${nb_n1>1?'s':''} GE en N1/N2, ${nb_n3} en N3 FFE`);
+
+    } else if (typePdf === 'engarde' && ['engarde','fff_equipes','fff_classement','xml'].includes(data.format)) {
+      // Remplir N3 + remplaçants depuis le classement régional (PDF/FFF/XML)
+      const quota  = parseInt(document.getElementById(`fQuotaN3Eq${genre}`)?.value) || 0;
+      const equipes = data.equipes || [];
+      const n3   = quota > 0 ? equipes.slice(0, quota) : equipes;
+      const remp = quota > 0 ? equipes.slice(quota)    : [];
+
+      // Remplir N3
+      const listN3 = document.getElementById(`eqN3${genre}_list`);
+      if (listN3) {
+        listN3.innerHTML = '';
+        n3.forEach(eq => {
+          ajouterLigneEquipe(`N3${genre}`, eq.rang);
+          const inputs = listN3.lastElementChild?.querySelectorAll('input');
+          if (inputs) { inputs[0].value = eq.nom_equipe; inputs[1].value = eq.club; }
+        });
+      }
+      // Remplir remplaçants
+      const listR = document.getElementById(`eqRemplac${genre}_list`);
+      if (listR) {
+        listR.innerHTML = '';
+        remp.forEach(eq => {
+          ajouterLigneEquipe(`Remplac${genre}`, eq.rang);
+          const inputs = listR.lastElementChild?.querySelectorAll('input');
+          if (inputs) { inputs[0].value = eq.nom_equipe; inputs[1].value = eq.club; }
+        });
+        updateRemplacCount(genre);
+      }
+      const nb  = equipes.length;
+      const fmt = {'engarde':'PDF','fff_equipes':'FFF','fff_classement':'FFF','xml':'XML'}[data.format] || data.format;
+      const src = data.header?.nom ? ` — ${data.header.nom}` : '';
+      if (label) label.textContent = `✅ ${nb} équipe${nb>1?'s':''} (${fmt}${src})`;
+      afficherResumeImport(`Classement régional ${genre==='H'?'Hommes':'Dames'} [${fmt}] : ${nb} équipe${nb>1?'s':''} — ${n3.length} N3 + ${remp.length} remplaçant${remp.length>1?'s':''}`);
+
+    } else {
+      toast(`Format non reconnu (${data.format})`, 'error');
+      if (label) label.textContent = '❌ Format inconnu';
+    }
+  } catch(e) {
+    toast('Erreur : ' + e.message, 'error');
+    if (label) label.textContent = '❌ Erreur';
+  }
+}
+
+function afficherResumeImport(msg) {
+  const div = document.getElementById('pdfImportResume');
+  if (!div) return;
+  div.style.display = '';
+  div.innerHTML += (div.innerHTML ? '<br>' : '') + '✅ ' + msg;
+}
+
+// ── Équipes Seniors / M17→Vétérans ─────────────────────────────────────
+const MATRICE_EQ_N3 = {
+  "M17|E|H":"quota","M17|E|D":"quota","M17|F|H":"quota","M17|F|D":"open",
+  "M17|S|H":"open", "M17|S|D":"open",
+  "M20|E|H":"quota","M20|E|D":"quota","M20|F|H":"quota","M20|F|D":"open",
+  "M20|S|H":"open", "M20|S|D":"open",
+  "Seniors|E|H":"quota","Seniors|E|D":"quota","Seniors|F|H":"quota","Seniors|F|D":"open",
+  "Seniors|S|H":"open","Seniors|S|D":"open",
+  "V1|E|H":"quota","V1|E|D":"quota","V2|E|H":"quota","V2|E|D":"quota",
+  "V3|E|H":"quota","V3|E|D":"quota","V4|E|H":"open","V4|E|D":"open",
+};
+
+function getN3ModeEq(catId, armeId, genre) {
+  return MATRICE_EQ_N3[`${catId}|${armeId}|${genre}`] || "quota";
+}
+
+async function initEquipesSeniors() {
+  const catId  = state.cat;
+  const armeId = state.arme;
+  if (!catId || !armeId) return;
+  // Charger quotas N3 équipes par défaut depuis le serveur
+  try {
+    const res = await fetch(`/api/quotas_defaut?cat=${catId}&arme=${armeId}`);
+    const q   = await res.json();
+    if (!q.error) {
+      ['H','D'].forEach(g => {
+        const gl = g.toLowerCase();
+        const qv = q[`equipes_${gl}`];
+        if (qv === undefined || qv === null) return;
+        const el = document.getElementById(`fQuotaN3Eq${g}`);
+        if (el) {
+          el.value = qv;
+          syncN3Lignes(g);   // synchroniser les lignes avec le quota
+        }
+      });
+      // Afficher la bannière réglementaire N3
+      afficherBanniereEq(catId, armeId);
+    }
+  } catch(e) { console.warn('Quotas non chargés:', e); }
+
+  // Ajouter des lignes remplaçants vides si la section est vide
+  ['H','D'].forEach(g => {
+    const mode = getN3ModeEq(catId, armeId, g);
+    if (mode !== 'quota') return;
+    const listR = document.getElementById(`eqRemplac${g}_list`);
+    if (listR && listR.children.length === 0) {
+      for (let i = 1; i <= 3; i++) ajouterLigneEquipe(`Remplac${g}`, i);
+    }
+  });
+
+  // Initialiser 8 lignes N1/N2 si vides
+  ['H','D'].forEach(g => {
+    const list = document.getElementById(`eqN1${g}_list`);
+    if (list && list.children.length === 0) {
+      for (let i = 1; i <= 8; i++) ajouterLigneEquipe(`N1${g}`, i);
+    }
+  });
+
+  // Afficher mode N3 H et D
+  ['H','D'].forEach(g => {
+    const mode   = getN3ModeEq(catId, armeId, g);
+    const modeEl = document.getElementById(`eqN3${g}_mode`);
+    if (modeEl) {
+      if (mode === 'open') {
+        modeEl.textContent = '⚠️ Épreuve open — pas de quota LREGE pour cette arme/genre';
+        modeEl.style.color = 'var(--text-muted)';
+        document.getElementById(`fQuotaN3Eq${g}`).disabled = true;
+        document.getElementById(`fQuotaN3Eq${g}`).value = 0;
+        document.getElementById(`eqN3${g}_list`).innerHTML = '';
+        const rowOpen = document.getElementById(`rowOpenN3${g}`);
+        if (rowOpen) rowOpen.style.display = '';
+      } else {
+        modeEl.textContent = '✅ Soumis à quota LREGE — classement championnat régional GE';
+        modeEl.style.color = 'var(--bleu-nuit)';
+        document.getElementById(`fQuotaN3Eq${g}`).disabled = false;
+        const rowOpen = document.getElementById(`rowOpenN3${g}`);
+        if (rowOpen) rowOpen.style.display = 'none';
+      }
+    }
+  });
+
+  // Bannière réglementaire
+  afficherBanniereEq(catId, armeId);
+}
+
+function afficherBanniereEq(catId, armeId) {
+  const banner = document.getElementById('eqRegleBanniere');
+  if (!banner) return;
+  const mH = getN3ModeEq(catId, armeId, 'H');
+  const mD = getN3ModeEq(catId, armeId, 'D');
+  banner.innerHTML = `<strong style="color:var(--bleu-nuit);">📋 Règle équipes N3 :</strong><br>
+    ♂ Hommes : ${mH === 'quota' ? 'Quota LREGE — classement championnat régional GE' : 'Open — participation libre'}<br>
+    ♀ Dames : ${mD === 'quota' ? 'Quota LREGE — classement championnat régional GE' : 'Open — participation libre'}`;
+  banner.style.display = '';
+}
+
+function ajouterLigneEquipe(listId, rang) {
+  const container = document.getElementById(`eq${listId}_list`);
+  if (!container) return;
+  const idx = container.children.length + 1;
+  const r   = rang || idx;
+  const div = document.createElement('div');
+  div.dataset.rang = String(r);  // stocker le rang officiel FFE
+  div.style.cssText = 'display:grid;grid-template-columns:32px 1fr 1fr 20px;gap:4px;align-items:center;';
+  div.innerHTML = `
+    <span style="font-size:11px;font-weight:700;color:var(--bleu-nuit);text-align:center;">${r}</span>
+    <input type="text" placeholder="Nom équipe / Club" style="font-size:11px;padding:4px 6px;border:1px solid var(--border);border-radius:5px;" class="eq-nom">
+    <input type="text" placeholder="Comité / Ville" style="font-size:11px;padding:4px 6px;border:1px solid var(--border);border-radius:5px;" class="eq-club">
+    <button onclick="this.parentElement.remove()" style="font-size:14px;color:var(--text-muted);background:none;border:none;cursor:pointer;line-height:1;">×</button>`;
+  container.appendChild(div);
+}
+
+function syncN3Lignes(genre) {
+  const quota = parseInt(document.getElementById(`fQuotaN3Eq${genre}`)?.value) || 0;
+  const list  = document.getElementById(`eqN3${genre}_list`);
+  if (!list) return;
+  const mode = getN3ModeEq(state.cat, state.arme, genre);
+  if (mode === 'open') return;
+  // Ajuster le nombre de lignes
+  while (list.children.length < quota) ajouterLigneEquipe(`N3${genre}`, list.children.length + 1);
+  while (list.children.length > quota) list.removeChild(list.lastChild);
+}
+
+function updateRemplacCount(genre) {
+  const list  = document.getElementById(`eqRemplac${genre}_list`);
+  const badge = document.getElementById(`remplacBadge${genre}`);
+  const count = document.getElementById(`remplacCount${genre}`);
+  if (!list || !badge || !count) return;
+  const nb = Array.from(list.querySelectorAll('.eq-nom'))
+    .filter(i => i.value.trim()).length;
+  count.textContent = nb;
+  badge.style.display = nb > 0 ? '' : 'none';
+}
+
+function lireEquipes(listId) {
+  const list = document.getElementById(`eq${listId}_list`);
+  if (!list) return [];
+  return Array.from(list.children).map((div, i) => ({
+    rang:       div.dataset.rang || String(i + 1),  // rang officiel FFE si disponible
+    nom_equipe: div.querySelector('.eq-nom')?.value?.trim()  || '',
+    club:       div.querySelector('.eq-club')?.value?.trim() || '',
+  })).filter(e => e.nom_equipe || e.club);
+}
+
+async function genererEquipesSeniors() {
+  const btn = document.getElementById('btnGenererEquipesSeniors');
+  btn.disabled = true;
+  btn.innerHTML = '⏳ Génération...';
+  try {
+    const baseParams = buildParams();
+    const payload = {
+      ...baseParams,
+      equipes_n1n2_h: lireEquipes('N1H'),
+      equipes_n1n2_d: lireEquipes('N1D'),
+      equipes_n3_ffe_h: lireEquipes('N3FfeH'),
+      equipes_n3_ffe_d: lireEquipes('N3FfeD'),
+      equipes_n3_h:   lireEquipes('N3H'),
+      equipes_n3_d:   lireEquipes('N3D'),
+      remplacants_h:  lireEquipes('RemplacH'),
+      remplacants_d:  lireEquipes('RemplacD'),
+      quota_n3_eq_h:  parseInt(document.getElementById('fQuotaN3EqH')?.value) || 0,
+      quota_n3_eq_d:  parseInt(document.getElementById('fQuotaN3EqD')?.value) || 0,
+      nb_open_n3:     Math.max(
+        parseInt(document.getElementById('fNbOpenN3H')?.value) || 0,
+        parseInt(document.getElementById('fNbOpenN3D')?.value) || 0
+      ),
+    };
+    const res = await fetch('/api/generer_equipes_seniors', {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify(payload),
+    });
+    const data = await res.json();
+    if (data.error) { toast('Erreur : ' + data.error, 'error'); return; }
+    toast(`✅ Sélection équipes générée — ${data.feuilles.join(' + ')}`, 'success');
+    ajouterTelechargement(data.fichier, data.feuilles.join(' + '));
+    ajouterHistorique(`${state.cat} Équipes · ${data.feuilles.join('+')} → ${data.fichier}`);
+  } catch(e) { toast('Erreur : ' + e.message, 'error'); }
+  finally { btn.innerHTML = '⚡ Générer la sélection équipes H+D'; btn.disabled = false; }
+}
+
+// ── Table LREGE 1/3 FFE + 2/3 régional ────────────────────────────
+const TABLE_LREGE = {
+  1:[0,1], 2:[1,1], 3:[1,2], 4:[1,3], 5:[2,3],
+  6:[2,4], 7:[2,5], 8:[3,5], 9:[3,6], 10:[3,7], 11:[4,7]
+};
+
+function repartitionLrege(total) {
+  total = parseInt(total) || 0;
+  if (total <= 0) return [0, 0];
+  if (TABLE_LREGE[total]) return TABLE_LREGE[total];
+  // Extrapolation > 11
+  const ffe = Math.round(total / 3);
+  return [ffe, total - ffe];
+}
+
+function updateWcTotal() {
+  ['H', 'D'].forEach(g => {
+    const n1  = parseInt(document.getElementById(`fQuotaN1${g}`)?.value) || 0;
+    const wc  = parseInt(document.getElementById(`fWc${g}`)?.value) || 0;
+    const tot = document.getElementById(`totalN1${g}`);
+    if (tot) tot.textContent = n1 + wc > 0 ? `= ${n1 + wc} total` : '';
+  });
+  updateRepartition();
+}
+
+function updateRepartition() {
+  ['H', 'D'].forEach(g => {
+    const total = parseInt(document.getElementById(`fQuotaLrege${g}`)?.value) || 0;
+    const div   = document.getElementById(`repartition${g}`);
+    const span  = document.getElementById(`repartition${g}Texte`);
+    const hiddenN2 = document.getElementById(`fQuotaN2Reg${g}`);
+    if (!div) return;
+    if (total === 0) {
+      div.style.display = 'none';
+      if (hiddenN2) hiddenN2.value = 0;
+      return;
+    }
+    const [ffe, reg] = repartitionLrege(total);
+    if (hiddenN2) hiddenN2.value = reg;
+    div.style.display = '';
+    span.innerHTML = `→ <strong>${ffe}</strong> place${ffe>1?'s':''} classement FFE &nbsp;+&nbsp; <strong>${reg}</strong> place${reg>1?'s':''} classement régional GE`;
+  });
+}
+
+// ── Construire les params ──
+function buildParams() {
+  const cat = cat_map[state.cat];
+  const isJeunes = cat.format === 'jeunes';
+  const armeLabel = { S: 'Sabre', F: 'Fleuret', E: 'Épée' }[state.arme] || '';
+
+  const params = {
+    format: cat.format,
+    discipline: document.getElementById('fDiscipline').value,
+    competition: document.getElementById('fCompetition').value,
+    date: document.getElementById('fDate').value,
+    lieu: document.getElementById('fLieu').value,
+    mail_retour: document.getElementById('fMailRetour').value,
+    date_limite_retour: document.getElementById('fDateLimite').value,
+    date_engagement_extranet: document.getElementById('fDateExtranet').value,
+    arbitrage: buildArbTexte(),
+    arbitrage_config: buildArbConfig(),
+    min_participations_nationales: document.getElementById('fParticiToggle')?.checked
+      ? parseInt(document.getElementById('fMinCompNat')?.value || 0)
+      : 0,
+    nationalite_francaise: document.getElementById('fNatFr').checked,
+    cat_id:  cat.id,
+    arme_id: state.arme,
+  };
+
+  if (isJeunes) {
+    // Quotas Jeunes H/D
+    params.quota_federal_h         = parseInt(document.getElementById('fQuotaFedH').value);
+    params.quota_federal_h_display = parseInt(document.getElementById('fQuotaFedHDisplay')?.value) || params.quota_federal_h;
+    // M13 : critères optionnels
+    if (state.cat === 'M13') {
+      params.m13_use_quota_fed = document.getElementById('fM13UseQuotaFed')?.checked || false;
+      params.m13_use_quota_nat = document.getElementById('fM13UseQuotaNat')?.checked || false;
+    }
+    params.quota_crege_nat_h = parseInt(document.getElementById('fQuotaCNH').value);
+    params.quota_crege_reg_h = parseInt(document.getElementById('fQuotaCRH').value);
+    params.nb_remplacants_h  = parseInt(document.getElementById('fNbRemplH').value);
+    params.quota_federal_d         = parseInt(document.getElementById('fQuotaFedD').value);
+    params.quota_federal_d_display = parseInt(document.getElementById('fQuotaFedDDisplay')?.value) || params.quota_federal_d;
+    params.quota_crege_nat_d = parseInt(document.getElementById('fQuotaCND').value);
+    params.quota_crege_reg_d = parseInt(document.getElementById('fQuotaCRD').value);
+    params.nb_remplacants_d  = parseInt(document.getElementById('fNbRemplD').value);
+    params.quota_federal     = params.quota_federal_h;
+    params.quota_crege_nat   = params.quota_crege_nat_h;
+    params.quota_crege_reg   = params.quota_crege_reg_h;
+    params.nb_remplacants    = params.nb_remplacants_h;
+    // Clés PDF FFE (obligatoire pour FH/FD M17/M20 Fleuret/Épée, optionnel autres)
+    if (pdfFfeCache['H']) params.cle_pdf_h = pdfFfeCache['H'];
+    else if (pdfCache['H']) params.cle_pdf_h = pdfCache['H'];
+    if (pdfFfeCache['D']) params.cle_pdf_d = pdfFfeCache['D'];
+    else if (pdfCache['D']) params.cle_pdf_d = pdfCache['D'];
+    // Classement national Excel (pour N3/N2 quotas LREGE sur Fleuret/Épée M17/M20)
+    if (natCache['H']) params.cle_national_h = natCache['H'];
+    if (natCache['D']) params.cle_national_d = natCache['D'];
+    // textes_federal/textes_crege : générés côté serveur depuis les quotas H/D réels
+  } else {
+    // Quotas Seniors H/D
+    params.quota_n1_h    = parseInt(document.getElementById('fQuotaN1H').value);
+    // Clés PDF si uploadés — pdfFfeCache (zoneUploadPdfFfe) prioritaire sur pdfCache (Excel)
+    if (pdfFfeCache['H']) params.cle_pdf_h = pdfFfeCache['H'];
+    else if (pdfCache['H']) params.cle_pdf_h = pdfCache['H'];
+    if (pdfFfeCache['D']) params.cle_pdf_d = pdfFfeCache['D'];
+    else if (pdfCache['D']) params.cle_pdf_d = pdfCache['D'];
+    // Open circuit (M20/M17/M23 Sabre)
+    const isOpenCircuit = ['M20','M17','M23'].includes(params.cat_id) && params.arme_id === 'S';
+    if (isOpenCircuit) {
+      params.n2_mode = 'open_circuit';
+      if (pdfN2Cache['H']) params.cle_pdf_n2_h = pdfN2Cache['H'];
+      if (pdfN2Cache['D']) params.cle_pdf_n2_d = pdfN2Cache['D'];
+      if (natCache['H'])   params.cle_national_h = natCache['H'];
+      if (natCache['D'])   params.cle_national_d = natCache['D'];
+    }
+    params.nb_wildcards_h = parseInt(document.getElementById('fWcH')?.value ?? 4);
+    params.nb_wildcards_d = parseInt(document.getElementById('fWcD')?.value ?? 4);
+    // Calcul LREGE : répartir le quota total GE en FFE + régional
+    const lregeH = parseInt(document.getElementById('fQuotaLregeH')?.value) || 0;
+    const lregeD = parseInt(document.getElementById('fQuotaLregeD')?.value) || 0;
+    const [ffeSplitH, regSplitH] = repartitionLrege(lregeH);
+    const [ffeSplitD, regSplitD] = repartitionLrege(lregeD);
+    params.quota_lrege_h   = lregeH;
+    params.quota_lrege_d   = lregeD;
+    params.quota_n2_reg_h  = regSplitH;
+    params.quota_n2_reg_d  = regSplitD;
+    // N2 FFE = quota_n1 + ffeSplit (tireurs FFE au-delà du N1)
+    params.quota_ffe_ext_h = ffeSplitH;
+    params.quota_ffe_ext_d = ffeSplitD;
+    params.quota_n2_reg_h= parseInt(document.getElementById('fQuotaN2RegH').value) || 0;
+    params.quota_n1_d    = parseInt(document.getElementById('fQuotaN1D').value);
+    params.quota_n2_reg_d= parseInt(document.getElementById('fQuotaN2RegD').value) || 0;
+    params.quota_n1      = params.quota_n1_h;   // rétrocompat
+    if (params.quota_n2_reg_h > 0) params.quota_n2_reg = params.quota_n2_reg_h;
+    // textes_n1/textes_n2 : générés côté serveur depuis les quotas H/D réels
+  }
+
+  return params;
+}
+
+
+// ── Générer ──
+
+
+// ── Upload PDF classement FFE ──────────────────────────────────────
+// (déclaré en tête de script)
+
+async function uploadFichierPdfFfe(input, genre) {
+  const zone = document.getElementById(`uploadPdfFfe${genre}`);
+  const info = document.getElementById(`infoPdfFfe${genre}`);
+  const file = input.files[0];
+  if (!file) return;
+  const cle = `pdf_ffe_${genre}_${Date.now()}`;
+  info.textContent = '⏳ Chargement…';
+  zone.classList.remove('loaded');
+  const fd = new FormData();
+  fd.append('fichier', file);
+  fd.append('cle', cle);
+  try {
+    const res  = await fetch('/api/upload_pdf_ffe', { method: 'POST', body: fd });
+    const data = await res.json();
+    if (data.error) throw new Error(data.error);
+    // Pour Sabre open_circuit : PDF FFE = classement national
+    // Pour Fleuret/Épée M17/M20 : ne pas écraser multiCache nat (Excel requis séparément)
+    const _isFfeN1N2 = ['M17','M20'].includes(state.cat) && ['F','E'].includes(state.arme);
+    if (!_isFfeN1N2) multiCache[`nat_${genre}`] = cle;
+    pdfFfeCache[genre] = cle;  // cache dédié (cle_pdf_h/d)
+    // Afficher détail par niveau si disponible
+    let detail = '';
+    if (data.niveaux && Object.keys(data.niveaux).length > 0) {
+      detail = Object.entries(data.niveaux)
+        .sort(([a],[b]) => a.localeCompare(b))
+        .map(([n, d]) => `${n}: ${d.total} total (${d.grand_est} GE)`)
+        .join(' | ');
+    }
+    info.innerHTML = `✅ ${data.nb_total} tireurs &bull; ${data.nb_grand_est} GE${detail ? '<br><small style="color:var(--text-muted)">' + detail + '</small>' : ''}`;
+    zone.classList.add('loaded');
+    const msg = detail ? `PDF FFE ${genre} : ${data.nb_grand_est} GE — ${detail}` : `PDF FFE ${genre} : ${data.nb_total} tireurs dont ${data.nb_grand_est} Grand Est`;
+    toast(msg, 'success');
+  } catch(e) {
+    info.textContent = '❌ ' + e.message;
+    zone.classList.remove('loaded');
+    toast('Erreur PDF FFE : ' + e.message, 'error');
+  }
+}
+
+async function uploadPdf(genre) {
+  const input = document.getElementById(`pdfInput${genre}`);
+  const zone  = document.getElementById(`pdfZone${genre}`);
+  const info  = document.getElementById(`pdfInfo${genre}`);
+  const file  = input.files[0];
+  if (!file) return;
+
+  const cle = `pdf_${genre}_${Date.now()}`;
+  info.textContent = '⏳ Chargement…';
+  zone.classList.remove('loaded');
+
+  const fd = new FormData();
+  fd.append('fichier', file);
+  fd.append('cle', cle);
+
+  try {
+    const res  = await fetch('/api/upload_pdf', { method: 'POST', body: fd });
+    const data = await res.json();
+    if (data.error) throw new Error(data.error);
+
+    pdfCache[genre] = cle;
+    const niveaux = Object.entries(data.niveaux)
+      .map(([n,c]) => `${n}: ${c} tireurs`).join(', ');
+    info.innerHTML = `✅ ${file.name}<br><span style="font-size:10px;">${niveaux}</span>`;
+    zone.classList.add('loaded');
+    toast(`✅ PDF ${genre === 'H' ? 'Hommes' : 'Dames'} chargé — ${niveaux}`, 'success');
+  } catch(e) {
+    info.textContent = `❌ ${e.message}`;
+    zone.classList.remove('loaded');
+    toast('Erreur PDF : ' + e.message, 'error');
+  }
+}
+
+// ── Upload PDF N2 FFE (open_circuit) ──────────────────────────────
+const pdfN2Cache = {};
+const natCache   = {};
+
+async function uploadPdfN2(genre) {
+  const input = document.getElementById(`pdfInputN2${genre}`);
+  const zone  = document.getElementById(`pdfZoneN2${genre}`);
+  const info  = document.getElementById(`pdfInfoN2${genre}`);
+  const file  = input.files[0];
+  if (!file) return;
+  const cle = `pdf_n2_${genre}_${Date.now()}`;
+  info.textContent = '⏳ Chargement…';
+  zone.classList.remove('loaded');
+  const fd = new FormData();
+  fd.append('fichier', file);
+  fd.append('cle', cle);
+  try {
+    const res  = await fetch('/api/upload_pdf', { method: 'POST', body: fd });
+    const data = await res.json();
+    if (data.error) throw new Error(data.error);
+    pdfN2Cache[genre] = cle;
+    const niveaux = Object.entries(data.niveaux).map(([n,c]) => `${n}: ${c} tireurs`).join(', ');
+    info.innerHTML = `✅ ${file.name}<br><span style="font-size:10px;">${niveaux}</span>`;
+    zone.classList.add('loaded');
+    toast(`✅ PDF N2 ${genre === 'H' ? 'Hommes' : 'Dames'} chargé — ${niveaux}`, 'success');
+  } catch(e) {
+    info.textContent = `❌ ${e.message}`;
+    zone.classList.remove('loaded');
+    toast('Erreur PDF N2 : ' + e.message, 'error');
+  }
+}
+
+async function uploadClassementNat(genre) {
+  const input = document.getElementById(`natInput${genre}`);
+  const zone  = document.getElementById(`natZone${genre}`);
+  const info  = document.getElementById(`natInfo${genre}`);
+  const file  = input.files[0];
+  if (!file) return;
+  const cle = `nat_${genre}_${Date.now()}`;
+  info.textContent = '⏳ Chargement…';
+  const fd = new FormData();
+  fd.append('file', file);
+  fd.append('cle', cle);
+  try {
+    const res  = await fetch('/api/upload_classement', { method: 'POST', body: fd });
+    const data = await res.json();
+    if (data.error) throw new Error(data.error);
+    natCache[genre] = cle;
+    info.innerHTML = `✅ ${data.nb_tireurs} tireurs chargés`;
+    zone.classList.add('loaded');
+    toast(`✅ Classement national ${genre} chargé`, 'success');
+  } catch(e) {
+    info.textContent = `❌ ${e.message}`;
+    toast('Erreur classement nat : ' + e.message, 'error');
+  }
+}
+
+// ── Upload PDF équipes FFE ─────────────────────────────────────────
+// (pdfEqCache déclaré en tête de script)
+
+async function uploadPdfEquipes(genre) {
+  const input = document.getElementById(`pdfEqInput${genre}`);
+  const zone  = document.getElementById(`pdfEqZone${genre}`);
+  const info  = document.getElementById(`pdfEqInfo${genre}`);
+  const file  = input.files[0];
+  if (!file) return;
+
+  const cle = `pdf_eq_${genre}_${Date.now()}`;
+  info.textContent = '⏳ Chargement…';
+  zone.classList.remove('loaded');
+
+  const fd = new FormData();
+  fd.append('fichier', file);
+  fd.append('cle', cle);
+
+  try {
+    const res  = await fetch('/api/upload_pdf_equipes', { method: 'POST', body: fd });
+    const data = await res.json();
+    if (data.error) throw new Error(data.error);
+
+    pdfEqCache[genre] = { cle, niveaux: data.niveaux };
+
+    // Afficher résumé
+    const details = Object.entries(data.niveaux)
+      .map(([n,v]) => `${n}: ${v.total} équipes (${v.ge} GE)`).join(', ');
+    info.innerHTML = `✅ ${file.name}<br><span style="font-size:10px;">${details}</span>`;
+    zone.classList.add('loaded');
+    toast(`✅ PDF équipes ${genre === 'H' ? 'Hommes' : 'Dames'} — ${details}`, 'success');
+
+    // Mettre à jour l'aperçu et activer le bouton
+    updateApercuEquipes();
+  } catch(e) {
+    info.textContent = `❌ ${e.message}`;
+    zone.classList.remove('loaded');
+    toast('Erreur PDF équipes : ' + e.message, 'error');
+  }
+}
+
+function updateApercuEquipes() {
+  const apercu = document.getElementById('pdfEqApercu');
+  const content = document.getElementById('pdfEqApercuContent');
+  const btn = document.getElementById('btnGenererEquipesPdf');
+  if (!apercu || !content) return;
+
+  const hasH = !!pdfEqCache['H'];
+  const hasD = !!pdfEqCache['D'];
+
+  if (!hasH && !hasD) {
+    apercu.style.display = 'none';
+    if (btn) btn.disabled = true;
+    return;
+  }
+
+  apercu.style.display = '';
+  if (btn) btn.disabled = false;
+
+  let html = '';
+  ['H','D'].forEach(g => {
+    if (!pdfEqCache[g]) return;
+    const label = g === 'H' ? '♂ Hommes' : '♀ Dames';
+    html += `<div style="margin-bottom:8px;"><strong>${label}</strong><br>`;
+    Object.entries(pdfEqCache[g].niveaux).forEach(([niv, v]) => {
+      html += `<span style="font-size:11px;color:var(--text-muted);">${niv}: ${v.ge} équipes GE / ${v.total} total</span><br>`;
+    });
+    html += '</div>';
+  });
+  content.innerHTML = html;
+}
+
+async function genererEquipesPdf() {
+  const btn = document.getElementById('btnGenererEquipesPdf');
+  if (!btn || btn.disabled) return;
+  btn.disabled = true;
+  btn.textContent = '⏳ Génération…';
+
+  try {
+    const params = buildParams();
+    params.mode = 'equipes_pdf';
+    if (pdfEqCache['H']) params.cle_pdf_eq_h = pdfEqCache['H'].cle;
+    if (pdfEqCache['D']) params.cle_pdf_eq_d = pdfEqCache['D'].cle;
+    params.quota_n3_eq_h = parseInt(document.getElementById('fQuotaN3EqH')?.value || 0);
+    params.quota_n3_eq_d = parseInt(document.getElementById('fQuotaN3EqD')?.value || 0);
+    if (pdfRegCache['H']) params.cle_pdf_reg_h = pdfRegCache['H'].cle;
+    if (pdfRegCache['D']) params.cle_pdf_reg_d = pdfRegCache['D'].cle;
+
+    const res  = await fetch('/api/generer_equipes_pdf', {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify(params)
+    });
+    const data = await res.json();
+    if (data.error) throw new Error(data.error);
+
+    toast(`✅ Sélection équipes — ${data.feuilles?.join(' + ')} — prête`, 'success');
+    ajouterTelechargement(data.fichier, (data.feuilles || []).join(' + '));
+    ajouterHistorique(`Équipes ${state.cat} · ${data.feuilles?.join('+')} → ${data.fichier}`);
+  } catch(e) {
+    toast('Erreur génération équipes : ' + e.message, 'error');
+  } finally {
+    btn.disabled = false;
+    btn.textContent = '⚡ Générer la sélection équipes';
+  }
+}
+
+// ── Upload PDF Engarde classement régional équipes ─────────────────
+// (pdfRegCache déclaré en tête de script)
+
+async function uploadPdfEngarde(genre) {
+  const input = document.getElementById(`pdfRegInput${genre}`);
+  const zone  = document.getElementById(`pdfRegZone${genre}`);
+  const info  = document.getElementById(`pdfRegInfo${genre}`);
+  const file  = input.files[0];
+  if (!file) return;
+
+  const cle = `pdf_reg_${genre}_${Date.now()}`;
+  info.textContent = '⏳ Chargement…';
+  zone.classList.remove('loaded');
+
+  const fd = new FormData();
+  fd.append('fichier', file);
+  fd.append('cle', cle);
+
+  try {
+    const res  = await fetch('/api/upload_pdf_engarde_eq', { method: 'POST', body: fd });
+    const data = await res.json();
+    if (data.error) throw new Error(data.error);
+
+    pdfRegCache[genre] = { cle, equipes: data.equipes };
+    info.innerHTML = `✅ ${file.name}<br><span style="font-size:10px;">${data.equipes.length} équipes · ${data.equipes.slice(0,3).map(e=>e.nom).join(', ')}…</span>`;
+    zone.classList.add('loaded');
+    toast(`✅ Classement régional ${genre === 'H' ? 'Hommes' : 'Dames'} — ${data.equipes.length} équipes`, 'success');
+    updateApercuN3(genre);
+  } catch(e) {
+    info.textContent = `❌ ${e.message}`;
+    zone.classList.remove('loaded');
+    toast('Erreur PDF Engarde : ' + e.message, 'error');
+  }
+}
+
+function updateApercuN3(genre) {
+  const apercu = document.getElementById('apercuN3');
+  const content = document.getElementById('apercuN3Content');
+  if (!apercu || !content) return;
+
+  let html = '';
+  let hasData = false;
+
+  ['H','D'].forEach(g => {
+    const quota = parseInt(document.getElementById(`fQuotaN3Eq${g}`)?.value) || 0;
+    const cache = pdfRegCache[g];
+    if (!cache || quota === 0) return;
+
+    hasData = true;
+    const label = g === 'H' ? '♂ Hommes' : '♀ Dames';
+    const selected = cache.equipes.slice(0, quota);
+    html += `<strong>${label} — ${quota} place${quota>1?'s':''} quota N3 :</strong><br>`;
+    selected.forEach((e, i) => {
+      html += `<span style="color:var(--vert);">✓ ${i+1}. ${e.nom}</span><br>`;
+    });
+    if (cache.equipes.length > quota) {
+      html += `<span style="color:var(--text-muted);font-style:italic;">+ ${cache.equipes.length - quota} remplaçant${cache.equipes.length-quota>1?'s':''} dans l'ordre</span><br>`;
+    }
+    html += '<br>';
+  });
+
+  if (hasData) {
+    apercu.style.display = '';
+    content.innerHTML = html;
+  } else {
+    apercu.style.display = 'none';
+  }
+}
+
+// ── Toast ──
+function toast(msg, type='info') {
+  const icons = { success: '✓', error: '✕', info: 'ℹ' };
+  const el = document.createElement('div');
+  el.className = `toast ${type}`;
+  el.innerHTML = `<span>${icons[type]}</span><span>${msg}</span>`;
+  document.getElementById('toastContainer').appendChild(el);
+  setTimeout(() => el.remove(), 4000);
+}
+
+// ── Arbitrage ──────────────────────────────────────────
+function setArbSource(val) {
+  document.querySelectorAll('[name="arbSource"]').forEach(r => r.checked = r.value === val);
+  document.querySelectorAll('.arb-source-btn').forEach(btn => {
+    btn.classList.toggle('selected', btn.dataset.val === val);
+  });
+  const hasArb = val !== 'aucun';
+  document.getElementById('arbDetails').style.display = hasArb ? '' : 'none';
+  updateArbApercu();
+}
+
+document.addEventListener('change', function(e) {
+  if (e.target.name === 'arbSource') setArbSource(e.target.value);
+  if (e.target.id === 'fArbSeuil1' || e.target.id === 'fArbSeuil2') updateArbApercu();
+});
+
+const NIVEAUX_LABELS = {
+  regional:            'Régional',
+  regional_formation:  'Régional en formation',
+  national:            'National',
+  national_formation:  'National en formation',
+  international:       'International',
+};
+
+
+
+function toggleArbSeuil2() {
+  const active = document.getElementById('fArbSeuil2Toggle').checked;
+  document.getElementById('fArbSeuil2Row').style.display = active ? 'flex' : 'none';
+  document.getElementById('fArbSeuil2Off').style.display = active ? 'none' : '';
+  updateArbApercu();
+}
+
+function buildArbTexte() {
+  const source = document.querySelector('input[name="arbSource"]:checked')?.value || 'aucun';
+  if (source === 'aucun') return "Pas d'arbitre requis";
+  const src     = source === 'club' ? 'par le club du tireur' : 'par la ligue';
+  const s1      = document.getElementById('fArbSeuil1')?.value || 4;
+  const use2    = document.getElementById('fArbSeuil2Toggle')?.checked;
+  const s2      = document.getElementById('fArbSeuil2')?.value || 9;
+  let txt = `Fourni ${src} — 1 arbitre à partir de ${s1} tireurs engagés (H+D confondus)`;
+  if (use2) txt += `, 2 arbitres à partir de ${s2} tireurs engagés (H+D confondus)`;
+  return txt;
+}
+
+function buildArbConfig() {
+  const source = document.querySelector('input[name="arbSource"]:checked')?.value || 'aucun';
+  return {
+    source,
+    seuil1: parseInt(document.getElementById('fArbSeuil1')?.value || 4),
+    seuil2: parseInt(document.getElementById('fArbSeuil2')?.value || 9),
+  };
+}
+
+function updateArbApercu() {
+  const el = document.getElementById('arbApercu');
+  if (el) el.textContent = buildArbTexte();
+}
+
+// ── Master Grand Est ───────────────────────────────────
+
+
+// ── Participation ──────────────────────────────────────
+function toggleParticipation() {
+  const active = document.getElementById('fParticiToggle').checked;
+  document.getElementById('participationDetails').style.display = active ? '' : 'none';
+}
+
+// ── Zone téléchargements ───────────────────────────────
+function ajouterTelechargement(fichier, label) {
+  const zone = document.getElementById('zoneTelechargement');
+  const list = document.getElementById('dlList');
+  if (!zone || !list) return;
+  zone.style.display = '';
+  const a = document.createElement('a');
+  a.href = `/api/telecharger/${fichier}`;
+  a.download = fichier;
+  a.style.cssText = 'display:flex;align-items:center;gap:10px;padding:10px 14px;background:var(--vert);color:#fff;border-radius:8px;font-size:13px;font-weight:600;text-decoration:none;';
+  a.innerHTML = `📥 <span style="flex:1;">${fichier}</span><span style="opacity:.8;font-size:11px;">${label}</span>`;
+  list.prepend(a);
+}
+
+// ── Génération H+D simultanée ───────────────────────────
+// (multiCache déclaré en tête de script)
+
+async function uploadFileMulti(input, type, genre) {
+  if (!input.files[0]) return;
+  const key    = `${type}_${genre}`;
+  // La clé côté backend est construite de la même manière
+  const cle    = `${type}_${genre}`;
+  const zoneId = `upload${type.charAt(0).toUpperCase()+type.slice(1)}${genre}`;
+  const infoId = `info${type.charAt(0).toUpperCase()+type.slice(1)}${genre}`;
+  const zone   = document.getElementById(zoneId);
+  const infoEl = document.getElementById(infoId);
+  if (infoEl) infoEl.textContent = '⏳ Chargement...';
+
+  const formData = new FormData();
+  formData.append('file', input.files[0]);
+  formData.append('type', type);
+  formData.append('genre', genre);
+  formData.append('cle', cle);   // forcer la clé explicitement
+  try {
+    const res  = await fetch('/api/upload_classement', { method: 'POST', body: formData });
+    const data = await res.json();
+    if (data.error) { toast(data.error, 'error'); return; }
+    multiCache[key] = data.cle || cle;
+    if (zone) zone.classList.add('loaded');
+    if (infoEl) infoEl.textContent = `✓ ${data.nb_tireurs || data.nb_total} tireurs`;
+    toast(`Chargé : ${genre} ${type} (${data.nb_tireurs || data.nb_total} tireurs)`, 'success');
+  } catch(e) { toast('Erreur : ' + e.message, 'error'); }
+}
+
+function dropFileMulti(e, type, genre) {
+  e.preventDefault();
+  const zoneId = `upload${type.charAt(0).toUpperCase()+type.slice(1)}${genre}`;
+  dragLeave(zoneId);
+  const file = e.dataTransfer.files[0];
+  if (!file) return;
+  uploadFileMulti({ files: [file] }, type, genre);
+}
+
+async function genererHD() {
+  const btn = document.getElementById('btnGenererHD');
+  btn.innerHTML = '<span class="spinner"></span> Génération H+D...';
+  btn.disabled = true;
+
+  const hasRegH = !!multiCache['reg_H'];
+  const hasRegD = !!multiCache['reg_D'];
+  const _isOC   = ['M20','M17','M23'].includes(state.cat) && state.arme === 'S';
+  const hasPdfH = !!pdfFfeCache['H'] || !!pdfCache['H'] || !!pdfN2Cache['H'];
+  const hasPdfD = !!pdfFfeCache['D'] || !!pdfCache['D'] || !!pdfN2Cache['D'];
+  if (!hasRegH && !hasRegD && !(_isOC && (hasPdfH || hasPdfD))) {
+    toast('Chargez au moins le classement régional pour H ou D', 'error');
+    btn.innerHTML = '⚡ Générer H+D (Excel 2 feuilles)'; btn.disabled = false; return;
+  }
+  // Résumé des fichiers chargés (debug)
+  console.log('multiCache au moment de la génération:', JSON.stringify(multiCache));
+
+  // Récupérer les paramètres communs depuis le formulaire
+  const baseParams = buildParams();
+  const catId  = state.cat;
+  const armeId = state.arme;
+
+  // Construire la discipline sans genre (on la laisse au backend)
+  const discipline = document.getElementById('fDiscipline').value
+    .replace(/(HOMMES|DAMES|hommes|dames)/gi, '').replace(/\s+/g,' ').trim();
+
+  const _isOC2 = ['M20','M17','M23'].includes(catId) && armeId === 'S';
+  const params = {
+    ...baseParams,
+    discipline,
+    cle_national_h: _isOC2 && natCache['H'] ? natCache['H'] : (multiCache['nat_H'] || null),
+    cle_regional_h: multiCache['reg_H'] || null,
+    cle_national_d: _isOC2 && natCache['D'] ? natCache['D'] : (multiCache['nat_D'] || null),
+    cle_regional_d: multiCache['reg_D'] || null,
+    format:         ['M13','M15','M17','M20'].includes(catId) ? 'jeunes' : 'seniors',
+    use_nat_m13:    document.getElementById('fM13UseNat')?.checked || false,
+    cat_id:  state.cat,
+    arme_id: state.arme,
+  };
+  if (_isOC2) {
+    params.n2_mode = 'open_circuit';
+    // PDF N1 : depuis pdfFfeCache (upload_pdf_ffe) en priorité
+    if (pdfFfeCache['H']) params.cle_pdf_h    = pdfFfeCache['H'];
+    else if (pdfCache['H']) params.cle_pdf_h  = pdfCache['H'];
+    if (pdfFfeCache['D']) params.cle_pdf_d    = pdfFfeCache['D'];
+    else if (pdfCache['D']) params.cle_pdf_d  = pdfCache['D'];
+    if (pdfN2Cache['H'])     params.cle_pdf_n2_h = pdfN2Cache['H'];
+    if (pdfN2Cache['D'])     params.cle_pdf_n2_d = pdfN2Cache['D'];
+    // Classement national : depuis natCache (upload XLSX dédié)
+    if (natCache['H'])       params.cle_national_h = natCache['H'];
+    if (natCache['D'])       params.cle_national_d = natCache['D'];
+  }
+
+  try {
+    const res = await fetch('/api/generer_multi', {
+      method: 'POST', headers: {'Content-Type':'application/json'},
+      body: JSON.stringify(params)
+    });
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({error: `Erreur HTTP ${res.status}`}));
+      toast('Erreur serveur : ' + (err.error || res.statusText), 'error');
+      return;
+    }
+    const data = await res.json();
+    if (data.error) { toast('Erreur : ' + data.error, 'error'); return; }
+
+    toast(`✅ ${data.nb_tireurs} tireurs — ${data.feuilles.join(' + ')}`, 'success');
+    const catHD = cat_map[state.cat];
+    ajouterHistorique(`${catHD?.label || state.cat} · ${data.feuilles.join('+')} → ${data.fichier}`);
+    ajouterTelechargement(data.fichier, data.feuilles.join(' + '));
+  } catch(e) { toast('Erreur : ' + e.message, 'error'); }
+  finally { btn.innerHTML = '⚡ Générer H+D (Excel 2 feuilles)'; btn.disabled = false; }
+}
+
+// Quota organisateur info (listener retiré — géré par les handlers individuels)
+
+// Init
+showCentralEmpty();
+setArbSource('aucun');
+
+// ═══════════════════════════════════════════════════════════════════
+// SABRE LASER
+// ═══════════════════════════════════════════════════════════════════
+
+const SL_DISCIPLINES = [
+  { id:'combat_sportif_senior', label:'Combat Sportif Seniors', label_court:'CS Seniors', parseur:'sl',
+    niveaux:[
+      {id:'epreuve_nationale', label:'\u00c9preuve Nationale', quota_ge:11, regional_only:true},
+      {id:'cdf', label:'Championnat de France', quota_ge:3, regional_only:false},
+    ]},
+  { id:'combat_sportif_m17', label:'Combat Sportif M17', label_court:'CS M17', parseur:'sl',
+    niveaux:[{id:'cdf', label:'Championnat de France', quota_ge:6, regional_only:false}]},
+  { id:'epreuve_technique', label:'\u00c9preuve Technique Seniors', label_court:'ET Seniors', parseur:'et',
+    niveaux:[{id:'cdf', label:'Championnat de France', quota_ge:7, regional_only:false}]},
+  { id:'combat_choregraphie', label:'Combat Chor\u00e9graphie Seniors', label_court:'Chor\u00e9graphie', parseur:'chore',
+    sous_categories:['Duel','Bataille','Ensemble'],
+    niveaux:[{id:'cdf', label:'Championnat de France', quota_ge:5, regional_only:false}]},
+];
+
+// Cache SL : {discId_niveauId_type: cle}
+const slCache = {};  // slCache["combat_sportif_senior_cdf_nat"] = cle
+
+function initSabreLaser() {
+  const container = document.getElementById('slDisciplines');
+  if (!container) return;
+  container.innerHTML = '';
+
+  SL_DISCIPLINES.forEach(disc => {
+    const discKey = disc.id;
+    const bloc = document.createElement('div');
+    bloc.style.cssText = 'border:1px solid #C4B5FD;border-radius:8px;padding:10px 12px;background:#F9F5FF;margin-bottom:10px;';
+
+    const titre = document.createElement('div');
+    titre.style.cssText = 'font-size:12px;font-weight:700;color:#4B0082;margin-bottom:8px;';
+    titre.textContent = disc.label;
+    bloc.appendChild(titre);
+
+    // ── Sous-blocs par niveau ──────────────────────────────────
+    disc.niveaux.forEach(niveau => {
+      const key = discKey + '_' + niveau.id;
+      const nDiv = document.createElement('div');
+      nDiv.style.cssText = 'border:1px solid #EDE9FE;border-radius:6px;padding:8px;margin-bottom:6px;background:white;';
+
+      // En-tête niveau : label + quota GE
+      let html_inner = '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;">'
+        + '<div style="font-size:11px;font-weight:600;color:#6A0DAD;">' + niveau.label + '</div>'
+        + '<div style="display:flex;align-items:center;gap:6px;">'
+        + '<label style="font-size:9px;color:#6B7280;">Quota GE total</label>'
+        + '<input type="number" id="slQuota_' + key + '" value="' + niveau.quota_ge + '" style="width:45px;font-size:11px;border:1px solid #C4B5FD;border-radius:4px;padding:2px 4px;text-align:center;">'
+        + '</div></div>';
+
+      // ── Quotas Chorégraphie par sous-catégorie ──────────────
+      if (disc.parseur === 'chore' && disc.sous_categories) {
+        html_inner += '<div style="background:#F3E8FF;border-radius:4px;padding:6px 8px;margin-bottom:6px;">';
+        html_inner += '<div style="font-size:9px;color:#6B7280;margin-bottom:4px;font-weight:600;">Répartition par catégorie <span style="font-weight:400;">(laisser vide = auto)</span></div>';
+        html_inner += '<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:6px;">';
+        disc.sous_categories.forEach(sc => {
+          html_inner += '<div><label style="font-size:9px;color:#6B7280;display:block;">' + sc + '</label>'
+            + '<input type="number" id="slQuotaSC_' + key + '_' + sc.toLowerCase() + '" placeholder="auto"'
+            + ' min="0" style="width:100%;font-size:10px;border:1px solid #C4B5FD;border-radius:4px;padding:2px 4px;text-align:center;"></div>';
+        });
+        html_inner += '</div></div>';
+      }
+
+      // ── Date / Lieu — uniquement pour l'Épreuve Nationale (CDF = champs communs) ──
+      if (niveau.id !== 'cdf') {
+        html_inner += '<div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:6px;">'
+          + '<div><label style="font-size:9px;color:#6B7280;display:block;">Date</label>'
+          + '<input type="text" id="slDate_' + key + '" placeholder="jj/mm/aaaa" style="width:100%;font-size:10px;border:1px solid #E5E7EB;border-radius:4px;padding:3px 6px;box-sizing:border-box;"></div>'
+          + '<div><label style="font-size:9px;color:#6B7280;display:block;">Lieu</label>'
+          + '<input type="text" id="slLieu_' + key + '" placeholder="Ville" style="width:100%;font-size:10px;border:1px solid #E5E7EB;border-radius:4px;padding:3px 6px;box-sizing:border-box;"></div>'
+          + '</div>';
+      }
+
+      // ── Import national (masqué si regional_only ou ET/Choré) ──
+      const showNat = !niveau.regional_only && disc.parseur === 'sl';
+      if (showNat) {
+        html_inner += '<div style="margin-bottom:6px;"><label style="font-size:9px;color:#6B7280;display:block;">📋 Liste qualifiés national (optionnel)</label>'
+          + '<div id="slZoneNat_' + key + '" class="upload-zone" style="padding:6px 8px;min-height:32px;font-size:10px;">'
+          + '<input type="file" id="slInputNat_' + key + '" accept=".pdf,.xlsx,.xls,.html,.htm,.fff" style="display:none">'
+          + '<span id="slInfoNat_' + key + '">PDF / XLSX / HTML / FFF</span></div></div>';
+      }
+
+      // ── Import régional propre à CE niveau (EN ≠ CDF) ──────
+      // Pour CS Senior avec 2 niveaux : chaque niveau a son propre import régional
+      const hasMultiNiveaux = disc.niveaux.length > 1;
+      if (hasMultiNiveaux) {
+        const regLabel = niveau.regional_only
+          ? '📊 Classement régional GE'
+          : '📊 Classement régional GE (optionnel)';
+        html_inner += '<div><label style="font-size:9px;color:#166534;font-weight:600;display:block;">' + regLabel + '</label>'
+          + '<div id="slZoneReg_' + key + '" class="upload-zone" style="padding:6px 8px;min-height:32px;font-size:10px;border-color:#22C55E;">'
+          + '<input type="file" id="slInputReg_' + key + '" accept=".pdf,.xlsx,.xls,.html,.htm,.fff" style="display:none">'
+          + '<span id="slInfoReg_' + key + '">PDF / XLSX / HTML / FFF</span></div></div>';
+
+        // ── Import demi-finale nationale (CS Senior CDF uniquement) ──
+        if (disc.id === 'combat_sportif_senior' && niveau.id === 'cdf') {
+          html_inner += '<div style="margin-top:6px;"><label style="font-size:9px;color:#92400E;font-weight:600;display:block;">🏆 Résultats demi-finale nationale (PDF ou MD — optionnel)</label>'
+            + '<div id="slZoneDemifin_' + key + '" class="upload-zone" style="padding:6px 8px;min-height:32px;font-size:10px;border-color:#F59E0B;">'
+            + '<input type="file" id="slInputDemifin_' + key + '" accept=".pdf,.md" style="display:none">'
+            + '<span id="slInfoDemifin_' + key + '">PDF / MD — rang demi-finale affiché en note</span></div></div>';
+        }
+      }
+
+      nDiv.innerHTML = html_inner;
+
+      // Handlers nat
+      if (showNat) {
+        const zNat = nDiv.querySelector('#slZoneNat_' + key);
+        const iNat = nDiv.querySelector('#slInputNat_' + key);
+        if (zNat && iNat) {
+          zNat.onclick = () => iNat.click();
+          iNat.onchange = (function(d, n) { return function() { slUpload(this, d, n, 'nat'); }; })(disc.id, niveau.id);
+        }
+      }
+
+      // Handlers reg par niveau (quand multi-niveaux)
+      if (hasMultiNiveaux) {
+        const zReg = nDiv.querySelector('#slZoneReg_' + key);
+        const iReg = nDiv.querySelector('#slInputReg_' + key);
+        if (zReg && iReg) {
+          zReg.onclick = () => iReg.click();
+          iReg.onchange = (function(d, n) { return function() { slUploadNiveauReg(this, d, n); }; })(disc.id, niveau.id);
+        }
+
+        // Handler demi-finale (CS Senior CDF uniquement)
+        const zDf = nDiv.querySelector('#slZoneDemifin_' + key);
+        const iDf = nDiv.querySelector('#slInputDemifin_' + key);
+        if (zDf && iDf) {
+          zDf.onclick = () => iDf.click();
+          iDf.onchange = (function(d, n) { return function() { slUploadDemifin(this, d, n); }; })(disc.id, niveau.id);
+        }
+      }
+
+      bloc.appendChild(nDiv);
+    });
+
+    // ── Import régional partagé (disciplines à 1 seul niveau) ─
+    const hasMultiNiveaux = disc.niveaux.length > 1;
+    if (!hasMultiNiveaux) {
+      const regLabel = disc.parseur === 'et' ? 'Classement régional GE'
+                     : disc.parseur === 'chore' ? 'Classement Chorégraphie GE (fichier multi-feuilles)'
+                     : 'Classement régional GE (optionnel)';
+      const regWrap = document.createElement('div');
+      regWrap.style.marginTop = '6px';
+      const regLbl = document.createElement('label');
+      regLbl.style.cssText = 'font-size:9px;color:#166534;font-weight:600;display:block;';
+      regLbl.textContent = regLabel;
+      const regZone = document.createElement('div');
+      regZone.id = 'slZoneReg_' + discKey;
+      regZone.className = 'upload-zone';
+      regZone.style.cssText = 'padding:6px 8px;min-height:32px;font-size:10px;border-color:#22C55E;';
+      const regInput = document.createElement('input');
+      regInput.type = 'file'; regInput.accept = '.pdf,.xlsx,.xls,.html,.htm,.fff';
+      regInput.id = 'slInputReg_' + discKey; regInput.style.display = 'none';
+      const regInfo = document.createElement('span');
+      regInfo.id = 'slInfoReg_' + discKey;
+      regInfo.textContent = 'PDF / XLSX / HTML / FFF';
+      regZone.appendChild(regInput); regZone.appendChild(regInfo);
+      regZone.onclick = (function(d) { return () => document.getElementById('slInputReg_' + d)?.click(); })(discKey);
+      regInput.onchange = (function(d, p) { return function() { slUploadReg(this, d, p); }; })(discKey, disc.parseur);
+      regWrap.appendChild(regLbl); regWrap.appendChild(regZone);
+      bloc.appendChild(regWrap);
+    }
+
+    container.appendChild(bloc);
+  });
+
+  // Restaurer l'état visuel depuis slCache
+  SL_DISCIPLINES.forEach(disc => {
+    const hasMultiNiveaux = disc.niveaux.length > 1;
+    disc.niveaux.forEach(niveau => {
+      const key = disc.id + '_' + niveau.id;
+      if (slCache[key + '_nat']) {
+        const z = document.getElementById('slZoneNat_' + key);
+        const i = document.getElementById('slInfoNat_' + key);
+        if (z) z.classList.add('loaded');
+        if (i) i.textContent = '\u2705 Fichier chargé';
+      }
+      if (hasMultiNiveaux && slCache[key + '_reg']) {
+        const z = document.getElementById('slZoneReg_' + key);
+        const i = document.getElementById('slInfoReg_' + key);
+        if (z) z.classList.add('loaded');
+        if (i) i.textContent = '\u2705 Fichier chargé';
+      }
+      if (slCache[key + '_demifin']) {
+        const z = document.getElementById('slZoneDemifin_' + key);
+        const i = document.getElementById('slInfoDemifin_' + key);
+        if (z) z.classList.add('loaded');
+        if (i) i.textContent = '\u2705 Demi-finale chargée';
+      }
+    });
+    if (!hasMultiNiveaux && disc.niveaux.some(n => slCache[disc.id + '_' + n.id + '_reg'])) {
+      const z = document.getElementById('slZoneReg_' + disc.id);
+      const i = document.getElementById('slInfoReg_' + disc.id);
+      if (z) z.classList.add('loaded');
+      if (i) i.textContent = '\u2705 Fichier chargé';
+    }
+  });
+}
+
+// Upload régional par niveau (CS Senior EN vs CDF séparés)
+async function slUploadNiveauReg(input, discId, niveauId) {
+  const file = input.files[0];
+  if (!file) return;
+  const key  = discId + '_' + niveauId;
+  const zone = document.getElementById('slZoneReg_' + key);
+  const info = document.getElementById('slInfoReg_' + key);
+  if (info) info.textContent = '\u23f3 Chargement\u2026';
+  const fd = new FormData();
+  fd.append('fichier', file);
+  fd.append('disc_id', discId);
+  fd.append('niveau_id', niveauId);
+  try {
+    const res  = await fetch('/api/sl/upload', {method:'POST', body:fd});
+    const data = await res.json();
+    if (data.error) throw new Error(data.error);
+    slCache[key + '_reg'] = data.cle;
+    if (zone) zone.classList.add('loaded');
+    if (info) info.innerHTML = '\u2705 ' + (data.format||'').toUpperCase() + ' \u2014 ' + data.nb_total + ' tireurs (' + data.nb_grand_est + ' GE)'
+      + ' <span onclick="slPurgerZone(\'' + discId + '\',\'' + niveauId + '\',\'reg\')" style="cursor:pointer;color:#DC2626;margin-left:6px;font-weight:700;" title="Effacer">\u00d7</span>';
+    toast('Classement charg\u00e9 : ' + data.nb_grand_est + ' GE', 'success');
+  } catch(e) {
+    if (info) info.textContent = '\u274c ' + e.message;
+    toast(e.message, 'error');
+  }
+}
+
+
+function slTriggerUploadReg(discId) {
+  document.getElementById('slInputReg_' + discId)?.click();
+}
+
+async function slUploadDemifin(input, discId, niveauId) {
+  const file = input.files[0];
+  if (!file) return;
+  const key  = discId + '_' + niveauId;
+  const zone = document.getElementById('slZoneDemifin_' + key);
+  const info = document.getElementById('slInfoDemifin_' + key);
+  if (info) info.textContent = '⏳ Chargement…';
+  const fd = new FormData();
+  fd.append('fichier', file);
+  fd.append('disc_id', discId);
+  fd.append('niveau_id', niveauId);
+  try {
+    const res  = await fetch('/api/sl/upload', {method:'POST', body:fd});
+    const data = await res.json();
+    if (data.error) throw new Error(data.error);
+    slCache[key + '_demifin'] = data.cle;
+    if (zone) zone.classList.add('loaded');
+    if (info) info.innerHTML = '✅ ' + (data.format||'').toUpperCase() + ' — ' + data.nb_total + ' tireurs'
+      + ' <span onclick="slCache[\'' + key + '_demifin\']=null;this.closest(\'.upload-zone\').classList.remove(\'loaded\');document.getElementById(\'slInfoDemifin_' + key + '\').textContent=\'PDF / MD — rang demi-finale affiché en note\';" style="cursor:pointer;color:#DC2626;margin-left:6px;font-weight:700;" title="Effacer">✕</span>';
+    toast('Demi-finale chargée : ' + data.nb_total + ' tireurs', 'success');
+  } catch(e) {
+    if (info) info.textContent = '❌ ' + e.message;
+    toast(e.message, 'error');
+  }
+}
+
+async function slUploadReg(input, discId) {
+  const file = input.files[0];
+  if (!file) return;
+  const zone = document.getElementById('slZoneReg_' + discId);
+  const info = document.getElementById('slInfoReg_' + discId);
+  if (info) info.textContent = '⏳ Chargement…';
+  const fd = new FormData();
+  fd.append('fichier', file);
+  fd.append('disc_id', discId);
+  fd.append('niveau_id', 'reg');
+  try {
+    const res  = await fetch('/api/sl/upload', {method:'POST', body:fd});
+    const data = await res.json();
+    if (data.error) throw new Error(data.error);
+    // Stocker la clé pour TOUS les niveaux de cette discipline
+    const disc = SL_DISCIPLINES.find(d => d.id === discId);
+    if (disc) disc.niveaux.forEach(n => { slCache[discId + '_' + n.id + '_reg'] = data.cle; });
+    if (zone) zone.classList.add('loaded');
+    if (info) info.innerHTML = '✅ ' + (data.format||'').toUpperCase() + ' — ' + data.nb_total + ' tireurs (' + data.nb_grand_est + ' GE)'
+      + ' <span onclick="slPurgerZone(\'' + discId + '\',\'\',\'reg\')" style="cursor:pointer;color:#DC2626;margin-left:6px;font-weight:700;" title="Effacer">✕</span>';
+    toast('Classement régional : ' + data.nb_grand_est + ' Grand Est', 'success');
+  } catch(e) {
+    if (info) info.textContent = '❌ ' + e.message;
+    toast(e.message, 'error');
+  }
+}
+
+
+function slTriggerUpload(discId, niveauId, type) {
+  const key = `${discId}_${niveauId}`;
+  document.getElementById(`slInput${type === 'nat' ? 'Nat' : 'Reg'}_${key}`)?.click();
+}
+
+async function slUpload(input, discId, niveauId, type) {
+  const file = input.files[0];
+  if (!file) return;
+  const key     = `${discId}_${niveauId}`;
+  const zoneId  = `slZone${type === 'nat' ? 'Nat' : 'Reg'}_${key}`;
+  const infoId  = `slInfo${type === 'nat' ? 'Nat' : 'Reg'}_${key}`;
+  const zone    = document.getElementById(zoneId);
+  const info    = document.getElementById(infoId);
+
+  if (info) info.textContent = '⏳ Chargement…';
+
+  const fd = new FormData();
+  fd.append('fichier', file);
+  fd.append('disc_id', discId);
+  fd.append('niveau_id', niveauId);
+
+  try {
+    const res  = await fetch('/api/sl/upload', {method:'POST', body:fd});
+    const data = await res.json();
+    if (data.error) throw new Error(data.error);
+
+    slCache[`${key}_${type}`] = data.cle;
+    if (zone) zone.classList.add('loaded');
+
+    const label = data.format.toUpperCase();
+    const ge    = data.nb_grand_est;
+    const total = data.nb_total;
+    if (info) info.innerHTML = `✅ ${label} — ${total} tireurs (${ge} GE) <span onclick="slPurgerZone('${discId}','${niveauId}','nat')" style="cursor:pointer;color:#DC2626;margin-left:6px;font-weight:700;" title="Effacer">✕</span>`;
+    toast(`${file.name} : ${total} tireurs, ${ge} Grand Est`, 'success');
+  } catch(e) {
+    if (info) info.textContent = `❌ ${e.message}`;
+    toast(e.message, 'error');
+  }
+}
+
+async function slGenerer() {
+  const mode = document.querySelector('input[name="slMode"]:checked')?.value || 'multi';
+  const mailRetour    = document.getElementById('slMailRetour')?.value || 'administration@crege.fr';
+  const dateLimite    = document.getElementById('slDateLimite')?.value || '';
+  const dateExtranet  = document.getElementById('slDateExtranet')?.value || '';
+  const dateCDF       = document.getElementById('slDateCDF')?.value || '';
+  const lieuCDF       = document.getElementById('slLieuCDF')?.value || '';
+  const statusEl    = document.getElementById('slStatus');
+
+  // Séparer Épreuve Nationale (toujours document séparé) et CDF
+  const selectionsEN  = [];  // Épreuves Nationales → doc séparé
+  const selectionsCDF = [];  // CDF + autres → multi-onglets ou séparés
+
+  SL_DISCIPLINES.forEach(disc => {
+    disc.niveaux.forEach(niveau => {
+      const key    = disc.id + '_' + niveau.id;
+      const quota  = parseInt(document.getElementById('slQuota_' + key)?.value || niveau.quota_ge);
+      const date   = niveau.id === 'cdf' ? dateCDF  : (document.getElementById('slDate_' + key)?.value || '');
+      const lieu   = niveau.id === 'cdf' ? lieuCDF  : (document.getElementById('slLieu_' + key)?.value || '');
+      const cleNat = slCache[key + '_nat'] || null;
+      const cleReg = slCache[key + '_reg'] || null;
+      const cleDemifin = slCache[key + '_demifin'] || null;
+
+      if (!cleNat && !cleReg) return;
+
+      const selObj = {
+        disc_id: disc.id, niveau_id: niveau.id,
+        quota_ge: quota, date, lieu,
+        competition: 'Sabre Laser — ' + disc.label,
+        mail_retour: mailRetour, date_limite: dateLimite,
+        date_extranet: dateExtranet,
+        cle_national: cleNat, cle_regional: cleReg,
+        cle_demifin: cleDemifin,
+      };
+      if (disc.parseur === 'chore' && disc.sous_categories) {
+        disc.sous_categories.forEach(sc => {
+          const scKey = 'slQuotaSC_' + key + '_' + sc.toLowerCase();
+          const val = document.getElementById(scKey)?.value;
+          if (val && val !== '') selObj['quota_' + sc.toLowerCase()] = parseInt(val);
+        });
+      }
+
+      // Épreuve Nationale → séparée
+      if (niveau.id === 'epreuve_nationale') {
+        selectionsEN.push(selObj);
+      } else {
+        selectionsCDF.push(selObj);
+      }
+    });
+  });
+
+  if (!selectionsEN.length && !selectionsCDF.length) {
+    toast('Importez au moins un fichier pour une discipline', 'error');
+    return;
+  }
+
+  const noms = [...selectionsEN, ...selectionsCDF].map(s => {
+    const disc = SL_DISCIPLINES.find(d => d.id === s.disc_id);
+    return (disc ? disc.label_court : s.disc_id) + (s.niveau_id === 'epreuve_nationale' ? ' (EN)' : '');
+  });
+  if (statusEl) statusEl.innerHTML = '⏳ Génération : ' + noms.join(', ') + '…';
+
+  const fichiers = [];
+
+  try {
+    // 1. Épreuves Nationales → toujours en documents séparés
+    if (selectionsEN.length) {
+      const r1 = await fetch('/api/sl/generer', {
+        method: 'POST', headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({mode: 'separes', selections: selectionsEN}),
+      });
+      const d1 = await r1.json();
+      if (d1.error) throw new Error(d1.error);
+      (d1.fichiers || []).forEach(f => fichiers.push({nom: f, label: 'Épreuve Nationale'}));
+    }
+
+    // 2. CDF → selon le mode choisi par l'utilisateur
+    if (selectionsCDF.length) {
+      const r2 = await fetch('/api/sl/generer', {
+        method: 'POST', headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({mode, selections: selectionsCDF}),
+      });
+      const d2 = await r2.json();
+      if (d2.error) throw new Error(d2.error);
+      // sl_generer retourne toujours {fichiers:[...]}
+      const labelCDF = mode === 'multi' ? 'CDF (multi-onglets)' : 'CDF';
+      (d2.fichiers || []).forEach(f => fichiers.push({nom: f, label: labelCDF}));
+    }
+
+    // Afficher les liens
+    const liens = fichiers.map(({nom, label}) => {
+      const url = '/api/telecharger/' + encodeURIComponent(nom);
+      ajouterHistorique(nom);
+      return '<div><span style="font-size:10px;color:#6B7280;">' + label + '</span><br>'
+        + '<a href="' + url + '" download style="color:#4B0082;font-weight:600;">' + nom + '</a></div>';
+    }).join('');
+    if (statusEl) statusEl.innerHTML = '✅ ' + fichiers.length + ' fichier(s) :<br>' + liens;
+    toast('Sélections générées !', 'success');
+
+  } catch(e) {
+    if (statusEl) statusEl.innerHTML = '❌ ' + e.message;
+    toast(e.message, 'error');
+  }
+}
+
+// ── Purge imports Sabre Laser ──────────────────────────────────────
+function slPurgerZone(discId, niveauId, type) {
+  const disc = SL_DISCIPLINES.find(d => d.id === discId);
+  const hasMulti = disc && disc.niveaux.length > 1;
+
+  if (type === 'reg') {
+    if (hasMulti && niveauId) {
+      const key = discId + '_' + niveauId;
+      delete slCache[key + '_reg'];
+      const zone = document.getElementById('slZoneReg_' + key);
+      const info = document.getElementById('slInfoReg_' + key);
+      const input = document.getElementById('slInputReg_' + key);
+      if (zone)  zone.classList.remove('loaded');
+      if (info)  info.textContent = 'PDF / XLSX / HTML / FFF';
+      if (input) input.value = '';
+    } else {
+      if (disc) disc.niveaux.forEach(n => { delete slCache[discId + '_' + n.id + '_reg']; });
+      const zone  = document.getElementById('slZoneReg_' + discId);
+      const info  = document.getElementById('slInfoReg_' + discId);
+      const input = document.getElementById('slInputReg_' + discId);
+      if (zone)  zone.classList.remove('loaded');
+      if (info)  info.textContent = 'PDF / XLSX / HTML / FFF';
+      if (input) input.value = '';
+    }
+  } else {
+    const key = discId + (niveauId ? '_' + niveauId : '');
+    delete slCache[key + '_nat'];
+    const zone  = document.getElementById('slZoneNat_' + key);
+    const info  = document.getElementById('slInfoNat_' + key);
+    const input = document.getElementById('slInputNat_' + key);
+    if (zone)  zone.classList.remove('loaded');
+    if (info)  info.textContent = 'PDF / XLSX / HTML / FFF';
+    if (input) input.value = '';
+  }
+}
+
+function slPurgerTout() {
+  Object.keys(slCache).forEach(k => delete slCache[k]);
+  SL_DISCIPLINES.forEach(disc => {
+    const hasMulti = disc.niveaux.length > 1;
+    if (!hasMulti) {
+      const zone  = document.getElementById('slZoneReg_' + disc.id);
+      const info  = document.getElementById('slInfoReg_' + disc.id);
+      const input = document.getElementById('slInputReg_' + disc.id);
+      if (zone)  zone.classList.remove('loaded');
+      if (info)  info.textContent = 'PDF / XLSX / HTML / FFF';
+      if (input) input.value = '';
+    }
+    disc.niveaux.forEach(niveau => {
+      const key = disc.id + '_' + niveau.id;
+      ['Nat', 'Reg'].forEach(t => {
+        const zone  = document.getElementById('slZone' + t + '_' + key);
+        const info  = document.getElementById('slInfo' + t + '_' + key);
+        const input = document.getElementById('slInput' + t + '_' + key);
+        if (zone)  zone.classList.remove('loaded');
+        if (info)  info.textContent = 'PDF / XLSX / HTML / FFF';
+        if (input) input.value = '';
+      });
+    });
+  });
+  const statusEl = document.getElementById('slStatus');
+  if (statusEl) statusEl.innerHTML = '';
+  toast('Imports Sabre Laser purg\u00e9s', 'info');
+}
+
+</script>
+</body>
+</html>
