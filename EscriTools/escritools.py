@@ -1365,6 +1365,662 @@ class TabRenommage(tk.Frame):
 
 
 # =============================================================================
+# LOGIQUE EQUIPE -> INDIVIDUEL (BellePoule .md)
+# =============================================================================
+
+_EI_REGION = (
+    r'(?:CHAMPAGNE-ARDENNE|LORRAINE|ALSACE|GRAND[\s\-]EST|BOURGOGNE|'
+    r'ILE[\s\-]DE[\s\-]FRANCE|NORMANDIE|BRETAGNE|OCCITANIE|PACA|AUVERGNE|'
+    r'NOUVELLE[\s\-]AQUITAINE|CENTRE|HAUTS[\s\-]DE[\s\-]FRANCE|'
+    r'PAYS[\s\-]DE[\s\-]LA[\s\-]LOIRE|FRANCHE[\s\-]COMTE)'
+)
+_EI_PAT_ENTREE = re.compile(
+    r'(.+?)\s+' + _EI_REGION + r'\s+FRA\s+(0|19998)\s*(\d{5,7})?', re.UNICODE
+)
+_EI_PAT_DDN   = re.compile(r'\d{2}/\d{2}/\d{4}')
+_EI_PAT_SPLIT = re.compile(
+    r'([A-ZÀÂÄÉÈÊËÎÏÔÖÙÛÜ][A-ZÀÂÄÉÈÊËÎÏÔÖÙÛÜ ]+?\s+\d+)\s+'
+    r'[A-ZÀÂÄÉÈÊËÎÏÔÖÙÛÜ]+\s+([A-ZÀÂÄÉÈÊËÎÏÔÖÙÛÜ].+)$', re.UNICODE
+)
+_EI_PAT_CG_FLAT = re.compile(
+    r'(\d+)\s+(.+?)\s+' + _EI_REGION + r'\s+FRA\s*(?=\d|\Z)', re.UNICODE
+)
+
+
+def _ei_nom_prenom(avant):
+    """Extrait NOM et Prénom (composés, tout-caps, suffixe club) depuis un champ avant."""
+    avant = _EI_PAT_DDN.sub('', avant).strip()
+    tokens = avant.split()
+    if not tokens:
+        return "", ""
+
+    # Supprimer suffixe club (tokens tout-caps après le dernier token mixte)
+    last_mixed = None
+    for i in range(len(tokens) - 1, -1, -1):
+        if re.match(r'^[A-ZÀÂÄÉÈÊËÎÏÔÖÙÛÜ][a-zàâäéèêëîïôöùûü]', tokens[i]):
+            last_mixed = i
+            break
+    if last_mixed is not None:
+        tokens = tokens[:last_mixed + 1]
+    else:
+        # Tout caps : retirer max 2 tokens suffixe
+        while len(tokens) > 2 and re.match(r'^[A-ZÀÂÄÉÈÊËÎÏÔÖÙÛÜ]{2,}$', tokens[-1]):
+            tokens = tokens[:-1]
+
+    if not tokens:
+        return "", ""
+
+    # Trouver frontière NOM / Prénom
+    last_mixed = None
+    for i in range(len(tokens) - 1, -1, -1):
+        if re.match(r'^[A-ZÀÂÄÉÈÊËÎÏÔÖÙÛÜ][a-zàâäéèêëîïôöùûü]', tokens[i]):
+            last_mixed = i
+            break
+
+    if last_mixed is None:
+        return " ".join(tokens[:-1]) if len(tokens) > 1 else tokens[0], tokens[-1] if len(tokens) > 1 else ""
+
+    # Prénom composé
+    prenom_start = last_mixed
+    for i in range(last_mixed - 1, -1, -1):
+        if re.match(r'^[A-ZÀÂÄÉÈÊËÎÏÔÖÙÛÜ][a-zàâäéèêëîïôöùûü]', tokens[i]):
+            prenom_start = i
+        else:
+            break
+    prenom = " ".join(tokens[prenom_start:last_mixed + 1])
+    nom_tokens = []
+    for i in range(prenom_start - 1, -1, -1):
+        if re.match(r'^[A-ZÀÂÄÉÈÊËÎÏÔÖÙÛÜ][A-ZÀÂÄÉÈÊËÎÏÔÖÙÛÜ\-\']+$', tokens[i]):
+            nom_tokens.insert(0, tokens[i])
+        else:
+            break
+    return " ".join(nom_tokens), prenom
+
+
+def _ei_nom_equipe(avant):
+    """Extrait le nom d'équipe depuis un champ avant (entrée 19998 ou inline)."""
+    avant = avant.strip()
+    matches = re.findall(
+        r'([A-ZÀÂÄÉÈÊËÎÏÔÖÙÛÜ][A-ZÀÂÄÉÈÊËÎÏÔÖÙÛÜ\s]+?\s+\d+)(?:\s+[A-ZÀÂÄÉÈÊËÎÏÔÖÙÛÜ]|\s*$)',
+        avant
+    )
+    if matches:
+        return matches[-1].strip()
+    return " ".join(avant.split()[-3:]).strip()
+
+
+def ei_extraire_inscrits(texte):
+    """
+    Extrait la composition des équipes depuis la section 'Liste des inscrits'.
+    Retourne dict { nom_equipe: [ {nom, prenom, ddn, licence, sexe} ] }
+    """
+    m0 = re.search(r'Liste des inscrits', texte, re.IGNORECASE)
+    if not m0:
+        return {}
+    bloc = texte[m0.start():]
+    fin  = re.search(r'\n#+ R[eé]partition', bloc)
+    if fin:
+        bloc = bloc[:fin.start()]
+    flat = " ".join(bloc.splitlines())
+
+    equipes = {}
+    eq_courant = None
+
+    for m in _EI_PAT_ENTREE.finditer(flat):
+        avant = m.group(1)
+        cls   = m.group(2)   # "0" = tireur, "19998" = équipe
+        lic   = m.group(3) or ""
+        ddn   = _EI_PAT_DDN.search(avant)
+        ddn   = ddn.group(0) if ddn else ""
+
+        if cls == "19998":
+            eq_courant = _ei_nom_equipe(avant)
+            equipes.setdefault(eq_courant, [])
+        else:
+            # Détecter un changement d'équipe inline dans le champ avant
+            ms = _EI_PAT_SPLIT.search(avant.strip())
+            if ms:
+                g2 = ms.group(2).strip()
+                # Si le reste est tout-caps court = répétition club -> équipe seule sans tireur
+                is_eq_seule = (
+                    all(re.match(r'^[A-ZÀÂÄÉÈÊËÎÏÔÖÙÛÜ]+$', t) for t in g2.split())
+                    and len(g2.split()) <= 3
+                )
+                if is_eq_seule:
+                    eq_courant = ms.group(1).strip()
+                    equipes.setdefault(eq_courant, [])
+                    continue
+                eq_courant = ms.group(1).strip()
+                equipes.setdefault(eq_courant, [])
+                avant_tireur = g2
+            else:
+                avant_tireur = avant
+            if eq_courant is None:
+                continue
+            nom, prenom = _ei_nom_prenom(avant_tireur)
+            if nom:
+                equipes[eq_courant].append({
+                    "nom": nom, "prenom": prenom,
+                    "ddn": ddn, "licence": lic, "sexe": ""
+                })
+    # Supprimer les entrées parasites sans tireurs et sans nom valide
+    equipes = {k: v for k, v in equipes.items()
+               if re.search(r'[A-ZÀÂÄÉÈÊËÎÏÔÖÙÛÜ]', k) and not k.startswith('|') and not k.startswith('*')}
+    return equipes
+
+
+def ei_extraire_classement_general(texte):
+    """
+    Extrait le classement général final.
+    Gère les formats ligne-par-ligne et ligne unique (BellePoule M13).
+    Retourne liste de (place, nom_equipe).
+    """
+    blocs = list(re.finditer(r'Classement g[eé]n[eé]ral', texte, re.IGNORECASE))
+    if not blocs:
+        return []
+    bloc = texte[blocs[-1].start():]
+
+    result = []
+
+    def _parse_nom_eq(reste):
+        mots = reste.strip().split()
+        nom_eq = reste.strip()
+        for l in range(len(mots) // 2 + 1, 0, -1):
+            c = " ".join(mots[:l])
+            s = " ".join(mots[l:])
+            if s and (s in c or c.endswith(s.split()[0])):
+                nom_eq = c
+                break
+        return nom_eq.strip()
+
+    # Essai 1 : ligne par ligne
+    for ligne in bloc.splitlines():
+        m = re.match(r'^\s*(\d+)\s+(.+)', ligne)
+        if m:
+            result.append((int(m.group(1)), _parse_nom_eq(m.group(2))))
+
+    # Essai 2 : si vide, chercher sur une seule ligne aplatie (format M13)
+    if not result:
+        flat = " ".join(bloc.splitlines())
+        for m in _EI_PAT_CG_FLAT.finditer(flat):
+            result.append((int(m.group(1)), _parse_nom_eq(m.group(2))))
+
+    return result
+
+
+def ei_extraire_classement_poules(texte):
+    """
+    Extrait le classement du dernier tour de poules.
+    Gère le format aplati sur une seule ligne.
+    Retourne dict { nom_equipe: place }.
+    """
+    occ = list(re.finditer(r'Classement Tour n', texte, re.IGNORECASE))
+    if not occ:
+        return {}
+    debut = occ[-1].start()
+    flat  = " ".join(texte[debut: debut + 2000].splitlines())
+
+    # Utiliser les noms d'équipes connus (classement général) pour recherche ciblée
+    cg    = ei_extraire_classement_general(texte)
+    noms  = [n for _, n in cg]
+    result = {}
+    for nom_eq in noms:
+        m = re.search(r'(\d+)\s+' + re.escape(nom_eq) + r'\s', flat)
+        if m:
+            result[nom_eq] = int(m.group(1))
+    return result
+
+
+def _ei_trouver_membres(nom_eq, inscrits):
+    """Recherche tolérante du nom d'équipe dans le dict inscrits."""
+    if nom_eq in inscrits:
+        return inscrits[nom_eq]
+    for k, v in inscrits.items():
+        if nom_eq in k or k in nom_eq:
+            return v
+    return []
+
+
+def ei_construire_classement_individuel(inscrits, classement_general, classement_poules):
+    """
+    Construit le classement individuel depuis le classement d'équipes.
+    Ex æquo → départagés par classement_poules.
+    """
+    if not classement_general:
+        return []
+    par_place = {}
+    for place, nom_eq in classement_general:
+        par_place.setdefault(place, []).append(nom_eq)
+
+    tireurs = []
+    rang = 1
+    for place in sorted(par_place):
+        exaequo = par_place[place]
+        ordre = sorted(exaequo, key=lambda e: classement_poules.get(e, 9999))
+        for nom_eq in ordre:
+            membres = _ei_trouver_membres(nom_eq, inscrits)
+            for t in membres:
+                tireurs.append({**t, "place": rang})
+            rang += len(membres)
+    return tireurs
+
+
+def ei_generer_fff(tireurs, date_comp, arme, sexe, categorie, nom_comp, lieu, output_path):
+    """Génère le fichier .fff individuel."""
+    lignes = [
+        f"FFF;WIN;competition;{lieu};individuel",
+        f"{date_comp};{arme};{sexe};{categorie};{nom_comp};{nom_comp}"
+    ]
+    for t in tireurs:
+        lignes.append(
+            f"{t['nom']},{t['prenom']},{t['ddn']},{t['sexe'] or sexe},FRA,;"
+            f",,;{t['licence']},,,{t['place']},,;{t['place']},t"
+        )
+    contenu = "\r\n".join(lignes) + "\r\n"
+    with open(output_path, "w", encoding="latin-1", errors="replace") as f:
+        f.write(contenu)
+
+
+# =============================================================================
+# PARSING PDF BELLEPOULE (source principale)
+# =============================================================================
+
+_EI_REGION_PDF = (
+    r'CHAMPAGNE-ARDENNE|LORRAINE|ALSACE|GRAND[\s\-]EST|BOURGOGNE|'
+    r'ILE[\s\-]DE[\s\-]FRANCE|NORMANDIE|BRETAGNE|OCCITANIE|PACA|AUVERGNE|'
+    r'NOUVELLE[\s\-]AQUITAINE|CENTRE|HAUTS[\s\-]DE[\s\-]FRANCE|'
+    r'PAYS[\s\-]DE[\s\-]LA[\s\-]LOIRE|FRANCHE[\s\-]COMTE'
+)
+_EI_PAT_ENTREE_PDF = re.compile(
+    r'^(.+?)\s+(?:' + _EI_REGION_PDF + r')\s+FRA\s+(0|19998)\s*(\d{5,7})?\s*$',
+    re.UNICODE
+)
+_EI_PAT_CG_PDF = re.compile(
+    r'^(\d+)\s+(.+?)\s+(?:' + _EI_REGION_PDF + r')\s+FRA\s*$',
+    re.UNICODE
+)
+_EI_PAT_CP_PDF = re.compile(
+    r'^(\d+)\s+(.+?)\s+\S+\s+\d+\s+\d+\s+[+-]?\d+\s+\d+\s*$',
+    re.UNICODE
+)
+
+
+def _ei_pdf_pages(pdf_path):
+    """Retourne la liste des textes de pages via pdfplumber."""
+    pages = []
+    with pdfplumber.open(pdf_path) as pdf:
+        for p in pdf.pages:
+            t = p.extract_text()
+            if t:
+                pages.append(t)
+    return pages
+
+
+def ei_extraire_inscrits_pdf(pages):
+    """
+    Extrait inscrits depuis les pages PDF BellePoule.
+    Une ligne = une équipe ou un tireur → parsing ligne par ligne.
+    """
+    equipes = {}
+    eq_courant = None
+    in_inscrits = False
+
+    for page_text in pages:
+        lignes = page_text.splitlines()
+        for ligne in lignes:
+            ligne = ligne.strip()
+            if not ligne:
+                continue
+            if 'liste des inscrits' in ligne.lower():
+                in_inscrits = True
+                continue
+            if in_inscrits and re.match(
+                r'^(r[eé]partition|poules?\s+tour|composition|page\s+\d)',
+                ligne, re.I
+            ):
+                in_inscrits = False
+                continue
+            if not in_inscrits:
+                continue
+
+            m = _EI_PAT_ENTREE_PDF.match(ligne)
+            if not m:
+                continue
+
+            avant = m.group(1).strip()
+            cls   = m.group(2)
+            lic   = m.group(3) or ""
+            ddn_m = _EI_PAT_DDN.search(avant)
+            ddn   = ddn_m.group(0) if ddn_m else ""
+
+            # Déterminer si ligne d'équipe ou tireur
+            # Équipe : pas de DDN, pas de token mixte, ET contient un chiffre isolé (numéro d'équipe)
+            tokens = avant.split()
+            has_mixed = any(
+                re.match(r'^[A-ZÀÂÄÉÈÊËÎÏÔÖÙÛÜ][a-zàâäéèêëîïôöùûü]', t)
+                for t in tokens
+            )
+            has_team_number = any(re.match(r'^\d+$', t) for t in tokens)
+
+            if not has_mixed and not ddn and has_team_number:
+                # Ligne d'équipe (cls 19998 ou 0 comme WASSY CE)
+                nom_eq = _ei_nom_equipe(avant)
+                eq_courant = nom_eq
+                equipes.setdefault(eq_courant, [])
+            else:
+                # Tireur
+                if eq_courant is None:
+                    continue
+                nom, prenom = _ei_nom_prenom(avant)
+                if nom:
+                    equipes[eq_courant].append({
+                        "nom": nom, "prenom": prenom,
+                        "ddn": ddn, "licence": lic, "sexe": ""
+                    })
+
+    return equipes
+
+
+def _ei_parse_nom_eq_cg(reste):
+    """
+    Extrait nom d'équipe depuis "NOM_EQ CLUB" (répétition partielle).
+    Ex: "TROYES TG 5 TROYES TG" -> "TROYES TG 5"
+    """
+    mots = reste.split()
+    for l in range(len(mots) // 2 + 1, 0, -1):
+        c = " ".join(mots[:l])
+        s = " ".join(mots[l:])
+        if s and (s in c or c.endswith(s.split()[0])):
+            return c.strip()
+    matches = re.findall(
+        r'([A-ZÀÂÄÉÈÊËÎÏÔÖÙÛÜ][A-ZÀÂÄÉÈÊËÎÏÔÖÙÛÜ\s]+?\s+\d+)(?:\s+[A-ZÀÂÄÉÈÊËÎÏÔÖÙÛÜ]|\s*$)',
+        reste
+    )
+    return matches[-1].strip() if matches else reste.strip()
+
+
+def ei_extraire_classement_general_pdf(pages):
+    """
+    Extrait le classement général depuis les pages PDF.
+    Format: "PLACE NOM_EQUIPE CLUB REGION FRA"
+    """
+    result = []
+    # Chercher la dernière page contenant "classement général" + des lignes "N NOM"
+    for page_text in reversed(pages):
+        if not re.search(r'classement\s+g[eé]n[eé]ral', page_text, re.I):
+            continue
+        lignes = page_text.splitlines()
+        candidats = []
+        for ligne in lignes:
+            m = _EI_PAT_CG_PDF.match(ligne.strip())
+            if m:
+                place = int(m.group(1))
+                nom_eq = _ei_parse_nom_eq_cg(m.group(2).strip())
+                candidats.append((place, nom_eq))
+        if candidats:
+            return candidats
+    return result
+
+
+def ei_extraire_classement_poules_pdf(pages, noms_eq):
+    """
+    Extrait le classement du dernier tour de poules depuis les pages PDF.
+    Cherche la dernière page contenant une grille de classement avec les noms d'équipes.
+    Format ligne: "PLACE NOM_EQ CLUB POULE VICT INDICE TD"
+    """
+    result = {}
+    # Pattern d'une ligne de classement de poules (numérique en fin)
+    # "1 TROYES TG 5 TROYES TG 1 1000 22 48" ou "1 TROYES TG 5 TROYES TG 1 1000 35 96"
+    PAT_CP_LIGNE = re.compile(r'^(\d+)\s+(.+?)\s+\d+\s+\d+\s+[+-]?\d+\s+\d+\s*$')
+
+    # Index de la page classement général pour limiter la recherche
+    cg_page_idx = len(pages)
+    for i, pt in enumerate(pages):
+        if re.search(r'classement\s+g[eé]n[eé]ral', pt, re.I) and \
+           any(re.match(r'^\d+\s+[A-Z]', l.strip()) for l in pt.splitlines()):
+            cg_page_idx = i
+            break
+
+    # Chercher la dernière page de classement de poules avant le CG
+    cp_page = None
+    for pt in reversed(pages[:cg_page_idx]):
+        lignes = [l.strip() for l in pt.splitlines() if l.strip()]
+        classement_lignes = [l for l in lignes if PAT_CP_LIGNE.match(l)]
+        if len(classement_lignes) >= 3:
+            cp_page = pt
+            break
+
+    if not cp_page:
+        return result
+
+    # Parser avec les noms connus
+    for nom_eq in noms_eq:
+        m = re.search(r'(\d+)\s+' + re.escape(nom_eq) + r'\s', cp_page)
+        if m:
+            result[nom_eq] = int(m.group(1))
+
+    return result
+
+
+def ei_traiter_fichier(chemin, date_comp, arme, sexe, categorie, nom_comp, lieu, output_path, log):
+    """Traite un fichier PDF ou .md BellePoule équipes → .fff individuel."""
+    ext = Path(chemin).suffix.lower()
+    is_pdf = ext == ".pdf"
+
+    if is_pdf:
+        log("   -> Mode PDF")
+        pages = _ei_pdf_pages(chemin)
+
+        log("   -> Extraction des inscrits...")
+        inscrits = ei_extraire_inscrits_pdf(pages)
+        nb_eq = len(inscrits)
+        nb_t  = sum(len(v) for v in inscrits.values())
+        log(f"   -> {nb_eq} equipes, {nb_t} tireurs")
+        if not inscrits:
+            return False, "Aucune equipe extraite."
+
+        log("   -> Extraction du classement general...")
+        classement_general = ei_extraire_classement_general_pdf(pages)
+        if not classement_general:
+            return False, "Classement general introuvable."
+        log(f"   -> {len(classement_general)} equipes classees")
+
+        log("   -> Extraction classement poules (departage ex aequo)...")
+        noms_eq = [n for _, n in classement_general]
+        classement_poules = ei_extraire_classement_poules_pdf(pages, noms_eq)
+        log(f"   -> {len(classement_poules)} entrees poules")
+
+    else:
+        log("   -> Mode Markdown (.md)")
+        texte = Path(chemin).read_text(encoding="utf-8")
+
+        log("   -> Extraction des inscrits...")
+        inscrits = ei_extraire_inscrits(texte)
+        nb_eq = len(inscrits)
+        nb_t  = sum(len(v) for v in inscrits.values())
+        log(f"   -> {nb_eq} equipes, {nb_t} tireurs")
+        if not inscrits:
+            return False, "Aucune equipe extraite."
+
+        log("   -> Extraction du classement general...")
+        classement_general = ei_extraire_classement_general(texte)
+        if not classement_general:
+            return False, "Classement general introuvable."
+        log(f"   -> {len(classement_general)} equipes classees")
+
+        log("   -> Extraction classement poules (departage ex aequo)...")
+        classement_poules = ei_extraire_classement_poules(texte)
+        log(f"   -> {len(classement_poules)} entrees poules")
+
+    log("   -> Construction classement individuel...")
+    tireurs = ei_construire_classement_individuel(inscrits, classement_general, classement_poules)
+    log(f"   -> {len(tireurs)} tireurs classes")
+    if not tireurs:
+        return False, "Aucun tireur classe (verifier la correspondance equipes/inscrits)."
+
+    ei_generer_fff(tireurs, date_comp, arme, sexe, categorie, nom_comp, lieu, output_path)
+    return True, output_path
+
+
+# ── Onglet Equipe -> Individuel ───────────────────────────────────────────────
+
+class TabEquipeIndiv(tk.Frame):
+    def __init__(self, parent, root):
+        super().__init__(parent)
+        self.root = root
+        self.var_mds   = []
+        self.var_sortie = tk.StringVar()
+        # Paramètres compétition
+        self.var_date    = tk.StringVar(value=datetime.today().strftime("%d/%m/%Y"))
+        self.var_arme    = tk.StringVar(value="Epee")
+        self.var_sexe    = tk.StringVar(value="M")
+        self.var_cat     = tk.StringVar(value="M13")
+        self.var_nom     = tk.StringVar()
+        self.var_lieu    = tk.StringVar()
+        self._build()
+
+    def _build(self):
+        tk.Label(self,
+                 text="Convertit des resultats d'epreuves par equipes (BellePoule .pdf ou .md) "
+                      "en classement individuel au format .fff (WIN/FFE).",
+                 fg="gray", wraplength=580, justify="left").pack(
+            anchor="w", padx=14, pady=(10, 6))
+
+        # ── Fichiers ──
+        fr_f = tk.LabelFrame(self, text="Fichiers BellePoule (.pdf ou .md)", padx=10, pady=6)
+        fr_f.pack(fill="x", padx=14, pady=(0, 6))
+
+        fr_lst = tk.Frame(fr_f)
+        fr_lst.grid(row=0, column=0, columnspan=2, sticky="ew")
+        self.lst = tk.Listbox(fr_lst, width=56, height=4, selectmode=tk.EXTENDED)
+        self.lst.pack(side="left")
+        sb = tk.Scrollbar(fr_lst, orient="vertical", command=self.lst.yview)
+        sb.pack(side="left", fill="y")
+        self.lst.config(yscrollcommand=sb.set)
+
+        fr_b = tk.Frame(fr_f)
+        fr_b.grid(row=1, column=0, columnspan=2, sticky="w", pady=(6, 0))
+        for txt, cmd in [("Ajouter fichier(s)...", self._ajouter),
+                         ("Retirer", self._retirer),
+                         ("Vider", self._vider)]:
+            tk.Button(fr_b, text=txt, command=cmd).pack(side="left", padx=(0, 6))
+
+        row_field(fr_f, "Dossier de sortie :", self.var_sortie, self._sortie, 1)
+
+        # ── Paramètres compétition ──
+        fr_p = tk.LabelFrame(self, text="Parametres competition", padx=10, pady=6)
+        fr_p.pack(fill="x", padx=14, pady=(0, 6))
+
+        def champ(parent, label, var, row, col, width=18):
+            tk.Label(parent, text=label).grid(row=row, column=col*2,     sticky="w", padx=(0,4), pady=3)
+            tk.Entry(parent, textvariable=var, width=width).grid(row=row, column=col*2+1, sticky="w", padx=(0,14))
+
+        champ(fr_p, "Date (JJ/MM/AAAA) :", self.var_date, 0, 0)
+        champ(fr_p, "Arme :",              self.var_arme, 0, 1, 12)
+        champ(fr_p, "Categorie :",         self.var_cat,  0, 2, 8)
+
+        # Sexe avec radio buttons
+        tk.Label(fr_p, text="Sexe :").grid(row=1, column=0, sticky="w", padx=(0,4), pady=3)
+        fr_sx = tk.Frame(fr_p)
+        fr_sx.grid(row=1, column=1, sticky="w")
+        tk.Radiobutton(fr_sx, text="F", variable=self.var_sexe, value="F").pack(side="left")
+        tk.Radiobutton(fr_sx, text="M", variable=self.var_sexe, value="M").pack(side="left")
+
+        champ(fr_p, "Nom competition :", self.var_nom,  1, 1, 28)
+        champ(fr_p, "Lieu :",            self.var_lieu, 1, 2, 14)
+
+        # ── Bouton ──
+        self.btn = tk.Button(self, text="Generer .fff individuel",
+                             command=self._lancer,
+                             bg="#1F3864", fg="white",
+                             font=("Segoe UI", 10, "bold"), pady=7,
+                             state="disabled")
+        self.btn.pack(pady=8)
+
+        # ── Log ──
+        fr_log = tk.LabelFrame(self, text="Journal", padx=2, pady=2)
+        fr_log.pack(fill="both", expand=True, padx=14, pady=(0, 14))
+        self.log = make_log(fr_log)
+
+    def _log(self, msg): log_write(self.log, msg, self.root)
+
+    def _ajouter(self):
+        chemins = filedialog.askopenfilenames(
+            title="Selectionner des fichiers BellePoule (.pdf ou .md)",
+            filetypes=[("PDF / Markdown", "*.pdf *.md"), ("PDF", "*.pdf"),
+                       ("Markdown", "*.md"), ("Tous", "*.*")])
+        for c in chemins:
+            if c not in self.var_mds:
+                self.var_mds.append(c)
+                self.lst.insert(tk.END, os.path.basename(c))
+        self._refresh()
+        if chemins and not self.var_sortie.get():
+            self.var_sortie.set(os.path.dirname(chemins[0]))
+
+    def _retirer(self):
+        for i in reversed(self.lst.curselection()):
+            self.lst.delete(i); self.var_mds.pop(i)
+        self._refresh()
+
+    def _vider(self):
+        self.lst.delete(0, tk.END); self.var_mds.clear(); self._refresh()
+
+    def _sortie(self):
+        d = filedialog.askdirectory(title="Dossier de sortie")
+        if d: self.var_sortie.set(d)
+
+    def _refresh(self):
+        self.btn.config(state="normal" if self.var_mds else "disabled")
+
+    def _lancer(self):
+        if not self.var_mds: return
+        sortie = self.var_sortie.get().strip()
+        if not sortie:
+            messagebox.showwarning("Attention", "Choisissez un dossier de sortie."); return
+        for champ, label in [
+            (self.var_date.get(), "Date"),
+            (self.var_arme.get(), "Arme"),
+            (self.var_cat.get(),  "Categorie"),
+            (self.var_nom.get(),  "Nom competition"),
+            (self.var_lieu.get(), "Lieu"),
+        ]:
+            if not champ.strip():
+                messagebox.showwarning("Attention", f"Le champ '{label}' est vide."); return
+
+        self.log.delete("1.0", tk.END)
+        self.btn.config(state="disabled")
+        succes, erreurs = [], []
+
+        for md_path in self.var_mds:
+            self._log(f"\n--- {os.path.basename(md_path)} ---")
+            nom_out = Path(md_path).stem + "_indiv.fff"
+            out_path = os.path.join(sortie, nom_out)
+            ok, res = ei_traiter_fichier(
+                md_path,
+                date_comp = self.var_date.get().strip(),
+                arme      = self.var_arme.get().strip(),
+                sexe      = self.var_sexe.get(),
+                categorie = self.var_cat.get().strip(),
+                nom_comp  = self.var_nom.get().strip(),
+                lieu      = self.var_lieu.get().strip(),
+                output_path = out_path,
+                log       = self._log
+            )
+            if ok:
+                succes.append(res)
+                self._log(f"OK : {os.path.basename(res)}")
+            else:
+                erreurs.append((md_path, res))
+                self._log(f"ERREUR : {res}")
+
+        msg = f"{len(succes)} fichier(s) genere(s)"
+        if erreurs:
+            msg += "\nErreurs :\n" + "\n".join(f"  {os.path.basename(p)}: {e}" for p, e in erreurs)
+        (messagebox.showinfo if succes else messagebox.showerror)("Termine", msg)
+        self.btn.config(state="normal")
+
+
+# =============================================================================
 # FENETRE PRINCIPALE
 # =============================================================================
 
@@ -1386,13 +2042,15 @@ def lancer_app():
     tab2 = TabMD(nb, root)
     tab3 = TabMDPDF(nb, root)
     tab4 = TabRenommage(nb, root)
+    tab5 = TabEquipeIndiv(nb, root)
     nb.add(tab1, text="  BellePoule → FFF  ")
     nb.add(tab2, text="  PDF → Markdown  ")
     nb.add(tab3, text="  Markdown → PDF  ")
     nb.add(tab4, text="  Renommage XML  ")
+    nb.add(tab5, text="  Equipe → Individuel  ")
 
     # Pied de page
-    tk.Label(root, text="EscriTools v1.1  —  LREGE Grand Est",
+    tk.Label(root, text="EscriTools v1.3  —  LREGE Grand Est",
              fg="gray", font=("Segoe UI", 8)).pack(side="bottom", pady=(0, 6))
 
     root.mainloop()
