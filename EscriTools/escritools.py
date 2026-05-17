@@ -1581,10 +1581,19 @@ def _ei_trouver_membres(nom_eq, inscrits):
     return []
 
 
+def _ei_club_depuis_nom_eq(nom_eq):
+    """Extrait le nom du club depuis le nom d'équipe. Ex: 'TROYES TG 1' -> 'TROYES TG'."""
+    # Retirer le numéro final
+    m = re.match(r'^(.+?)\s+\d+\s*$', nom_eq.strip())
+    return m.group(1).strip() if m else nom_eq.strip()
+
+
 def ei_construire_classement_individuel(inscrits, classement_general, classement_poules):
     """
     Construit le classement individuel depuis le classement d'équipes.
-    Ex æquo → départagés par classement_poules.
+    - Place tireur = place équipe (pas de décalage par nb de tireurs).
+    - Ex æquo → départagés par classement_poules.
+    - Champ 'club' ajouté depuis le nom d'équipe.
     """
     if not classement_general:
         return []
@@ -1593,15 +1602,16 @@ def ei_construire_classement_individuel(inscrits, classement_general, classement
         par_place.setdefault(place, []).append(nom_eq)
 
     tireurs = []
-    rang = 1
     for place in sorted(par_place):
         exaequo = par_place[place]
         ordre = sorted(exaequo, key=lambda e: classement_poules.get(e, 9999))
+        rang = place  # place individuelle = place de l'équipe
         for nom_eq in ordre:
             membres = _ei_trouver_membres(nom_eq, inscrits)
+            club = _ei_club_depuis_nom_eq(nom_eq)
             for t in membres:
-                tireurs.append({**t, "place": rang})
-            rang += len(membres)
+                tireurs.append({**t, "place": rang, "club": club})
+            rang += 1  # équipe suivante ex æquo décalée de 1, pas de nb tireurs
     return tireurs
 
 
@@ -1612,9 +1622,10 @@ def ei_generer_fff(tireurs, date_comp, arme, sexe, categorie, nom_comp, lieu, ou
         f"{date_comp};{arme};{sexe};{categorie};{nom_comp};{nom_comp}"
     ]
     for t in tireurs:
+        club = t.get("club", "")
         lignes.append(
             f"{t['nom']},{t['prenom']},{t['ddn']},{t['sexe'] or sexe},FRA,;"
-            f",,;{t['licence']},,,{t['place']},,;{t['place']},t"
+            f",,;{t['licence']},,{club},{t['place']},,;{t['place']},t"
         )
     contenu = "\r\n".join(lignes) + "\r\n"
     with open(output_path, "w", encoding="latin-1", errors="replace") as f:
