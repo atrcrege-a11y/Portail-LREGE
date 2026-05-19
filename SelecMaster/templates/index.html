@@ -110,7 +110,7 @@
   </div>
 </header>
 
-<main>
+<div id="page-import"><main>
 
   <!-- Paramètres -->
   <div class="card">
@@ -487,6 +487,18 @@ function cacherErreur() {
 }
 </script>
 
+<!-- ══════════════════ BARRE DE NAVIGATION STATIQUE ══════════════════ -->
+<div id="nav-bar" style="background:#1F3864;padding:0 24px;display:flex;gap:0">
+  <button id="tab-import" onclick="afficherPage('import')"
+    style="background:rgba(255,255,255,.15);color:#fff;border:none;border-bottom:3px solid #fff;padding:10px 20px;cursor:pointer;font-size:9.5pt;font-family:Verdana,sans-serif;font-weight:bold">
+    📂 Import &amp; Génération
+  </button>
+  <button id="tab-suivi" onclick="afficherPage('suivi')"
+    style="background:transparent;color:rgba(255,255,255,.7);border:none;border-bottom:3px solid transparent;padding:10px 20px;cursor:pointer;font-size:9.5pt;font-family:Verdana,sans-serif;font-weight:bold">
+    📋 Suivi
+  </button>
+</div>
+
 <!-- ══════════════════════════════════════════════════════ ONGLET SUIVI -->
 <div id="page-suivi" style="display:none">
 <main style="max-width:980px;margin:24px auto;padding:0 16px">
@@ -604,33 +616,33 @@ let pageActive = 'import';
 
 function afficherPage(page) {
   pageActive = page;
+  // Pages
   document.getElementById('page-suivi').style.display = page === 'suivi' ? 'block' : 'none';
-  // La page import est gérée par le <main> existant
-  document.querySelector('main').style.display = page === 'import' ? 'block' : 'none';
-  document.querySelectorAll('.nav-tab').forEach(t => t.classList.toggle('active', t.dataset.page === page));
+  document.getElementById('page-import').style.display = page === 'import' ? 'block' : 'none';
+  // Onglets
+  const tabImport = document.getElementById('tab-import');
+  const tabSuivi  = document.getElementById('tab-suivi');
+  if (tabImport && tabSuivi) {
+    if (page === 'import') {
+      tabImport.style.background = 'rgba(255,255,255,.15)';
+      tabImport.style.borderBottom = '3px solid #fff';
+      tabImport.style.color = '#fff';
+      tabSuivi.style.background = 'transparent';
+      tabSuivi.style.borderBottom = '3px solid transparent';
+      tabSuivi.style.color = 'rgba(255,255,255,.7)';
+    } else {
+      tabSuivi.style.background = 'rgba(255,255,255,.15)';
+      tabSuivi.style.borderBottom = '3px solid #fff';
+      tabSuivi.style.color = '#fff';
+      tabImport.style.background = 'transparent';
+      tabImport.style.borderBottom = '3px solid transparent';
+      tabImport.style.color = 'rgba(255,255,255,.7)';
+    }
+  }
   if (page === 'suivi') svCharger();
 }
 
-// Ajouter la barre de navigation
-document.addEventListener('DOMContentLoaded', () => {
-  const nav = document.createElement('div');
-  nav.style.cssText = 'background:#1F3864;padding:0 24px;display:flex;gap:0';
-  nav.innerHTML = `
-    <button class="nav-tab active" data-page="import" onclick="afficherPage('import')"
-      style="background:rgba(255,255,255,.15);color:#fff;border:none;padding:10px 20px;cursor:pointer;font-size:9.5pt;font-family:Verdana,sans-serif;font-weight:bold;border-bottom:3px solid #fff">
-      📂 Import & Génération
-    </button>
-    <button class="nav-tab" data-page="suivi" onclick="afficherPage('suivi')"
-      style="background:transparent;color:rgba(255,255,255,.7);border:none;padding:10px 20px;cursor:pointer;font-size:9.5pt;font-family:Verdana,sans-serif;font-weight:bold;border-bottom:3px solid transparent">
-      📋 Suivi
-    </button>`;
-  document.querySelector('header').after(nav);
-  // Style hover tabs
-  nav.querySelectorAll('.nav-tab').forEach(t => {
-    t.addEventListener('mouseenter', () => { if(!t.classList.contains('active')) t.style.background='rgba(255,255,255,.08)'; });
-    t.addEventListener('mouseleave', () => { if(!t.classList.contains('active')) t.style.background='transparent'; });
-  });
-});
+
 
 // ── Suivi ─────────────────────────────────────────────────────────────────────
 function svArmeUrl() {
