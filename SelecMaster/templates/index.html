@@ -489,11 +489,11 @@ function cacherErreur() {
 
 <!-- ══════════════════ BARRE DE NAVIGATION STATIQUE ══════════════════ -->
 <div id="nav-bar" style="background:#1F3864;padding:0 24px;display:flex;gap:0">
-  <button id="tab-import" onclick="afficherPage('import')"
+  <button id="tab-import"
     style="background:rgba(255,255,255,.15);color:#fff;border:none;border-bottom:3px solid #fff;padding:10px 20px;cursor:pointer;font-size:9.5pt;font-family:Verdana,sans-serif;font-weight:bold">
     📂 Import &amp; Génération
   </button>
-  <button id="tab-suivi" onclick="afficherPage('suivi')"
+  <button id="tab-suivi"
     style="background:transparent;color:rgba(255,255,255,.7);border:none;border-bottom:3px solid transparent;padding:10px 20px;cursor:pointer;font-size:9.5pt;font-family:Verdana,sans-serif;font-weight:bold">
     📋 Suivi
   </button>
@@ -613,6 +613,14 @@ function cacherErreur() {
 <script>
 // ── Navigation onglets ────────────────────────────────────────────────────────
 let pageActive = 'import';
+
+// Attacher les listeners après chargement du DOM
+window.addEventListener('load', function() {
+  var ti = document.getElementById('tab-import');
+  var ts = document.getElementById('tab-suivi');
+  if (ti) ti.addEventListener('click', function() { afficherPage('import'); });
+  if (ts) ts.addEventListener('click', function() { afficherPage('suivi'); });
+});
 
 function afficherPage(page) {
   pageActive = page;
