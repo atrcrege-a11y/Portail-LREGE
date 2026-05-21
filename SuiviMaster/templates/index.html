@@ -1,0 +1,605 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SuiviMaster — LREGE Grand Est</title>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: Verdana, Geneva, sans-serif; font-size: 10pt; background: #f0f4f8; color: #222; }
+
+header { background: #1F3864; color: #fff; padding: 12px 24px; display: flex; align-items: center; justify-content: space-between; }
+header h1 { font-size: 14pt; }
+header span { font-size: 9pt; opacity: .75; }
+
+/* Navigation onglets */
+#nav-bar { background: #16305A; padding: 0 24px; display: flex; gap: 0; }
+.nav-btn {
+  background: transparent; color: rgba(255,255,255,.65); border: none;
+  border-bottom: 3px solid transparent; padding: 10px 18px;
+  cursor: pointer; font-size: 9.5pt; font-family: Verdana, sans-serif;
+  font-weight: bold; transition: all .15s;
+}
+.nav-btn.active { background: rgba(255,255,255,.12); color: #fff; border-bottom-color: #fff; }
+.nav-btn:hover:not(.active) { color: rgba(255,255,255,.9); background: rgba(255,255,255,.06); }
+
+main { max-width: 1100px; margin: 24px auto; padding: 0 16px; }
+.page { display: none; }
+.page.active { display: block; }
+
+.card { background: #fff; border-radius: 6px; box-shadow: 0 1px 4px rgba(0,0,0,.12); padding: 18px 22px; margin-bottom: 18px; }
+.card h2 { font-size: 11pt; color: #1F3864; border-bottom: 2px solid #2E75B6; padding-bottom: 6px; margin-bottom: 14px; }
+.card h3 { font-size: 10pt; color: #2E75B6; margin: 12px 0 8px; }
+
+.form-row { display: flex; gap: 12px; flex-wrap: wrap; margin-bottom: 10px; }
+.form-row > div { flex: 1; min-width: 140px; }
+label { display: block; font-size: 8.5pt; color: #555; margin-bottom: 4px; font-weight: bold; }
+select, input[type=file] { width: 100%; padding: 6px 8px; border: 1px solid #ccc; border-radius: 4px; font-family: Verdana, sans-serif; font-size: 9pt; }
+
+.btn { display: inline-block; padding: 7px 14px; border: none; border-radius: 4px; cursor: pointer; font-family: Verdana, sans-serif; font-size: 9pt; font-weight: bold; transition: opacity .15s; }
+.btn:hover { opacity: .85; }
+.btn:disabled { opacity: .4; cursor: not-allowed; }
+.btn-primary { background: #2E75B6; color: #fff; }
+.btn-success { background: #70AD47; color: #fff; }
+.btn-danger  { background: #C00000; color: #fff; }
+.btn-sm { padding: 3px 10px; font-size: 8pt; }
+
+.actions { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 12px; align-items: center; }
+
+/* Messages */
+.msg-ok   { background: #E2EFDA; border: 1px solid #70AD47; color: #375623; padding: 7px 12px; border-radius: 4px; font-size: 9pt; margin-top: 8px; }
+.msg-err  { background: #FFCCCC; border: 1px solid #C00000; color: #7B0C0C; padding: 7px 12px; border-radius: 4px; font-size: 9pt; margin-top: 8px; }
+.msg-warn { background: #FFF2CC; border: 1px solid #BF8F00; color: #7F6000; padding: 7px 12px; border-radius: 4px; font-size: 9pt; margin-top: 8px; }
+
+/* Badges */
+.badge { display: inline-block; padding: 2px 10px; border-radius: 12px; font-size: 8.5pt; font-weight: bold; margin: 2px; }
+.b-oui     { background: #E2EFDA; color: #375623; }
+.b-non     { background: #FFCCCC; color: #7B0C0C; }
+.b-attente { background: #FFF2CC; color: #7F6000; }
+.b-info    { background: #DEEAF1; color: #1F3864; }
+.b-inter   { background: #FCE4D6; color: #843C0C; }
+
+/* Tableau tireurs */
+.tbl { width: 100%; border-collapse: collapse; font-size: 8.5pt; }
+.tbl th { background: #DEEAF1; color: #1F3864; padding: 5px 7px; border: 1px solid #aaa; text-align: left; font-size: 8pt; }
+.tbl td { padding: 4px 7px; border: 1px solid #ddd; vertical-align: middle; }
+.tbl tr.r-oui     { background: #F0FFF0; }
+.tbl tr.r-non     { background: #FFF0F0; }
+.tbl tr.r-attente { background: #FFFFF0; }
+.tbl tr.r-rem     { background: #FAFAFA; color: #777; }
+.tbl tr.r-inter   { background: #FCE4D6; }
+
+/* Section territoire */
+.terr-titre { font-size: 10pt; font-weight: bold; color: #1F3864; border-left: 4px solid #2E75B6; padding-left: 8px; margin: 14px 0 6px; }
+.genre-titre { font-size: 9.5pt; font-weight: bold; color: #2E75B6; margin: 8px 0 4px; }
+
+/* Stats */
+.stat-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 8px; margin-bottom: 12px; }
+.stat-box { text-align: center; padding: 10px 8px; border-radius: 6px; }
+.stat-box .val { font-size: 18pt; font-weight: bold; }
+.stat-box .lab { font-size: 8pt; margin-top: 2px; }
+.progress { background: #eee; border-radius: 4px; height: 10px; margin: 6px 0; }
+.progress-bar { height: 10px; border-radius: 4px; background: #70AD47; transition: width .3s; }
+
+/* Card suivi list */
+.suivis-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 12px; }
+.suivi-card { background: #fff; border: 2px solid #DEEAF1; border-radius: 8px; padding: 14px 16px; cursor: pointer; transition: border-color .15s; }
+.suivi-card:hover { border-color: #2E75B6; }
+.suivi-card h3 { font-size: 11pt; color: #1F3864; margin-bottom: 6px; }
+.suivi-card .meta { font-size: 8pt; color: #888; }
+
+/* Alerte remplaçants */
+.rem-card { background: #FFF2CC; border: 1px solid #BF8F00; border-radius: 6px; padding: 10px 14px; margin-bottom: 8px; font-size: 9pt; }
+.rem-card.inter { background: #FCE4D6; border-color: #C00000; }
+
+/* Audit */
+.audit-log { font-size: 8pt; font-family: monospace; max-height: 200px; overflow-y: auto; }
+.audit-line { padding: 2px 0; border-bottom: 1px solid #eee; }
+.audit-ts { color: #888; margin-right: 6px; }
+.audit-action { color: #2E75B6; margin-right: 6px; font-weight: bold; }
+
+select.conf-sel { font-size: 8pt; padding: 2px 4px; border: 1px solid #ccc; border-radius: 3px; }
+</style>
+</head>
+<body>
+
+<header>
+  <div>
+    <h1>SuiviMaster</h1>
+    <span>Suivi des confirmations Master Grand Est M11/M13 — LREGE</span>
+  </div>
+</header>
+
+<div id="nav-bar">
+  <button class="nav-btn active" data-page="accueil">🏠 Accueil</button>
+  <button class="nav-btn" data-page="import">📥 Import</button>
+  <button class="nav-btn" data-page="suivi" id="nav-suivi">📋 Suivi</button>
+</div>
+
+<main>
+
+<!-- ══════════════════════════════ ACCUEIL ══════════════════════════════ -->
+<div id="page-accueil" class="page active">
+  <div class="card">
+    <h2>📋 Suivis actifs</h2>
+    <div id="suivis-liste" class="suivis-grid">
+      <p style="color:#888;font-size:9pt">Chargement...</p>
+    </div>
+    <div class="actions" style="margin-top:16px">
+      <button class="btn btn-primary" onclick="afficherPage('import')">+ Nouveau suivi</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════ IMPORT ══════════════════════════════ -->
+<div id="page-import" class="page">
+
+  <!-- Import sélection SelecMaster -->
+  <div class="card">
+    <h2>📂 Import Excel SelecMaster</h2>
+    <p style="font-size:8.5pt;color:#555;margin-bottom:12px">
+      Importez le fichier Excel généré par SelecMaster pour initialiser le suivi d'un territoire.
+      Vous pouvez importer les 3 territoires séparément.
+    </p>
+    <div class="form-row">
+      <div>
+        <label>Territoire importé</label>
+        <select id="imp-territoire">
+          <option value="">— Choisir —</option>
+          <option value="Alsace">Alsace</option>
+          <option value="Champagne-Ardenne">Champagne-Ardenne</option>
+          <option value="Lorraine">Lorraine</option>
+        </select>
+      </div>
+      <div>
+        <label>Territoire organisateur</label>
+        <select id="imp-orga">
+          <option value="">— Choisir —</option>
+          <option value="Alsace">Alsace</option>
+          <option value="Champagne-Ardenne">Champagne-Ardenne</option>
+          <option value="Lorraine">Lorraine</option>
+        </select>
+      </div>
+      <div>
+        <label>Fichier Excel SelecMaster</label>
+        <input type="file" id="imp-fichier" accept=".xlsx">
+      </div>
+    </div>
+    <div class="actions">
+      <button class="btn btn-success" onclick="importerSelection()">📥 Importer</button>
+    </div>
+    <div id="imp-msg"></div>
+  </div>
+
+  <!-- Import retour club -->
+  <div class="card">
+    <h2>📬 Import Excel retourné par un club</h2>
+    <p style="font-size:8.5pt;color:#555;margin-bottom:12px">
+      Importez le fichier Excel complété par le club (colonne Participation remplie).
+    </p>
+    <div class="form-row">
+      <div>
+        <label>Arme</label>
+        <select id="ret-arme">
+          <option value="">— Choisir —</option>
+          <option value="Épée">Épée</option>
+          <option value="Fleuret">Fleuret</option>
+          <option value="Sabre">Sabre</option>
+        </select>
+      </div>
+      <div>
+        <label>Catégorie</label>
+        <select id="ret-cat">
+          <option value="">— Choisir —</option>
+          <option value="M11">M11</option>
+          <option value="M13">M13</option>
+        </select>
+      </div>
+      <div>
+        <label>Territoire</label>
+        <select id="ret-territoire">
+          <option value="">— Choisir —</option>
+          <option value="Alsace">Alsace</option>
+          <option value="Champagne-Ardenne">Champagne-Ardenne</option>
+          <option value="Lorraine">Lorraine</option>
+        </select>
+      </div>
+      <div>
+        <label>Fichier Excel retour</label>
+        <input type="file" id="ret-fichier" accept=".xlsx">
+      </div>
+    </div>
+    <div class="actions">
+      <button class="btn btn-primary" onclick="importerRetour()">📬 Importer retour</button>
+    </div>
+    <div id="ret-msg"></div>
+  </div>
+
+</div>
+
+<!-- ══════════════════════════════ SUIVI ══════════════════════════════ -->
+<div id="page-suivi" class="page">
+
+  <!-- Sélecteur -->
+  <div class="card">
+    <h2>📋 Suivi des confirmations</h2>
+    <div class="form-row">
+      <div>
+        <label>Arme</label>
+        <select id="sv-arme" onchange="chargerSuivi()">
+          <option value="">— Choisir —</option>
+          <option value="Épée">Épée</option>
+          <option value="Fleuret">Fleuret</option>
+          <option value="Sabre">Sabre</option>
+        </select>
+      </div>
+      <div>
+        <label>Catégorie</label>
+        <select id="sv-cat" onchange="chargerSuivi()">
+          <option value="">— Choisir —</option>
+          <option value="M11">M11</option>
+          <option value="M13">M13</option>
+        </select>
+      </div>
+      <div style="display:flex;align-items:flex-end">
+        <button class="btn btn-danger btn-sm" onclick="supprimerSuivi()">🗑 Supprimer</button>
+      </div>
+    </div>
+    <div id="sv-msg"></div>
+  </div>
+
+  <div id="sv-contenu" style="display:none">
+
+    <!-- Stats globales -->
+    <div class="card">
+      <h2>📊 État global — <span id="sv-titre" style="color:#2E75B6"></span></h2>
+      <div id="sv-stats"></div>
+    </div>
+
+    <!-- Alertes remplaçants -->
+    <div class="card" id="sv-card-rem" style="display:none">
+      <h2>🔔 Remplaçants à appeler</h2>
+      <div id="sv-rems"></div>
+    </div>
+
+    <!-- Tableau détaillé -->
+    <div class="card">
+      <h2>👥 Détail par territoire</h2>
+      <div id="sv-detail"></div>
+    </div>
+
+    <!-- Audit -->
+    <div class="card">
+      <h2>🔍 Journal</h2>
+      <div id="sv-audit" class="audit-log"></div>
+    </div>
+
+  </div>
+</div>
+
+</main>
+
+<script>
+const API = 'http://localhost:5005';
+
+// Stockage tireurs par index (évite apostrophes dans onclick)
+const _tireurs = {};
+let _idx = 0;
+
+function _store(t, terr, arme, cat) {
+  const i = _idx++;
+  _tireurs[i] = {t, terr, arme, cat};
+  return i;
+}
+
+// ── Navigation ────────────────────────────────────────────────────────────────
+function afficherPage(page) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('page-' + page).classList.add('active');
+  document.querySelector(`.nav-btn[data-page="${page}"]`)?.classList.add('active');
+  if (page === 'accueil') chargerAccueil();
+  if (page === 'suivi')   chargerSuivi();
+}
+
+document.querySelectorAll('.nav-btn').forEach(b => {
+  b.addEventListener('click', () => afficherPage(b.dataset.page));
+});
+
+// ── Accueil ───────────────────────────────────────────────────────────────────
+async function chargerAccueil() {
+  const div = document.getElementById('suivis-liste');
+  try {
+    const data = await (await fetch(API + '/api/suivis')).json();
+    const keys = Object.keys(data);
+    if (!keys.length) {
+      div.innerHTML = '<p style="color:#888;font-size:9pt">Aucun suivi. Importez un fichier Excel SelecMaster.</p>';
+      return;
+    }
+    div.innerHTML = keys.map(k => {
+      const s = data[k];
+      return `<div class="suivi-card" onclick="ouvrirSuivi('${s.arme}','${s.categorie}')">
+        <h3>${s.arme} ${s.categorie}</h3>
+        <div class="meta">${s.nb_terr} territoire(s) | MAJ ${s.updated_at}</div>
+      </div>`;
+    }).join('');
+  } catch(e) { div.innerHTML = '<p style="color:#C00000">Erreur chargement</p>'; }
+}
+
+function ouvrirSuivi(arme, cat) {
+  document.getElementById('sv-arme').value = arme;
+  document.getElementById('sv-cat').value  = cat;
+  afficherPage('suivi');
+}
+
+// ── Import ────────────────────────────────────────────────────────────────────
+async function importerSelection() {
+  const terr  = document.getElementById('imp-territoire').value;
+  const orga  = document.getElementById('imp-orga').value;
+  const fich  = document.getElementById('imp-fichier').files[0];
+  const msg   = document.getElementById('imp-msg');
+
+  if (!terr || !orga || !fich) { msg.className='msg-err'; msg.textContent='⚠ Tous les champs sont requis.'; return; }
+
+  const fd = new FormData();
+  fd.append('territoire', terr);
+  fd.append('territoire_organisateur', orga);
+  fd.append('fichier', fich);
+
+  try {
+    const r = await fetch(API + '/api/import_selection', {method:'POST', body:fd});
+    const d = await r.json();
+    if (d.erreur) { msg.className='msg-err'; msg.textContent='⚠ ' + d.erreur; }
+    else {
+      msg.className='msg-ok';
+      msg.textContent=`✓ ${d.arme} ${d.categorie} — ${d.nb_tireurs} tireurs importés (${terr})`;
+      chargerAccueil();
+    }
+  } catch(e) { msg.className='msg-err'; msg.textContent='⚠ Erreur réseau : ' + e.message; }
+}
+
+async function importerRetour() {
+  const arme  = document.getElementById('ret-arme').value;
+  const cat   = document.getElementById('ret-cat').value;
+  const terr  = document.getElementById('ret-territoire').value;
+  const fich  = document.getElementById('ret-fichier').files[0];
+  const msg   = document.getElementById('ret-msg');
+
+  if (!arme || !cat || !terr || !fich) { msg.className='msg-err'; msg.textContent='⚠ Tous les champs sont requis.'; return; }
+
+  const fd = new FormData();
+  fd.append('arme', arme); fd.append('categorie', cat);
+  fd.append('territoire', terr); fd.append('fichier', fich);
+
+  try {
+    const r = await fetch(API + '/api/import_retour', {method:'POST', body:fd});
+    const d = await r.json();
+    if (d.erreur) { msg.className='msg-err'; msg.textContent='⚠ ' + d.erreur; }
+    else {
+      const m = d.modifications;
+      const nb  = m.confirmations?.length || 0;
+      const err = m.erreurs?.length || 0;
+      msg.className = 'msg-ok';
+      msg.innerHTML = `✓ ${nb} confirmation(s) importée(s)`
+        + (err ? ` <span style="color:#C00000">| ⚠ ${err} erreur(s)</span>` : '');
+      if (document.getElementById('sv-arme').value === arme) chargerSuivi();
+    }
+  } catch(e) { msg.className='msg-err'; msg.textContent='⚠ Erreur réseau : ' + e.message; }
+}
+
+// ── Suivi ─────────────────────────────────────────────────────────────────────
+async function chargerSuivi() {
+  const arme = document.getElementById('sv-arme').value;
+  const cat  = document.getElementById('sv-cat').value;
+  if (!arme || !cat) return;
+
+  const armeEnc = encodeURIComponent(arme);
+  try {
+    const [sR, dR, rR, aR] = await Promise.all([
+      fetch(`${API}/api/suivi/${armeEnc}/${cat}/stats`),
+      fetch(`${API}/api/suivi/${armeEnc}/${cat}/detail`),
+      fetch(`${API}/api/suivi/${armeEnc}/${cat}/remplacants`),
+      fetch(`${API}/api/suivi/${armeEnc}/${cat}/audit`),
+    ]);
+    if (!sR.ok) { document.getElementById('sv-contenu').style.display='none'; msgSuivi('Aucun suivi pour ' + arme + ' ' + cat, 'warn'); return; }
+
+    const [stats, detail, rems, audit] = await Promise.all([sR.json(), dR.json(), rR.json(), aR.json()]);
+
+    document.getElementById('sv-titre').textContent = arme + ' ' + cat;
+    document.getElementById('sv-contenu').style.display = 'block';
+    document.getElementById('sv-msg').innerHTML = '';
+
+    renderStats(stats);
+    renderRems(rems, arme, cat);
+    renderDetail(detail, arme, cat);
+    renderAudit(audit);
+  } catch(e) { msgSuivi('Erreur : ' + e.message, 'err'); }
+}
+
+function renderStats(s) {
+  const t = s.total;
+  const pct = t.sel > 0 ? Math.round(t.oui / t.sel * 100) : 0;
+  document.getElementById('sv-stats').innerHTML = `
+    <div class="stat-grid">
+      <div class="stat-box" style="background:#E2EFDA">
+        <div class="val" style="color:#375623">${t.oui}</div>
+        <div class="lab">✓ Confirmés</div>
+      </div>
+      <div class="stat-box" style="background:#FFCCCC">
+        <div class="val" style="color:#7B0C0C">${t.non}</div>
+        <div class="lab">✗ Refus</div>
+      </div>
+      <div class="stat-box" style="background:#FFF2CC">
+        <div class="val" style="color:#7F6000">${t.attente}</div>
+        <div class="lab">⏳ En attente</div>
+      </div>
+      <div class="stat-box" style="background:#DEEAF1">
+        <div class="val" style="color:#1F3864">${t.sel}</div>
+        <div class="lab">Total sélectionnés</div>
+      </div>
+      <div class="stat-box" style="background:#F2F2F2">
+        <div class="val" style="color:#555">${t.rem_appeles}</div>
+        <div class="lab">Remplaçants appelés</div>
+      </div>
+    </div>
+    <div class="progress"><div class="progress-bar" style="width:${pct}%"></div></div>
+    <div style="font-size:8pt;color:#555">${pct}% de confirmations — Organisateur : <b>${s.territoire_organisateur || '—'}</b></div>`;
+}
+
+function renderRems(rems, arme, cat) {
+  const card = document.getElementById('sv-card-rem');
+  const div  = document.getElementById('sv-rems');
+  const keys = Object.keys(rems);
+  card.style.display = keys.length ? 'block' : 'none';
+  if (!keys.length) return;
+
+  div.innerHTML = keys.map(terr => rems[terr].map(r => {
+    const t     = r.remplacant;
+    const inter = r.inter_territorial;
+    const idx   = _store(t, r.territoire_rem, arme, cat);
+    return `<div class="rem-card ${inter ? 'inter' : ''}">
+      <b>${t.nom} ${t.prenom}</b> (${r.genre}) — ${t.club}
+      ${inter ? `<span class="badge b-inter">⚠️ Inter-territorial depuis ${r.territoire_rem}</span>` : ''}
+      <br><span style="font-size:8pt;color:#555">Position n°${r.position} pour ${terr}</span>
+      <button class="btn btn-sm btn-primary" style="margin-left:8px" onclick="appelIdx(${idx}, true)">✓ Marquer appelé</button>
+    </div>`;
+  }).join('')).join('');
+}
+
+function renderDetail(detail, arme, cat) {
+  const div  = document.getElementById('sv-detail');
+  const TERR = ['Lorraine','Alsace','Champagne-Ardenne'];
+  const terrs = TERR.filter(t => detail.territoires[t])
+                    .concat(Object.keys(detail.territoires).filter(t => !TERR.includes(t)));
+
+  let html = '';
+  for (const terr of terrs) {
+    const tireurs = detail.territoires[terr];
+    html += `<div class="terr-titre">${terr}</div>`;
+
+    for (const genre of ['H','D']) {
+      const gl   = genre === 'H' ? 'Hommes' : 'Dames';
+      const sel  = tireurs.filter(t => t.genre === genre && t.statut === 'selectionne');
+      const rems = tireurs.filter(t => t.genre === genre && t.statut === 'remplacant');
+      if (!sel.length && !rems.length) continue;
+
+      html += `<div class="genre-titre">${gl}</div>`;
+      html += '<table class="tbl"><thead><tr><th>Rang</th><th>Nom</th><th>Prénom</th><th>Club</th><th>Confirmation</th><th>Note</th><th>Action</th></tr></thead><tbody>';
+
+      for (const t of sel) {
+        html += ligneTireur(t, terr, arme, cat, false);
+      }
+      if (rems.length) {
+        html += `<tr><td colspan="7" style="background:#F0F4F9;font-size:8pt;font-style:italic;color:#555;padding:3px 7px">Remplaçants</td></tr>`;
+        for (const t of rems) {
+          html += ligneTireur(t, terr, arme, cat, true);
+        }
+      }
+      html += '</tbody></table>';
+    }
+  }
+  div.innerHTML = html;
+}
+
+function ligneTireur(t, terr, arme, cat, isRem) {
+  const conf  = t.confirmation;
+  const badge = conf === 'oui'
+    ? '<span class="badge b-oui">✓ Oui</span>'
+    : conf === 'non'
+    ? '<span class="badge b-non">✗ Non</span>'
+    : '<span class="badge b-attente">⏳ En attente</span>';
+
+  const idx = _store(t, terr, arme, cat);
+  const bg  = isRem ? 'r-rem' : `r-${conf}`;
+
+  const appeleBtn = isRem
+    ? `<button class="btn btn-sm btn-primary" onclick="appelIdx(${idx}, ${!t.appele})" style="margin-left:4px">
+        ${t.appele ? '↩ Annuler' : '📣 Appeler'}
+       </button>`
+    : '';
+
+  const appeleLabel = isRem && t.appele
+    ? '<span class="badge b-info" style="font-size:7.5pt">Appelé</span>'
+    : '';
+
+  return `<tr class="${bg}">
+    <td style="text-align:center">${isRem ? 'R' : 'M '}${t.rang}</td>
+    <td><b>${t.nom}</b></td>
+    <td>${t.prenom}</td>
+    <td style="font-size:8pt">${t.club}${appeleLabel}</td>
+    <td>${badge}</td>
+    <td style="font-size:8pt;color:#888">${t.note || ''}</td>
+    <td>
+      <select class="conf-sel" onchange="confIdx(${idx}, this.value)">
+        <option value="attente" ${conf==='attente'?'selected':''}>⏳ Attente</option>
+        <option value="oui"     ${conf==='oui'?'selected':''}>✓ Oui</option>
+        <option value="non"     ${conf==='non'?'selected':''}>✗ Non</option>
+      </select>${appeleBtn}
+    </td>
+  </tr>`;
+}
+
+async function confIdx(idx, val) {
+  const {t, terr, arme, cat} = _tireurs[idx];
+  const note = val === 'non' ? (prompt('Note (raison du refus) :') || '') : '';
+  await fetch(`${API}/api/suivi/${encodeURIComponent(arme)}/${cat}/confirmation`, {
+    method: 'POST', headers: {'Content-Type':'application/json'},
+    body: JSON.stringify({territoire:terr, nom:t.nom, prenom:t.prenom, genre:t.genre, confirmation:val, note})
+  });
+  chargerSuivi();
+}
+
+async function appelIdx(idx, appele) {
+  const {t, terr, arme, cat} = _tireurs[idx];
+  await fetch(`${API}/api/suivi/${encodeURIComponent(arme)}/${cat}/appel`, {
+    method: 'POST', headers: {'Content-Type':'application/json'},
+    body: JSON.stringify({territoire:terr, nom:t.nom, prenom:t.prenom, genre:t.genre, appele})
+  });
+  chargerSuivi();
+}
+
+function renderAudit(audit) {
+  const div = document.getElementById('sv-audit');
+  if (!audit.length) { div.innerHTML = '<p style="color:#888;font-size:9pt">Aucune modification.</p>'; return; }
+  div.innerHTML = audit.map(e =>
+    `<div class="audit-line">
+      <span class="audit-ts">${e.ts}</span>
+      <span class="audit-action">[${e.action}]</span>
+      <span>${e.detail}</span>
+    </div>`
+  ).join('');
+}
+
+async function supprimerSuivi() {
+  const arme = document.getElementById('sv-arme').value;
+  const cat  = document.getElementById('sv-cat').value;
+  if (!arme || !cat) return;
+  if (!confirm(`Supprimer le suivi ${arme} ${cat} ? Action irréversible.`)) return;
+  await fetch(`${API}/api/suivi/${encodeURIComponent(arme)}/${cat}/supprimer`, {method:'POST'});
+  document.getElementById('sv-contenu').style.display = 'none';
+  chargerAccueil();
+}
+
+function msgSuivi(txt, type) {
+  const el = document.getElementById('sv-msg');
+  el.className = 'msg-' + type;
+  el.textContent = txt;
+}
+
+// Init
+chargerAccueil();
+</script>
+<script>
+// Heartbeat -> portail (fermeture onglet = arret automatique)
+(function() {
+  var PORTAIL = "http://localhost:5000";
+  var OID = "suivimaster";
+  function ping() {
+    fetch(PORTAIL + "/api/heartbeat/" + OID, {method:"POST", keepalive:true}).catch(function(){});
+  }
+  ping();
+  setInterval(ping, 10000);
+})();
+</script>
+</body>
+</html>
