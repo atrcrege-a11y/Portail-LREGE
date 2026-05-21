@@ -1,12 +1,12 @@
 ; ================================================================
 ;  Portail LREGE - Installeur Inno Setup
 ;  Genere automatiquement par generer_setup_iss.py
-;  Version : 8.0
+;  Version : 8.1
 ;  Editeur : Escrime Grand Est
 ; ================================================================
 
 #define AppName    "Portail LREGE"
-#define AppVersion "8.0"
+#define AppVersion "8.1"
 #define AppPublisher "Escrime Grand Est"
 #define AppURL     "https://www.lrege.fr"
 
@@ -45,6 +45,7 @@ Source: "SYNESC\*"; DestDir: "{app}\SYNESC"; Flags: ignoreversion recursesubdirs
 Source: "EscriTools\*"; DestDir: "{app}\EscriTools"; Flags: ignoreversion recursesubdirs; Excludes: "*.pyc,__pycache__"
 Source: "CalendrierLREGE\*"; DestDir: "{app}\CalendrierLREGE"; Flags: ignoreversion recursesubdirs; Excludes: "*.pyc,__pycache__"
 Source: "SelecMaster\*"; DestDir: "{app}\SelecMaster"; Flags: ignoreversion recursesubdirs; Excludes: "*.pyc,__pycache__"
+Source: "SuiviMaster\*"; DestDir: "{app}\SuiviMaster"; Flags: ignoreversion recursesubdirs; Excludes: "*.pyc,__pycache__"
 
 [Icons]
 Name: "{group}\{#AppName}"; Filename: "{app}\LANCER_PORTAIL.bat"; WorkingDir: "{app}"; IconFilename: "{app}\portail.ico"

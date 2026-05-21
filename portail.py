@@ -5,7 +5,7 @@ import os, sys, subprocess, threading, webbrowser, time, json, tempfile
 import urllib.request as urlreq
 from flask import Flask, render_template_string, jsonify, request, make_response
 
-VERSION_LOCALE = "8.0"
+VERSION_LOCALE = "8.1"
 VERSION_JSON_URL = "https://raw.githubusercontent.com/atrcrege-a11y/Portail-LREGE/main/version.json"
 
 app = Flask(__name__)
@@ -67,6 +67,17 @@ OUTILS = {
         "type": "web",
         "cwd": os.path.join(BASE_DIR, "SelecMaster"),
     },
+    "suivimaster": {
+        "nom": "SuiviMaster",
+        "description": "Suivi des confirmations Master",
+        "detail": "M11 / M13 - Confirmations - Remplacants - Arbitres",
+        "script": os.path.join(BASE_DIR, "SuiviMaster", "app.py"),
+        "port": 5005,
+        "icone": "\U0001F4CB",
+        "couleur": "#7B3F9E",
+        "type": "web",
+        "cwd": os.path.join(BASE_DIR, "SuiviMaster"),
+    },
 }
 
 _processus = {}
@@ -77,6 +88,7 @@ VENVS = {
     "escritools": None,
     "calendrier": None,
     "selecmaster": None,
+    "suivimaster": None,
 }
 
 
@@ -145,7 +157,7 @@ def _telecharger_et_installer(url, version):
         for oid in list(_processus.keys()):
             _tuer_processus(oid)
         time.sleep(1)
-        # Lancer l'installeur puis quitter proprement
+        # Lancer l'installeur
         subprocess.Popen([tmp], shell=True)
         time.sleep(2)
         os._exit(0)
@@ -159,6 +171,7 @@ REQUIREMENTS = {
     "escritools":  os.path.join(BASE_DIR, "EscriTools",     "requirements.txt"),
     "calendrier":  os.path.join(BASE_DIR, "CalendrierLREGE","requirements.txt"),
     "selecmaster": os.path.join(BASE_DIR, "SelecMaster",    "requirements.txt"),
+    "suivimaster":  os.path.join(BASE_DIR, "SuiviMaster",    "requirements.txt"),
 }
 
 
@@ -182,7 +195,7 @@ def installer_dependances():
 
 
 def _watchdog():
-    """Tue automatiquement un outil si son onglet est fermé (heartbeat absent > 10s)."""
+    """Tue automatiquement un outil si son onglet est fermé (heartbeat absent > 60s)."""
     while True:
         time.sleep(10)
         maintenant = time.time()
@@ -191,7 +204,7 @@ def _watchdog():
                 continue
             derniere = _derniere_activite.get(oid)
             if derniere is not None and (maintenant - derniere) > 60:
-                print(f"[WATCHDOG] {oid} inactif depuis >10s — arrêt automatique")
+                print(f"[WATCHDOG] {oid} inactif depuis >60s — arrêt automatique")
                 _tuer_processus(oid)
                 _derniere_activite.pop(oid, None)
 
@@ -370,8 +383,8 @@ HTML_PORTAIL = """<!DOCTYPE html>
 </footer>
 <script>
 {% raw %}
-const TYPES = {selecge:"web",synesc:"web",escritools:"tkinter",calendrier:"web",selecmaster:"web"};
-const PORTS = {selecge:5001,synesc:5002,calendrier:5003,selecmaster:5004};
+const TYPES = {selecge:"web",synesc:"web",escritools:"tkinter",calendrier:"web",selecmaster:"web",suivimaster:"web"};
+const PORTS = {selecge:5001,synesc:5002,calendrier:5003,selecmaster:5004,suivimaster:5005};
 
 function btn(cls, oid, label, extra) {
   return `<button class="btn ${cls}" onclick="${extra||cls.replace('btn-','')}('${oid}')">${label}</button>`;
