@@ -539,5 +539,17 @@ async function supprimerSuivi(type_) {
 // Init
 chargerAccueil();
 </script>
+<script>
+// Heartbeat -> portail (fermeture onglet = arret automatique)
+(function() {
+  var PORTAIL = "http://localhost:5000";
+  var OID = "suivige";
+  function ping() {
+    fetch(PORTAIL + "/api/heartbeat/" + OID, {method:"POST", keepalive:true}).catch(function(){});
+  }
+  ping();
+  setInterval(ping, 10000);
+})();
+</script>
 </body>
 </html>

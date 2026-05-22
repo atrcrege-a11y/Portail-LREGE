@@ -1,12 +1,12 @@
 ; ================================================================
 ;  Portail LREGE - Installeur Inno Setup
 ;  Genere automatiquement par generer_setup_iss.py
-;  Version : 8.3
+;  Version : 8.4
 ;  Editeur : Escrime Grand Est
 ; ================================================================
 
 #define AppName    "Portail LREGE"
-#define AppVersion "8.3"
+#define AppVersion "8.4"
 #define AppPublisher "Escrime Grand Est"
 #define AppURL     "https://www.lrege.fr"
 
