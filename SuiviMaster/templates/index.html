@@ -114,6 +114,7 @@ select.conf-sel { font-size: 8pt; padding: 2px 4px; border: 1px solid #ccc; bord
   <button class="nav-btn active" data-page="accueil">🏠 Accueil</button>
   <button class="nav-btn" data-page="import">📥 Import</button>
   <button class="nav-btn" data-page="suivi" id="nav-suivi">📋 Suivi</button>
+  <button class="nav-btn" data-page="arbitres">⚖️ Arbitres</button>
 </div>
 
 <main>
@@ -277,6 +278,121 @@ select.conf-sel { font-size: 8pt; padding: 2px 4px; border: 1px solid #ccc; bord
   </div>
 </div>
 
+<!-- ══════════════════════════════ ARBITRES ══════════════════════════════ -->
+<div id="page-arbitres" class="page">
+
+  <!-- Stats -->
+  <div class="card">
+    <h2>⚖️ Arbitres Master Grand Est</h2>
+    <div id="arb-stats" style="display:flex;gap:12px;flex-wrap:wrap;margin-bottom:10px"></div>
+    <div class="actions">
+      <button class="btn btn-success" onclick="exporterPDF()">📄 Exporter PDF</button>
+    </div>
+  </div>
+
+  <!-- Ajouter manuellement -->
+  <div class="card">
+    <h2>➕ Ajouter un arbitre</h2>
+    <div class="form-row">
+      <div>
+        <label>Arme</label>
+        <select id="arb-arme">
+          <option value="">— Choisir —</option>
+          <option value="Épée">Épée</option>
+          <option value="Fleuret">Fleuret</option>
+          <option value="Sabre">Sabre</option>
+        </select>
+      </div>
+      <div>
+        <label>Nom</label>
+        <input type="text" id="arb-nom" placeholder="NOM" style="width:100%;padding:6px 8px;border:1px solid #ccc;border-radius:4px;font-family:Verdana,sans-serif;font-size:9pt">
+      </div>
+      <div>
+        <label>Prénom</label>
+        <input type="text" id="arb-prenom" placeholder="Prénom" style="width:100%;padding:6px 8px;border:1px solid #ccc;border-radius:4px;font-family:Verdana,sans-serif;font-size:9pt">
+      </div>
+      <div>
+        <label>Niveau</label>
+        <select id="arb-niveau">
+          <option value="">— Choisir —</option>
+          <option>Formation Régionale</option>
+          <option>Régionale</option>
+          <option>Formation Nationale</option>
+          <option>National</option>
+          <option>International</option>
+        </select>
+      </div>
+      <div>
+        <label>Club</label>
+        <input type="text" id="arb-club" placeholder="Club" style="width:100%;padding:6px 8px;border:1px solid #ccc;border-radius:4px;font-family:Verdana,sans-serif;font-size:9pt">
+      </div>
+      <div>
+        <label>Territoire</label>
+        <select id="arb-territoire">
+          <option value="">— Choisir —</option>
+          <option value="Alsace">Alsace</option>
+          <option value="Champagne-Ardenne">Champagne-Ardenne</option>
+          <option value="Lorraine">Lorraine</option>
+        </select>
+      </div>
+    </div>
+    <div class="actions">
+      <button class="btn btn-primary" onclick="ajouterArbitre()">➕ Ajouter</button>
+    </div>
+    <div id="arb-msg-ajout"></div>
+  </div>
+
+  <!-- Import Excel -->
+  <div class="card">
+    <h2>📥 Import depuis Excel retourné</h2>
+    <div class="form-row">
+      <div>
+        <label>Arme</label>
+        <select id="arb-imp-arme">
+          <option value="">— Choisir —</option>
+          <option value="Épée">Épée</option>
+          <option value="Fleuret">Fleuret</option>
+          <option value="Sabre">Sabre</option>
+        </select>
+      </div>
+      <div>
+        <label>Territoire</label>
+        <select id="arb-imp-territoire">
+          <option value="">— Choisir —</option>
+          <option value="Alsace">Alsace</option>
+          <option value="Champagne-Ardenne">Champagne-Ardenne</option>
+          <option value="Lorraine">Lorraine</option>
+        </select>
+      </div>
+      <div>
+        <label>Fichier Excel</label>
+        <input type="file" id="arb-imp-fichier" accept=".xlsx">
+      </div>
+    </div>
+    <div class="actions">
+      <button class="btn btn-primary" onclick="importerArbitresExcel()">📥 Importer</button>
+    </div>
+    <div id="arb-msg-import"></div>
+  </div>
+
+  <!-- Listes par arme -->
+  <div class="card">
+    <h2>📋 Liste des arbitres</h2>
+    <div class="form-row" style="margin-bottom:12px">
+      <div>
+        <label>Filtrer par arme</label>
+        <select id="arb-filtre" onchange="chargerArbitres()">
+          <option value="">Toutes les armes</option>
+          <option value="Épée">Épée</option>
+          <option value="Fleuret">Fleuret</option>
+          <option value="Sabre">Sabre</option>
+        </select>
+      </div>
+    </div>
+    <div id="arb-liste"></div>
+  </div>
+
+</div>
 </main>
 
 <script>
@@ -588,18 +704,161 @@ function msgSuivi(txt, type) {
 
 // Init
 chargerAccueil();
-</script>
-<script>
-// Heartbeat -> portail (fermeture onglet = arret automatique)
-(function() {
-  var PORTAIL = "http://localhost:5000";
-  var OID = "suivimaster";
-  function ping() {
-    fetch(PORTAIL + "/api/heartbeat/" + OID, {method:"POST", keepalive:true}).catch(function(){});
+
+// ── Arbitres ──────────────────────────────────────────────────────────────────
+
+async function chargerArbitres() {
+  const filtre = document.getElementById('arb-filtre')?.value || '';
+  const url    = filtre ? `${API}/api/arbitres/${encodeURIComponent(filtre)}` : `${API}/api/arbitres`;
+  const [aR, sR] = await Promise.all([
+    fetch(url),
+    fetch(`${API}/api/arbitres/stats`),
+  ]);
+  const data  = await aR.json();
+  const stats = await sR.json();
+
+  renderArbStats(stats);
+
+  // Normaliser en {arme: [arbitres]}
+  let groupes = {};
+  if (filtre) {
+    groupes[filtre] = Array.isArray(data) ? data : [];
+  } else {
+    groupes = data;
   }
-  ping();
-  setInterval(ping, 10000);
-})();
+  renderArbListe(groupes);
+}
+
+function renderArbStats(stats) {
+  const div = document.getElementById('arb-stats');
+  div.innerHTML = ['Épée','Fleuret','Sabre'].map(arme => {
+    const s = stats[arme];
+    const ok = s.retenu >= 8;
+    return `<div style="background:${ok?'#E2EFDA':'#FFF2CC'};border:1px solid ${ok?'#70AD47':'#BF8F00'};border-radius:6px;padding:10px 16px;min-width:180px">
+      <div style="font-weight:bold;font-size:10pt;color:#1F3864">${arme}</div>
+      <div style="font-size:9pt;margin-top:4px">
+        <span class="badge b-oui">✓ ${s.retenu}/8 retenus</span>
+        <span class="badge b-attente">⏳ ${s.propose}</span>
+        <span class="badge b-non">✗ ${s.libere}</span>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function renderArbListe(groupes) {
+  const div = document.getElementById('arb-liste');
+  const COULEURS = {Épée:'#1E6B3A', Fleuret:'#1B3F7A', Sabre:'#7B0C0C'};
+  let html = '';
+
+  for (const arme of ['Épée','Fleuret','Sabre']) {
+    const arbs = groupes[arme];
+    if (!arbs || !arbs.length) continue;
+
+    const coul = COULEURS[arme] || '#1F3864';
+    html += `<div style="background:${coul};color:#fff;font-weight:bold;font-size:11pt;padding:6px 10px;border-radius:4px 4px 0 0;margin-top:14px">${arme}</div>`;
+    html += '<table class="tbl"><thead><tr><th>Nom</th><th>Prénom</th><th>Niveau</th><th>Club</th><th>Territoire</th><th>Statut</th><th>Note</th><th>Actions</th></tr></thead><tbody>';
+
+    for (const a of arbs) {
+      const bg = a.statut === 'retenu' ? '#E2EFDA' : a.statut === 'libere' ? '#FFCCCC' : '#FFF2CC';
+      const badgeSt = a.statut === 'retenu'
+        ? '<span class="badge b-oui">✓ Retenu</span>'
+        : a.statut === 'libere'
+        ? '<span class="badge b-non">✗ Libéré</span>'
+        : '<span class="badge b-attente">⏳ Proposé</span>';
+
+      const armeEnc = encodeURIComponent(arme);
+      html += `<tr style="background:${bg}">
+        <td><b>${a.nom}</b></td>
+        <td>${a.prenom}</td>
+        <td style="font-size:8pt">${a.niveau || '—'}</td>
+        <td style="font-size:8pt">${a.club || '—'}</td>
+        <td style="font-size:8pt">${a.territoire || '—'}</td>
+        <td>${badgeSt}</td>
+        <td style="font-size:8pt;color:#888">${a.note || ''}</td>
+        <td>
+          <select onchange="setStatutArb('${armeEnc}','${a.id}',this.value)" class="conf-sel">
+            <option value="propose"  ${a.statut==='propose' ?'selected':''}>⏳ Proposé</option>
+            <option value="retenu"   ${a.statut==='retenu'  ?'selected':''}>✓ Retenu</option>
+            <option value="libere"   ${a.statut==='libere'  ?'selected':''}>✗ Libéré</option>
+          </select>
+          <button class="btn btn-danger btn-sm" style="margin-left:4px" onclick="supprimerArb('${armeEnc}','${a.id}')">🗑</button>
+        </td>
+      </tr>`;
+    }
+    html += '</tbody></table>';
+  }
+
+  div.innerHTML = html || '<p style="color:#888;font-size:9pt;padding:8px 0">Aucun arbitre enregistré.</p>';
+}
+
+async function ajouterArbitre() {
+  const d = {
+    arme:       document.getElementById('arb-arme').value,
+    nom:        document.getElementById('arb-nom').value,
+    prenom:     document.getElementById('arb-prenom').value,
+    niveau:     document.getElementById('arb-niveau').value,
+    club:       document.getElementById('arb-club').value,
+    territoire: document.getElementById('arb-territoire').value,
+  };
+  const msg = document.getElementById('arb-msg-ajout');
+  if (!d.arme || !d.nom) { msg.className='msg-err'; msg.textContent='⚠ Arme et Nom obligatoires'; return; }
+
+  const r = await fetch(`${API}/api/arbitres/ajouter`, {
+    method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(d)
+  });
+  const res = await r.json();
+  if (res.erreur) { msg.className='msg-err'; msg.textContent='⚠ ' + res.erreur; }
+  else {
+    msg.className='msg-ok'; msg.textContent=`✓ ${d.nom} ${d.prenom} ajouté`;
+    ['arb-nom','arb-prenom','arb-club'].forEach(id => document.getElementById(id).value='');
+    chargerArbitres();
+  }
+}
+
+async function setStatutArb(arme, id, statut) {
+  const note = statut === 'libere' ? (prompt('Raison (optionnel) :') || '') : '';
+  const r = await fetch(`${API}/api/arbitres/${arme}/${id}/statut`, {
+    method:'POST', headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({statut, note})
+  });
+  const res = await r.json();
+  if (res.erreur) { alert('⚠ ' + res.erreur); }
+  chargerArbitres();
+}
+
+async function supprimerArb(arme, id) {
+  if (!confirm('Supprimer cet arbitre ?')) return;
+  await fetch(`${API}/api/arbitres/${arme}/${id}/supprimer`, {method:'POST'});
+  chargerArbitres();
+}
+
+async function importerArbitresExcel() {
+  const arme  = document.getElementById('arb-imp-arme').value;
+  const terr  = document.getElementById('arb-imp-territoire').value;
+  const fich  = document.getElementById('arb-imp-fichier').files[0];
+  const msg   = document.getElementById('arb-msg-import');
+  if (!arme || !terr || !fich) { msg.className='msg-err'; msg.textContent='⚠ Tous les champs requis'; return; }
+
+  const fd = new FormData();
+  fd.append('arme', arme); fd.append('territoire', terr); fd.append('fichier', fich);
+  const r = await fetch(`${API}/api/arbitres/import_excel`, {method:'POST', body:fd});
+  const d = await r.json();
+  if (d.erreur) { msg.className='msg-err'; msg.textContent='⚠ ' + d.erreur; }
+  else {
+    msg.className='msg-ok';
+    msg.innerHTML=`✓ ${d.importes} arbitre(s) importé(s)` +
+      (d.erreurs?.length ? ` | <span style="color:#C00000">⚠ ${d.erreurs.length} doublon(s)/erreur(s)</span>` : '');
+    chargerArbitres();
+  }
+}
+
+function exporterPDF() {
+  window.open(`${API}/api/arbitres/export_pdf`, '_blank');
+}
+
+// Charger arbitres quand on arrive sur l'onglet
+document.querySelector('.nav-btn[data-page="arbitres"]')
+  ?.addEventListener('click', chargerArbitres);
 </script>
 </body>
 </html>

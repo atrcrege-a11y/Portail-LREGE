@@ -471,3 +471,198 @@ def supprimer_suivi(arme, categorie):
 
 # Chargement au démarrage
 _charger()
+
+
+# ══════════════════════════════════════════════════════════════════════════════
+# MODULE ARBITRES
+# Stockage par arme (M11+M13 confondus). Max 8 retenus par arme.
+# ══════════════════════════════════════════════════════════════════════════════
+
+ARMES_VALIDES    = {"Épée", "Fleuret", "Sabre"}
+STATUTS_ARB      = {"propose", "retenu", "libere"}
+NIVEAUX_ARB_VALS = {"Formation Régionale", "Régionale", "Formation Nationale",
+                    "National", "International", "Nationale"}
+MAX_RETENUS      = 8
+_ARB_FILE        = os.path.join(BASE_DIR, ".arbitres_master.pkl")
+
+_arbitres = {}  # clé : arme → liste d'arbitres
+
+
+def _sauvegarder_arb():
+    try:
+        with open(_ARB_FILE, "wb") as f:
+            pickle.dump(_arbitres, f)
+    except Exception as e:
+        print(f"[ARB] Erreur sauvegarde : {e}")
+
+
+def _charger_arb():
+    global _arbitres
+    try:
+        if os.path.isfile(_ARB_FILE):
+            with open(_ARB_FILE, "rb") as f:
+                _arbitres = pickle.load(f)
+    except Exception as e:
+        print(f"[ARB] Erreur chargement : {e}")
+        _arbitres = {}
+
+
+def _arb_id():
+    """Génère un ID unique pour un arbitre."""
+    import uuid
+    return str(uuid.uuid4())[:8]
+
+
+def _valider_arme(arme):
+    if arme not in ARMES_VALIDES:
+        raise ValueError(f"Arme invalide : {arme}. Valeurs : {ARMES_VALIDES}")
+
+
+def ajouter_arbitre(arme, nom, prenom, niveau, club, territoire, note=""):
+    """Ajoute un arbitre proposé pour une arme."""
+    _valider_arme(arme)
+    nom, prenom = nom.strip(), prenom.strip()
+    if not nom:
+        raise ValueError("Le nom est obligatoire")
+    if niveau and niveau not in NIVEAUX_ARB_VALS:
+        raise ValueError(f"Niveau invalide : {niveau}")
+
+    _arbitres.setdefault(arme, [])
+
+    # Contrôle doublon (même nom+prénom+club)
+    for a in _arbitres[arme]:
+        if (a["nom"].upper() == nom.upper()
+                and a["prenom"].upper() == prenom.upper()
+                and a["club"].upper() == club.upper()):
+            raise ValueError(f"Arbitre déjà enregistré : {nom} {prenom} ({club})")
+
+    arbitre = {
+        "id":         _arb_id(),
+        "nom":        nom,
+        "prenom":     prenom,
+        "niveau":     niveau,
+        "club":       club,
+        "territoire": territoire,
+        "statut":     "propose",
+        "note":       note,
+        "created_at": datetime.datetime.now(),
+        "updated_at": datetime.datetime.now(),
+    }
+    _arbitres[arme].append(arbitre)
+    _sauvegarder_arb()
+    return arbitre
+
+
+def maj_statut_arbitre(arme, arb_id, statut, note=""):
+    """Change le statut d'un arbitre (propose → retenu | libere)."""
+    _valider_arme(arme)
+    if statut not in STATUTS_ARB:
+        raise ValueError(f"Statut invalide : {statut}. Valeurs : {STATUTS_ARB}")
+
+    # Contrôle quota retenus
+    if statut == "retenu":
+        nb_retenus = sum(1 for a in _arbitres.get(arme, [])
+                         if a["statut"] == "retenu" and a["id"] != arb_id)
+        if nb_retenus >= MAX_RETENUS:
+            raise ValueError(f"Quota atteint : {MAX_RETENUS} arbitres déjà retenus pour {arme}")
+
+    for a in _arbitres.get(arme, []):
+        if a["id"] == arb_id:
+            a["statut"]     = statut
+            a["note"]       = note or a["note"]
+            a["updated_at"] = datetime.datetime.now()
+            _sauvegarder_arb()
+            return a
+
+    raise KeyError(f"Arbitre {arb_id} introuvable pour {arme}")
+
+
+def supprimer_arbitre(arme, arb_id):
+    _valider_arme(arme)
+    avant = len(_arbitres.get(arme, []))
+    _arbitres[arme] = [a for a in _arbitres.get(arme, []) if a["id"] != arb_id]
+    if len(_arbitres[arme]) == avant:
+        raise KeyError(f"Arbitre {arb_id} introuvable")
+    _sauvegarder_arb()
+
+
+def importer_arbitres_excel(arme, territoire, contenu_bytes):
+    """
+    Importe les arbitres depuis un Excel SelecMaster retourné.
+    Lit la ligne 'Arbitre 1' dans les feuilles Hommes/Dames.
+    """
+    _valider_arme(arme)
+    wb = load_workbook(io.BytesIO(contenu_bytes), data_only=True)
+    importes = []
+    erreurs  = []
+
+    for sheet_name in wb.sheetnames:
+        if sheet_name not in ("Hommes", "Dames"):
+            continue
+        ws = wb[sheet_name]
+        for row in ws.iter_rows(values_only=True):
+            if not row or row[0] is None:
+                continue
+            val0 = str(row[0]).strip()
+            if "Arbitre" not in val0:
+                continue
+            # Col B = Nom Prénom, Col D = Club, Col E ou F = Niveau
+            nom_prenom = str(row[1]).strip() if row[1] else ""
+            club_arb   = str(row[4]).strip() if len(row) > 4 and row[4] else ""
+            niveau_arb = str(row[5]).strip() if len(row) > 5 and row[5] else ""
+
+            if "Cliquer" in niveau_arb or not nom_prenom or nom_prenom == "Nom  Prénom":
+                continue
+            if niveau_arb not in NIVEAUX_ARB_VALS:
+                niveau_arb = ""
+
+            try:
+                a = ajouter_arbitre(arme, nom_prenom, "", niveau_arb, club_arb, territoire)
+                importes.append(a)
+            except ValueError as e:
+                erreurs.append(str(e))
+
+    return {"importes": len(importes), "erreurs": erreurs}
+
+
+def get_arbitres(arme=None):
+    """Retourne les arbitres, filtrés par arme si précisé."""
+    if arme:
+        _valider_arme(arme)
+        return _arbitres.get(arme, [])
+    return _arbitres
+
+
+def get_stats_arbitres():
+    """Retourne les stats par arme."""
+    stats = {}
+    for arme in ARMES_VALIDES:
+        arbs = _arbitres.get(arme, [])
+        stats[arme] = {
+            "total":    len(arbs),
+            "propose":  sum(1 for a in arbs if a["statut"] == "propose"),
+            "retenu":   sum(1 for a in arbs if a["statut"] == "retenu"),
+            "libere":   sum(1 for a in arbs if a["statut"] == "libere"),
+            "quota_ok": sum(1 for a in arbs if a["statut"] == "retenu") >= MAX_RETENUS,
+        }
+    return stats
+
+
+def get_arbitres_serialisable(arme=None):
+    """Version sérialisable (datetimes → strings)."""
+    def _ser(a):
+        return {**a,
+                "created_at": a["created_at"].strftime("%d/%m/%Y %H:%M"),
+                "updated_at": a["updated_at"].strftime("%d/%m/%Y %H:%M")}
+    if arme:
+        return [_ser(a) for a in _arbitres.get(arme, [])]
+    return {k: [_ser(a) for a in v] for k, v in _arbitres.items()}
+
+
+def supprimer_tous_arbitres(arme):
+    _valider_arme(arme)
+    _arbitres[arme] = []
+    _sauvegarder_arb()
+
+
+_charger_arb()
