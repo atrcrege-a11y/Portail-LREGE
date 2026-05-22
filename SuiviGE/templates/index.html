@@ -1,0 +1,543 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SuiviGE — LREGE Grand Est</title>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: Verdana, Geneva, sans-serif; font-size: 10pt; background: #f0f4f8; color: #222; }
+
+header { background: #1F3864; color: #fff; padding: 12px 24px; }
+header h1 { font-size: 14pt; }
+header p  { font-size: 9pt; opacity: .75; margin-top: 2px; }
+
+#nav-bar { background: #16305A; padding: 0 24px; display: flex; }
+.nav-btn { background: transparent; color: rgba(255,255,255,.65); border: none;
+  border-bottom: 3px solid transparent; padding: 10px 18px; cursor: pointer;
+  font-size: 9.5pt; font-family: Verdana,sans-serif; font-weight: bold; transition: all .15s; }
+.nav-btn.active { background: rgba(255,255,255,.12); color: #fff; border-bottom-color: #fff; }
+.nav-btn:hover:not(.active) { color: rgba(255,255,255,.9); background: rgba(255,255,255,.06); }
+
+main { max-width: 1100px; margin: 24px auto; padding: 0 16px; }
+.page { display: none; }
+.page.active { display: block; }
+
+.card { background: #fff; border-radius: 6px; box-shadow: 0 1px 4px rgba(0,0,0,.12);
+  padding: 18px 22px; margin-bottom: 18px; }
+.card h2 { font-size: 11pt; color: #1F3864; border-bottom: 2px solid #2E75B6;
+  padding-bottom: 6px; margin-bottom: 14px; }
+
+.form-row { display: flex; gap: 12px; flex-wrap: wrap; margin-bottom: 10px; }
+.form-row > div { flex: 1; min-width: 140px; }
+label { display: block; font-size: 8.5pt; color: #555; margin-bottom: 4px; font-weight: bold; }
+select, input[type=file], input[type=text] {
+  width: 100%; padding: 6px 8px; border: 1px solid #ccc; border-radius: 4px;
+  font-family: Verdana,sans-serif; font-size: 9pt; }
+
+.btn { display: inline-block; padding: 7px 14px; border: none; border-radius: 4px;
+  cursor: pointer; font-family: Verdana,sans-serif; font-size: 9pt; font-weight: bold;
+  transition: opacity .15s; }
+.btn:hover { opacity: .85; }
+.btn:disabled { opacity: .4; cursor: not-allowed; }
+.btn-primary { background: #2E75B6; color: #fff; }
+.btn-success { background: #70AD47; color: #fff; }
+.btn-danger  { background: #C00000; color: #fff; }
+.btn-sm { padding: 3px 9px; font-size: 8pt; }
+.actions { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 12px; align-items: center; }
+
+.msg-ok   { background: #E2EFDA; border: 1px solid #70AD47; color: #375623; padding: 7px 12px; border-radius: 4px; font-size: 9pt; margin-top: 8px; }
+.msg-err  { background: #FFCCCC; border: 1px solid #C00000; color: #7B0C0C; padding: 7px 12px; border-radius: 4px; font-size: 9pt; margin-top: 8px; }
+.msg-warn { background: #FFF2CC; border: 1px solid #BF8F00; color: #7F6000; padding: 7px 12px; border-radius: 4px; font-size: 9pt; margin-top: 8px; }
+
+.badge { display: inline-block; padding: 2px 10px; border-radius: 12px; font-size: 8.5pt; font-weight: bold; margin: 2px; }
+.b-oui     { background: #E2EFDA; color: #375623; }
+.b-non     { background: #FFCCCC; color: #7B0C0C; }
+.b-attente { background: #FFF2CC; color: #7F6000; }
+.b-info    { background: #DEEAF1; color: #1F3864; }
+
+.stat-grid { display: grid; grid-template-columns: repeat(auto-fit,minmax(110px,1fr)); gap: 8px; margin-bottom: 12px; }
+.stat-box  { text-align: center; padding: 10px 8px; border-radius: 6px; }
+.stat-box .val { font-size: 18pt; font-weight: bold; }
+.stat-box .lab { font-size: 8pt; margin-top: 2px; }
+.progress     { background: #eee; border-radius: 4px; height: 8px; margin: 6px 0; }
+.progress-bar { height: 8px; border-radius: 4px; background: #70AD47; transition: width .3s; }
+
+.tbl { width: 100%; border-collapse: collapse; font-size: 8.5pt; }
+.tbl th { background: #DEEAF1; color: #1F3864; padding: 5px 7px; border: 1px solid #aaa; text-align: left; font-size: 8pt; }
+.tbl td { padding: 4px 7px; border: 1px solid #ddd; vertical-align: middle; }
+.tbl tr.r-oui     { background: #F0FFF0; }
+.tbl tr.r-non     { background: #FFF0F0; }
+.tbl tr.r-attente { background: #FFFFF8; }
+.tbl tr.r-rem     { background: #FFF9F0; color: #666; }
+
+.genre-titre { font-size: 10pt; font-weight: bold; color: #fff;
+  background: #2E75B6; padding: 5px 10px; border-radius: 4px 4px 0 0; margin-top: 12px; }
+
+.rem-alert { background: #FFF2CC; border: 1px solid #BF8F00; border-radius: 6px;
+  padding: 8px 14px; margin-bottom: 8px; font-size: 9pt; }
+
+.audit-log { font-size: 8pt; font-family: monospace; max-height: 180px; overflow-y: auto; }
+.audit-line { padding: 2px 0; border-bottom: 1px solid #eee; }
+.audit-ts     { color: #888; margin-right: 6px; }
+.audit-action { color: #2E75B6; font-weight: bold; margin-right: 6px; }
+
+.card-suivi { background: #fff; border: 2px solid #DEEAF1; border-radius: 8px;
+  padding: 14px 16px; cursor: pointer; transition: border-color .15s; }
+.card-suivi:hover { border-color: #2E75B6; }
+.card-suivi h3 { font-size: 10.5pt; color: #1F3864; margin-bottom: 4px; }
+.card-suivi .meta { font-size: 8pt; color: #888; }
+.cards-grid { display: grid; grid-template-columns: repeat(auto-fill,minmax(220px,1fr)); gap: 12px; }
+
+.compo-bloc { font-size: 8pt; color: #555; margin-top: 4px; padding-left: 8px; border-left: 2px solid #DEEAF1; }
+
+conf-sel { font-size: 8pt; padding: 2px 4px; border: 1px solid #ccc; border-radius: 3px; }
+select.conf-sel { font-size: 8pt; padding: 2px 4px; border: 1px solid #ccc; border-radius: 3px; }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>SuiviGE</h1>
+  <p>Suivi des confirmations CDF — Individuel &amp; Équipes — LREGE Grand Est</p>
+</header>
+
+<div id="nav-bar">
+  <button class="nav-btn active" data-page="accueil">🏠 Accueil</button>
+  <button class="nav-btn" data-page="import">📥 Import</button>
+  <button class="nav-btn" data-page="indiv">👤 Individuel</button>
+  <button class="nav-btn" data-page="equipes">🤺 Équipes</button>
+</div>
+
+<main>
+
+<!-- ══ ACCUEIL ══ -->
+<div id="page-accueil" class="page active">
+  <div class="card">
+    <h2>📋 Suivis actifs</h2>
+    <div id="accueil-indiv" style="margin-bottom:16px">
+      <h3 style="font-size:10pt;color:#2E75B6;margin-bottom:8px">👤 Individuel</h3>
+      <div id="grid-indiv" class="cards-grid"></div>
+    </div>
+    <div id="accueil-equipes">
+      <h3 style="font-size:10pt;color:#2E75B6;margin-bottom:8px">🤺 Équipes</h3>
+      <div id="grid-equipes" class="cards-grid"></div>
+    </div>
+    <div class="actions" style="margin-top:16px">
+      <button class="btn btn-primary" onclick="afficherPage('import')">+ Importer des fichiers</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══ IMPORT ══ -->
+<div id="page-import" class="page">
+  <div class="card">
+    <h2>📥 Import Excel SelecGE — Individuel</h2>
+    <p style="font-size:8.5pt;color:#555;margin-bottom:12px">Importez un Excel individuel (feuilles Hommes/Dames). Les deux genres sont détectés automatiquement.</p>
+    <div class="form-row">
+      <div><label>Fichier Excel individuel</label><input type="file" id="imp-indiv-f" accept=".xlsx"></div>
+    </div>
+    <div class="actions"><button class="btn btn-success" onclick="importerIndiv()">📥 Importer</button></div>
+    <div id="imp-indiv-msg"></div>
+  </div>
+
+  <div class="card">
+    <h2>📥 Import Excel SelecGE — Équipes</h2>
+    <p style="font-size:8.5pt;color:#555;margin-bottom:12px">Importez un Excel équipes. La composition est lue automatiquement si renseignée.</p>
+    <div class="form-row">
+      <div><label>Fichier Excel équipes</label><input type="file" id="imp-eq-f" accept=".xlsx"></div>
+    </div>
+    <div class="actions"><button class="btn btn-success" onclick="importerEquipes()">📥 Importer</button></div>
+    <div id="imp-eq-msg"></div>
+  </div>
+
+  <div class="card">
+    <h2>📬 Import Excel retourné — Individuel</h2>
+    <p style="font-size:8.5pt;color:#555;margin-bottom:12px">Excel complété par le club (colonne Participation remplie).</p>
+    <div class="form-row">
+      <div><label>Fichier Excel retour individuel</label><input type="file" id="ret-indiv-f" accept=".xlsx"></div>
+    </div>
+    <div class="actions"><button class="btn btn-primary" onclick="importerRetourIndiv()">📬 Importer retour</button></div>
+    <div id="ret-indiv-msg"></div>
+  </div>
+
+  <div class="card">
+    <h2>📬 Import Excel retourné — Équipes</h2>
+    <p style="font-size:8.5pt;color:#555;margin-bottom:12px">Excel équipes complété par le club.</p>
+    <div class="form-row">
+      <div><label>Fichier Excel retour équipes</label><input type="file" id="ret-eq-f" accept=".xlsx"></div>
+    </div>
+    <div class="actions"><button class="btn btn-primary" onclick="importerRetourEquipes()">📬 Importer retour</button></div>
+    <div id="ret-eq-msg"></div>
+  </div>
+</div>
+
+<!-- ══ INDIVIDUEL ══ -->
+<div id="page-indiv" class="page">
+  <div class="card">
+    <h2>👤 Suivi individuel</h2>
+    <div class="form-row">
+      <div><label>Arme</label>
+        <select id="sv-arme" onchange="chargerIndiv()">
+          <option value="">— Choisir —</option>
+          <option value="Épée">Épée</option><option value="Fleuret">Fleuret</option><option value="Sabre">Sabre</option>
+        </select></div>
+      <div><label>Catégorie</label>
+        <select id="sv-cat" onchange="chargerIndiv()">
+          <option value="">— Choisir —</option>
+          <option>M13</option><option>M15</option><option>M17</option>
+          <option>M20</option><option>M23</option><option>Seniors</option><option>Vétérans</option>
+        </select></div>
+      <div><label>Genre</label>
+        <select id="sv-genre" onchange="chargerIndiv()">
+          <option value="">— Choisir —</option>
+          <option value="H">Hommes</option><option value="D">Dames</option>
+        </select></div>
+      <div style="display:flex;align-items:flex-end">
+        <button class="btn btn-danger btn-sm" onclick="supprimerSuivi('indiv')">🗑</button>
+      </div>
+    </div>
+    <div id="sv-indiv-msg"></div>
+  </div>
+
+  <div id="sv-indiv-contenu" style="display:none">
+    <div class="card"><h2>📊 État — <span id="sv-indiv-titre" style="color:#2E75B6"></span></h2>
+      <div id="sv-indiv-stats"></div></div>
+    <div class="card" id="sv-rem-card" style="display:none"><h2>🔔 Remplaçants à appeler</h2>
+      <div id="sv-rems"></div></div>
+    <div class="card"><h2>👥 Liste des tireurs</h2><div id="sv-indiv-detail"></div></div>
+    <div class="card"><h2>🔍 Journal</h2><div id="sv-indiv-audit" class="audit-log"></div></div>
+  </div>
+</div>
+
+<!-- ══ ÉQUIPES ══ -->
+<div id="page-equipes" class="page">
+  <div class="card">
+    <h2>🤺 Suivi équipes</h2>
+    <div class="form-row">
+      <div><label>Arme</label>
+        <select id="eq-arme" onchange="chargerEquipes()">
+          <option value="">— Choisir —</option>
+          <option value="Épée">Épée</option><option value="Fleuret">Fleuret</option><option value="Sabre">Sabre</option>
+        </select></div>
+      <div><label>Catégorie</label>
+        <select id="eq-cat" onchange="chargerEquipes()">
+          <option value="">— Choisir —</option>
+          <option>M15</option><option>M17</option><option>M20</option>
+          <option>M23</option><option>Seniors</option><option>Vétérans</option>
+        </select></div>
+      <div><label>Genre</label>
+        <select id="eq-genre" onchange="chargerEquipes()">
+          <option value="">— Choisir —</option>
+          <option value="H">Hommes</option><option value="D">Dames</option>
+        </select></div>
+      <div style="display:flex;align-items:flex-end">
+        <button class="btn btn-danger btn-sm" onclick="supprimerSuivi('equipe')">🗑</button>
+      </div>
+    </div>
+    <div id="sv-eq-msg"></div>
+  </div>
+
+  <div id="sv-eq-contenu" style="display:none">
+    <div class="card"><h2>📊 État — <span id="sv-eq-titre" style="color:#2E75B6"></span></h2>
+      <div id="sv-eq-stats"></div></div>
+    <div class="card"><h2>🤺 Équipes</h2><div id="sv-eq-detail"></div></div>
+    <div class="card"><h2>🔍 Journal</h2><div id="sv-eq-audit" class="audit-log"></div></div>
+  </div>
+</div>
+
+</main>
+
+<script>
+const API = 'http://localhost:5006';
+const _T  = {};  // stockage tireurs/équipes par index
+let   _i  = 0;
+function _store(o) { const i=_i++; _T[i]=o; return i; }
+
+// ── Navigation ────────────────────────────────────────────────────────────────
+function afficherPage(p) {
+  document.querySelectorAll('.page').forEach(x => x.classList.remove('active'));
+  document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('page-'+p).classList.add('active');
+  document.querySelector(`.nav-btn[data-page="${p}"]`)?.classList.add('active');
+  if (p==='accueil') chargerAccueil();
+}
+document.querySelectorAll('.nav-btn').forEach(b =>
+  b.addEventListener('click', () => afficherPage(b.dataset.page)));
+
+// ── Accueil ───────────────────────────────────────────────────────────────────
+async function chargerAccueil() {
+  const data = await (await fetch(API+'/api/suivis')).json();
+  const ARME_COL = {Épée:'#1E6B3A', Fleuret:'#1B3F7A', Sabre:'#7B0C0C'};
+
+  ['indiv','equipe'].forEach(type_ => {
+    const grid = document.getElementById('grid-' + (type_==='indiv'?'indiv':'equipes'));
+    const items = Object.entries(data).filter(([k,v]) => v.type===type_);
+    if (!items.length) { grid.innerHTML='<p style="color:#888;font-size:9pt">Aucun suivi.</p>'; return; }
+    grid.innerHTML = items.map(([k,v]) => {
+      const c = ARME_COL[v.arme] || '#1F3864';
+      return `<div class="card-suivi" onclick="ouvrirSuivi('${type_}','${v.arme}','${v.categorie}','${v.genre}')">
+        <div style="width:4px;height:36px;background:${c};border-radius:2px;float:left;margin-right:10px"></div>
+        <h3>${v.arme} ${v.categorie} ${v.genre==='H'?'H':'D'}</h3>
+        <div class="meta">${v.competition||''} | MAJ ${v.updated_at}</div>
+      </div>`;
+    }).join('');
+  });
+}
+
+function ouvrirSuivi(type_, arme, cat, genre) {
+  if (type_==='indiv') {
+    document.getElementById('sv-arme').value=arme;
+    document.getElementById('sv-cat').value=cat;
+    document.getElementById('sv-genre').value=genre;
+    afficherPage('indiv'); chargerIndiv();
+  } else {
+    document.getElementById('eq-arme').value=arme;
+    document.getElementById('eq-cat').value=cat;
+    document.getElementById('eq-genre').value=genre;
+    afficherPage('equipes'); chargerEquipes();
+  }
+}
+
+// ── Import ────────────────────────────────────────────────────────────────────
+async function importerFichier(inputId, url, msgId) {
+  const f=document.getElementById(inputId).files[0];
+  const el=document.getElementById(msgId);
+  if (!f) { el.className='msg-err'; el.textContent='⚠ Fichier requis'; return; }
+  const fd=new FormData(); fd.append('fichier',f);
+  const r=await fetch(API+url,{method:'POST',body:fd});
+  const d=await r.json();
+  if (d.erreur) { el.className='msg-err'; el.textContent='⚠ '+d.erreur; }
+  else {
+    el.className='msg-ok';
+    if (d.cles) el.textContent=`✓ ${d.nb} feuille(s) importée(s) : ${d.cles.join(' / ')}`;
+    else {
+      const nb=d.modifications?.reduce((s,m)=>s+(m.nb||0),0)||0;
+      el.textContent=`✓ ${nb} confirmation(s) importée(s)`;
+    }
+    chargerAccueil();
+  }
+}
+
+const importerIndiv        = () => importerFichier('imp-indiv-f',  '/api/import/indiv',         'imp-indiv-msg');
+const importerEquipes      = () => importerFichier('imp-eq-f',     '/api/import/equipes',        'imp-eq-msg');
+const importerRetourIndiv  = () => importerFichier('ret-indiv-f',  '/api/import/retour_indiv',   'ret-indiv-msg');
+const importerRetourEquipes= () => importerFichier('ret-eq-f',     '/api/import/retour_equipes', 'ret-eq-msg');
+
+// ── Individuel ────────────────────────────────────────────────────────────────
+async function chargerIndiv() {
+  const arme=document.getElementById('sv-arme').value;
+  const cat =document.getElementById('sv-cat').value;
+  const genre=document.getElementById('sv-genre').value;
+  if (!arme||!cat||!genre) return;
+  const p=`${encodeURIComponent(arme)}/${cat}/${genre}`;
+  const [sR,dR,rR,aR]=await Promise.all([
+    fetch(`${API}/api/suivi/indiv/${p}/stats`),
+    fetch(`${API}/api/suivi/indiv/${p}/detail`),
+    fetch(`${API}/api/suivi/indiv/${p}/remplacants`),
+    fetch(`${API}/api/suivi/indiv/${p}/audit`),
+  ]);
+  if (!sR.ok) { document.getElementById('sv-indiv-contenu').style.display='none'; return; }
+  const [s,d,rems,audit]=await Promise.all([sR.json(),dR.json(),rR.json(),aR.json()]);
+  document.getElementById('sv-indiv-titre').textContent=`${arme} ${cat} ${genre==='H'?'Hommes':'Dames'}`;
+  document.getElementById('sv-indiv-contenu').style.display='block';
+  renderIndivStats(s);
+  renderRems(rems, arme, cat, genre);
+  renderIndivDetail(d, arme, cat, genre);
+  renderAudit('sv-indiv-audit', audit);
+}
+
+function renderIndivStats(s) {
+  const q=s.qualifies, r=s.remplacants;
+  const pct=q.total>0?Math.round(q.oui/q.total*100):0;
+  document.getElementById('sv-indiv-stats').innerHTML=`
+    <p style="font-size:8.5pt;color:#555;margin-bottom:8px">${s.competition} | ${s.date_lieu}</p>
+    <div class="stat-grid">
+      <div class="stat-box" style="background:#E2EFDA"><div class="val" style="color:#375623">${q.oui}</div><div class="lab">✓ Confirmés</div></div>
+      <div class="stat-box" style="background:#FFCCCC"><div class="val" style="color:#7B0C0C">${q.non}</div><div class="lab">✗ Refus</div></div>
+      <div class="stat-box" style="background:#FFF2CC"><div class="val" style="color:#7F6000">${q.attente}</div><div class="lab">⏳ En attente</div></div>
+      <div class="stat-box" style="background:#DEEAF1"><div class="val" style="color:#1F3864">${q.total}</div><div class="lab">Total qualifiés</div></div>
+      <div class="stat-box" style="background:#F2F2F2"><div class="val" style="color:#555">${r.total}</div><div class="lab">Remplaçants</div></div>
+    </div>
+    <div class="progress"><div class="progress-bar" style="width:${pct}%"></div></div>
+    <div style="font-size:8pt;color:#555">${pct}% de confirmations</div>`;
+}
+
+function renderRems(rems, arme, cat, genre) {
+  const card=document.getElementById('sv-rem-card');
+  const div =document.getElementById('sv-rems');
+  card.style.display=rems.length?'block':'none';
+  if (!rems.length) return;
+  div.innerHTML=rems.map(t=>{
+    const idx=_store({t,arme,cat,genre,type_:'indiv'});
+    return `<div class="rem-alert">
+      <b>${t.nom} ${t.prenom}</b> — ${t.club}
+      <span class="badge b-attente" style="margin-left:6px">Rang ${t.rang}</span>
+      <button class="btn btn-sm btn-primary" style="margin-left:8px" onclick="confIdx(${idx},'oui')">✓ Confirmer appelé</button>
+    </div>`;
+  }).join('');
+}
+
+function renderIndivDetail(d, arme, cat, genre) {
+  const div=document.getElementById('sv-indiv-detail');
+  const tireurs=d.tireurs||[];
+  const qual=tireurs.filter(t=>t.statut==='qualifie');
+  const rem =tireurs.filter(t=>t.statut==='remplacant');
+
+  let html='';
+  if (qual.length) {
+    html+=`<div class="genre-titre">Qualifiés (${qual.length})</div>`;
+    html+=tableTireurs(qual,arme,cat,genre);
+  }
+  if (rem.length) {
+    html+=`<div class="genre-titre" style="margin-top:12px;background:#7F6000">Remplaçants (${rem.length})</div>`;
+    html+=tableTireurs(rem,arme,cat,genre,true);
+  }
+  div.innerHTML=html||'<p style="color:#888;font-size:9pt">Aucun tireur.</p>';
+}
+
+function tableTireurs(tireurs, arme, cat, genre, isRem=false) {
+  let html=`<table class="tbl"><thead><tr>
+    <th>Rang</th><th>Nom</th><th>Prénom</th><th>Club</th><th>Confirmation</th><th>Note</th><th>Action</th>
+  </tr></thead><tbody>`;
+  tireurs.forEach(t=>{
+    const cls=isRem?'r-rem':`r-${t.confirmation}`;
+    const badge=t.confirmation==='oui'?'<span class="badge b-oui">✓ Oui</span>':
+                t.confirmation==='non'?'<span class="badge b-non">✗ Non</span>':
+                '<span class="badge b-attente">⏳ Attente</span>';
+    const idx=_store({t,arme,cat,genre,type_:'indiv'});
+    html+=`<tr class="${cls}">
+      <td style="font-size:8pt">${t.rang}</td>
+      <td><b>${t.nom}</b></td><td>${t.prenom}</td>
+      <td style="font-size:8pt">${t.club}</td>
+      <td>${badge}</td>
+      <td style="font-size:8pt;color:#888">${t.note||''}</td>
+      <td><select class="conf-sel" onchange="confIdx(${idx},this.value)">
+        <option value="attente" ${t.confirmation==='attente'?'selected':''}>⏳</option>
+        <option value="oui"     ${t.confirmation==='oui'?'selected':''}>✓ Oui</option>
+        <option value="non"     ${t.confirmation==='non'?'selected':''}>✗ Non</option>
+      </select></td>
+    </tr>`;
+  });
+  return html+'</tbody></table>';
+}
+
+async function confIdx(idx, val) {
+  const {t,arme,cat,genre}=_T[idx];
+  const note=val==='non'?(prompt('Raison (optionnel) :')||''):'';
+  await fetch(`${API}/api/suivi/indiv/${encodeURIComponent(arme)}/${cat}/${genre}/confirmation`,{
+    method:'POST',headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({nom:t.nom,prenom:t.prenom,confirmation:val,note})
+  });
+  chargerIndiv();
+}
+
+// ── Équipes ───────────────────────────────────────────────────────────────────
+async function chargerEquipes() {
+  const arme=document.getElementById('eq-arme').value;
+  const cat =document.getElementById('eq-cat').value;
+  const genre=document.getElementById('eq-genre').value;
+  if (!arme||!cat||!genre) return;
+  const p=`${encodeURIComponent(arme)}/${cat}/${genre}`;
+  const [sR,dR,aR]=await Promise.all([
+    fetch(`${API}/api/suivi/equipe/${p}/stats`),
+    fetch(`${API}/api/suivi/equipe/${p}/detail`),
+    fetch(`${API}/api/suivi/equipe/${p}/audit`),
+  ]);
+  if (!sR.ok) { document.getElementById('sv-eq-contenu').style.display='none'; return; }
+  const [s,d,audit]=await Promise.all([sR.json(),dR.json(),aR.json()]);
+  document.getElementById('sv-eq-titre').textContent=`${arme} ${cat} ${genre==='H'?'Hommes':'Dames'}`;
+  document.getElementById('sv-eq-contenu').style.display='block';
+  renderEqStats(s);
+  renderEqDetail(d,arme,cat,genre);
+  renderAudit('sv-eq-audit',audit);
+}
+
+function renderEqStats(s) {
+  const e=s.equipes;
+  const pct=e.total>0?Math.round(e.oui/e.total*100):0;
+  document.getElementById('sv-eq-stats').innerHTML=`
+    <p style="font-size:8.5pt;color:#555;margin-bottom:8px">${s.competition} | ${s.date_lieu}</p>
+    <div class="stat-grid">
+      <div class="stat-box" style="background:#E2EFDA"><div class="val" style="color:#375623">${e.oui}</div><div class="lab">✓ Confirmées</div></div>
+      <div class="stat-box" style="background:#FFCCCC"><div class="val" style="color:#7B0C0C">${e.non}</div><div class="lab">✗ Refus</div></div>
+      <div class="stat-box" style="background:#FFF2CC"><div class="val" style="color:#7F6000">${e.attente}</div><div class="lab">⏳ En attente</div></div>
+      <div class="stat-box" style="background:#DEEAF1"><div class="val" style="color:#1F3864">${e.total}</div><div class="lab">Total équipes</div></div>
+      <div class="stat-box" style="background:#F2F2F2"><div class="val" style="color:#555">${e.avec_compo}</div><div class="lab">Avec composition</div></div>
+    </div>
+    <div class="progress"><div class="progress-bar" style="width:${pct}%"></div></div>
+    <div style="font-size:8pt;color:#555">${pct}% de confirmations</div>`;
+}
+
+function renderEqDetail(d,arme,cat,genre) {
+  const div=document.getElementById('sv-eq-detail');
+  const equipes=d.equipes||[];
+  if (!equipes.length) { div.innerHTML='<p style="color:#888;font-size:9pt">Aucune équipe.</p>'; return; }
+
+  let html=`<table class="tbl"><thead><tr>
+    <th>N°</th><th>Nom équipe</th><th>Club</th><th>Composition</th><th>Confirmation</th><th>Note</th><th>Action</th>
+  </tr></thead><tbody>`;
+
+  equipes.forEach(eq=>{
+    const cls=`r-${eq.confirmation}`;
+    const badge=eq.confirmation==='oui'?'<span class="badge b-oui">✓ Oui</span>':
+                eq.confirmation==='non'?'<span class="badge b-non">✗ Non</span>':
+                '<span class="badge b-attente">⏳ Attente</span>';
+    const compo=eq.composition?.length
+      ? `<div class="compo-bloc">${eq.composition.map(m=>`${m.nom} ${m.prenom}`).join('<br>')}</div>`
+      : '<span style="color:#bbb;font-size:8pt">—</span>';
+    const idx=_store({eq,arme,cat,genre});
+    html+=`<tr class="${cls}">
+      <td style="font-weight:bold">${eq.rang}</td>
+      <td><b>${eq.nom||'—'}</b></td>
+      <td style="font-size:8pt">${eq.club||'—'}</td>
+      <td>${compo}</td>
+      <td>${badge}</td>
+      <td style="font-size:8pt;color:#888">${eq.note||''}</td>
+      <td><select class="conf-sel" onchange="confEqIdx(${idx},this.value)">
+        <option value="attente" ${eq.confirmation==='attente'?'selected':''}>⏳</option>
+        <option value="oui"     ${eq.confirmation==='oui'?'selected':''}>✓ Oui</option>
+        <option value="non"     ${eq.confirmation==='non'?'selected':''}>✗ Non</option>
+      </select></td>
+    </tr>`;
+  });
+  div.innerHTML=html+'</tbody></table>';
+}
+
+async function confEqIdx(idx, val) {
+  const {eq,arme,cat,genre}=_T[idx];
+  const note=val==='non'?(prompt('Raison (optionnel) :')||''):'';
+  await fetch(`${API}/api/suivi/equipe/${encodeURIComponent(arme)}/${cat}/${genre}/confirmation`,{
+    method:'POST',headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({rang:eq.rang,confirmation:val,note})
+  });
+  chargerEquipes();
+}
+
+// ── Utilitaires ────────────────────────────────────────────────────────────────
+function renderAudit(id, audit) {
+  const div=document.getElementById(id);
+  if (!audit.length) { div.innerHTML='<p style="color:#888;font-size:9pt">Aucune modification.</p>'; return; }
+  div.innerHTML=audit.map(e=>`<div class="audit-line">
+    <span class="audit-ts">${e.ts}</span>
+    <span class="audit-action">[${e.action}]</span>
+    <span>${e.detail}</span>
+  </div>`).join('');
+}
+
+async function supprimerSuivi(type_) {
+  const arme =document.getElementById(type_==='indiv'?'sv-arme':'eq-arme').value;
+  const cat  =document.getElementById(type_==='indiv'?'sv-cat':'eq-cat').value;
+  const genre=document.getElementById(type_==='indiv'?'sv-genre':'eq-genre').value;
+  if (!arme||!cat||!genre) return;
+  if (!confirm(`Supprimer le suivi ${type_} ${arme} ${cat} ${genre} ? Action irréversible.`)) return;
+  await fetch(`${API}/api/suivi/${type_}/${encodeURIComponent(arme)}/${cat}/${genre}/supprimer`,{method:'POST'});
+  document.getElementById(`sv-${type_==='indiv'?'indiv':'eq'}-contenu`).style.display='none';
+  chargerAccueil();
+}
+
+// Init
+chargerAccueil();
+</script>
+</body>
+</html>
