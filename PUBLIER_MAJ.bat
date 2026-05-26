@@ -35,7 +35,13 @@ if errorlevel 1 ( echo Erreur generation setup.iss. & pause & exit /b 1 )
 echo OK
 
 echo.
-echo --- Etape 3/6 : Compilation Inno Setup ---
+echo --- Etape 3/6 : Compilation PyInstaller (PortailLREGE.exe) ---
+%PY% -m PyInstaller PortailLREGE.spec --noconfirm
+if errorlevel 1 ( echo Erreur compilation PyInstaller. & pause & exit /b 1 )
+echo OK
+
+echo.
+echo --- Etape 4/7 : Compilation Inno Setup ---
 
 set ISCC=
 if exist "C:\Program Files (x86)\Inno Setup 6\ISCC.exe" set ISCC=C:\Program Files (x86)\Inno Setup 6\ISCC.exe
@@ -54,7 +60,7 @@ set EXE=dist\PortailLREGE_Setup_v%VERSION%.exe
 if not exist "%EXE%" ( echo Fichier %EXE% introuvable. & pause & exit /b 1 )
 
 echo.
-echo --- Etape 4/6 : Sauvegarde GitHub ---
+echo --- Etape 5/7 : Sauvegarde GitHub ---
 git config gc.auto 0
 git add .
 git commit -m "Portail v%VERSION% - %DESC%"
@@ -63,7 +69,7 @@ if errorlevel 1 ( echo Erreur git push. & pause & exit /b 1 )
 echo OK
 
 echo.
-echo --- Etape 5/6 : Publication GitHub Release ---
+echo --- Etape 6/7 : Publication GitHub Release ---
 gh release create "v%VERSION%" "%EXE%" --title "Portail LREGE v%VERSION%" --notes "%DESC%"
 if errorlevel 1 ( echo Erreur GitHub Release. & pause & exit /b 1 )
 echo OK

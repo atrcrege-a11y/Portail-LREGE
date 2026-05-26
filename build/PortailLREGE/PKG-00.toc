@@ -1,4 +1,4 @@
-('C:\\Users\\ATRCR\\OneDrive\\Bureau\\LREGE\\build\\PortailLREGE\\PortailLREGE.pkg',
+('C:\\Users\\ATR EGE\\Desktop\\LREGE\\build\\PortailLREGE\\PortailLREGE.pkg',
  {'BINARY': True,
   'DATA': True,
   'EXECUTABLE': True,
@@ -10,76 +10,93 @@
   'SYMLINK': False},
  [('pyi-contents-directory _internal', '', 'OPTION'),
   ('PYZ-00.pyz',
-   'C:\\Users\\ATRCR\\OneDrive\\Bureau\\LREGE\\build\\PortailLREGE\\PYZ-00.pyz',
+   'C:\\Users\\ATR EGE\\Desktop\\LREGE\\build\\PortailLREGE\\PYZ-00.pyz',
    'PYZ'),
   ('struct',
-   'C:\\Users\\ATRCR\\OneDrive\\Bureau\\LREGE\\build\\PortailLREGE\\localpycs\\struct.pyc',
+   'C:\\Users\\ATR '
+   'EGE\\Desktop\\LREGE\\build\\PortailLREGE\\localpycs\\struct.pyc',
    'PYMODULE'),
   ('pyimod01_archive',
-   'C:\\Users\\ATRCR\\OneDrive\\Bureau\\LREGE\\build\\PortailLREGE\\localpycs\\pyimod01_archive.pyc',
+   'C:\\Users\\ATR '
+   'EGE\\Desktop\\LREGE\\build\\PortailLREGE\\localpycs\\pyimod01_archive.pyc',
    'PYMODULE'),
   ('pyimod02_importers',
-   'C:\\Users\\ATRCR\\OneDrive\\Bureau\\LREGE\\build\\PortailLREGE\\localpycs\\pyimod02_importers.pyc',
+   'C:\\Users\\ATR '
+   'EGE\\Desktop\\LREGE\\build\\PortailLREGE\\localpycs\\pyimod02_importers.pyc',
    'PYMODULE'),
   ('pyimod03_ctypes',
-   'C:\\Users\\ATRCR\\OneDrive\\Bureau\\LREGE\\build\\PortailLREGE\\localpycs\\pyimod03_ctypes.pyc',
+   'C:\\Users\\ATR '
+   'EGE\\Desktop\\LREGE\\build\\PortailLREGE\\localpycs\\pyimod03_ctypes.pyc',
    'PYMODULE'),
   ('pyimod04_pywin32',
-   'C:\\Users\\ATRCR\\OneDrive\\Bureau\\LREGE\\build\\PortailLREGE\\localpycs\\pyimod04_pywin32.pyc',
+   'C:\\Users\\ATR '
+   'EGE\\Desktop\\LREGE\\build\\PortailLREGE\\localpycs\\pyimod04_pywin32.pyc',
    'PYMODULE'),
   ('pyiboot01_bootstrap',
-   'C:\\Users\\ATRCR\\AppData\\Local\\Packages\\PythonSoftwareFoundation.Python.3.11_qbz5n2kfra8p0\\LocalCache\\local-packages\\Python311\\site-packages\\PyInstaller\\loader\\pyiboot01_bootstrap.py',
+   'C:\\Users\\ATR '
+   'EGE\\AppData\\Local\\Python\\pythoncore-3.14-64\\Lib\\site-packages\\PyInstaller\\loader\\pyiboot01_bootstrap.py',
    'PYSOURCE'),
   ('pyi_rth_inspect',
-   'C:\\Users\\ATRCR\\AppData\\Local\\Packages\\PythonSoftwareFoundation.Python.3.11_qbz5n2kfra8p0\\LocalCache\\local-packages\\Python311\\site-packages\\PyInstaller\\hooks\\rthooks\\pyi_rth_inspect.py',
+   'C:\\Users\\ATR '
+   'EGE\\AppData\\Local\\Python\\pythoncore-3.14-64\\Lib\\site-packages\\PyInstaller\\hooks\\rthooks\\pyi_rth_inspect.py',
    'PYSOURCE'),
-  ('lanceur',
-   'C:\\Users\\ATRCR\\OneDrive\\Bureau\\LREGE\\lanceur.py',
-   'PYSOURCE'),
-  ('python311.dll',
-   'C:\\Program '
-   'Files\\WindowsApps\\PythonSoftwareFoundation.Python.3.11_3.11.2544.0_x64__qbz5n2kfra8p0\\python311.dll',
+  ('lanceur', 'C:\\Users\\ATR EGE\\Desktop\\LREGE\\lanceur.py', 'PYSOURCE'),
+  ('python314.dll',
+   'C:\\Users\\ATR '
+   'EGE\\AppData\\Local\\Python\\pythoncore-3.14-64\\python314.dll',
    'BINARY'),
   ('_decimal.pyd',
-   'C:\\Program '
-   'Files\\WindowsApps\\PythonSoftwareFoundation.Python.3.11_3.11.2544.0_x64__qbz5n2kfra8p0\\DLLs\\_decimal.pyd',
+   'C:\\Users\\ATR '
+   'EGE\\AppData\\Local\\Python\\pythoncore-3.14-64\\DLLs\\_decimal.pyd',
    'EXTENSION'),
   ('_hashlib.pyd',
-   'C:\\Program '
-   'Files\\WindowsApps\\PythonSoftwareFoundation.Python.3.11_3.11.2544.0_x64__qbz5n2kfra8p0\\DLLs\\_hashlib.pyd',
+   'C:\\Users\\ATR '
+   'EGE\\AppData\\Local\\Python\\pythoncore-3.14-64\\DLLs\\_hashlib.pyd',
    'EXTENSION'),
-  ('unicodedata.pyd',
-   'C:\\Program '
-   'Files\\WindowsApps\\PythonSoftwareFoundation.Python.3.11_3.11.2544.0_x64__qbz5n2kfra8p0\\DLLs\\unicodedata.pyd',
+  ('_ssl.pyd',
+   'C:\\Users\\ATR '
+   'EGE\\AppData\\Local\\Python\\pythoncore-3.14-64\\DLLs\\_ssl.pyd',
    'EXTENSION'),
   ('select.pyd',
-   'C:\\Program '
-   'Files\\WindowsApps\\PythonSoftwareFoundation.Python.3.11_3.11.2544.0_x64__qbz5n2kfra8p0\\DLLs\\select.pyd',
+   'C:\\Users\\ATR '
+   'EGE\\AppData\\Local\\Python\\pythoncore-3.14-64\\DLLs\\select.pyd',
    'EXTENSION'),
   ('_socket.pyd',
-   'C:\\Program '
-   'Files\\WindowsApps\\PythonSoftwareFoundation.Python.3.11_3.11.2544.0_x64__qbz5n2kfra8p0\\DLLs\\_socket.pyd',
+   'C:\\Users\\ATR '
+   'EGE\\AppData\\Local\\Python\\pythoncore-3.14-64\\DLLs\\_socket.pyd',
+   'EXTENSION'),
+  ('unicodedata.pyd',
+   'C:\\Users\\ATR '
+   'EGE\\AppData\\Local\\Python\\pythoncore-3.14-64\\DLLs\\unicodedata.pyd',
+   'EXTENSION'),
+  ('_zstd.pyd',
+   'C:\\Users\\ATR '
+   'EGE\\AppData\\Local\\Python\\pythoncore-3.14-64\\DLLs\\_zstd.pyd',
    'EXTENSION'),
   ('_lzma.pyd',
-   'C:\\Program '
-   'Files\\WindowsApps\\PythonSoftwareFoundation.Python.3.11_3.11.2544.0_x64__qbz5n2kfra8p0\\DLLs\\_lzma.pyd',
+   'C:\\Users\\ATR '
+   'EGE\\AppData\\Local\\Python\\pythoncore-3.14-64\\DLLs\\_lzma.pyd',
    'EXTENSION'),
   ('_bz2.pyd',
-   'C:\\Program '
-   'Files\\WindowsApps\\PythonSoftwareFoundation.Python.3.11_3.11.2544.0_x64__qbz5n2kfra8p0\\DLLs\\_bz2.pyd',
+   'C:\\Users\\ATR '
+   'EGE\\AppData\\Local\\Python\\pythoncore-3.14-64\\DLLs\\_bz2.pyd',
    'EXTENSION'),
   ('VCRUNTIME140.dll',
-   'C:\\Program '
-   'Files\\WindowsApps\\PythonSoftwareFoundation.Python.3.11_3.11.2544.0_x64__qbz5n2kfra8p0\\VCRUNTIME140.dll',
+   'C:\\Users\\ATR '
+   'EGE\\AppData\\Local\\Python\\pythoncore-3.14-64\\VCRUNTIME140.dll',
    'BINARY'),
   ('libcrypto-3.dll',
-   'C:\\Program '
-   'Files\\WindowsApps\\PythonSoftwareFoundation.Python.3.11_3.11.2544.0_x64__qbz5n2kfra8p0\\DLLs\\libcrypto-3.dll',
+   'C:\\Users\\ATR '
+   'EGE\\AppData\\Local\\Python\\pythoncore-3.14-64\\DLLs\\libcrypto-3.dll',
+   'BINARY'),
+  ('libssl-3.dll',
+   'C:\\Users\\ATR '
+   'EGE\\AppData\\Local\\Python\\pythoncore-3.14-64\\DLLs\\libssl-3.dll',
    'BINARY'),
   ('base_library.zip',
-   'C:\\Users\\ATRCR\\OneDrive\\Bureau\\LREGE\\build\\PortailLREGE\\base_library.zip',
+   'C:\\Users\\ATR EGE\\Desktop\\LREGE\\build\\PortailLREGE\\base_library.zip',
    'DATA')],
- 'python311.dll',
+ 'python314.dll',
  False,
  False,
  False,
