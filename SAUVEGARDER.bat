@@ -1,5 +1,5 @@
 @echo off
-cd /d "C:\Users\ATRCR\OneDrive\Bureau\LREGE"
+cd /d "%~dp0"
 
 echo === Sauvegarde LREGE vers GitHub ===
 echo.

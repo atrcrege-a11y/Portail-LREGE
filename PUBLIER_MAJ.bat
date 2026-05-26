@@ -1,10 +1,20 @@
 @echo off
-cd /d "C:\Users\ATRCR\OneDrive\Bureau\LREGE"
+cd /d "%~dp0"
 
 echo ================================================
 echo   Publication MAJ Portail LREGE
 echo ================================================
 echo.
+
+:: ── Detecter Python ──────────────────────────────────────────
+set "PY="
+python --version >nul 2>&1 && set "PY=python" && goto PY_OK
+py --version >nul 2>&1 && set "PY=py" && goto PY_OK
+python3 --version >nul 2>&1 && set "PY=python3" && goto PY_OK
+echo [ERREUR] Python introuvable. Installez Python 3.9+ et cochez "Add to PATH".
+pause & exit /b 1
+:PY_OK
+echo Python detecte : %PY%
 
 set /p VERSION="Numero de version (ex: 1.3.0) : "
 if "%VERSION%"=="" ( echo Erreur : version vide. & pause & exit /b 1 )
@@ -14,13 +24,13 @@ if "%DESC%"=="" set DESC=Mise a jour v%VERSION%
 
 echo.
 echo --- Etape 1/6 : Mise a jour des fichiers de version ---
-python maj_versions.py %VERSION%
+%PY% maj_versions.py %VERSION%
 if errorlevel 1 ( echo Erreur mise a jour versions. & pause & exit /b 1 )
 echo OK
 
 echo.
 echo --- Etape 2/6 : Generation setup.iss ---
-python generer_setup_iss.py %VERSION%
+%PY% generer_setup_iss.py %VERSION%
 if errorlevel 1 ( echo Erreur generation setup.iss. & pause & exit /b 1 )
 echo OK
 
