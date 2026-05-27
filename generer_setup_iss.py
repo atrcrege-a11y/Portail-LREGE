@@ -122,7 +122,7 @@ def main():
     out = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'setup.iss')
     with open(out, 'w', encoding='utf-8') as f:
         f.write(iss)
-    print(f"setup.iss généré → {out}")
+    print(f"setup.iss genere -> {out}")
 
 if __name__ == '__main__':
     main()

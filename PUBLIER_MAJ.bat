@@ -1,125 +1,145 @@
 @echo off
 cd /d "%~dp0"
 
+:: ── Log toutes les sorties dans un fichier ─────────────────────
+set "LOG=%~dp0publier_maj_log.txt"
+echo === PUBLIER_MAJ %date% %time% === > "%LOG%"
+echo Dossier : %CD% >> "%LOG%"
+
 echo ================================================
 echo   Publication MAJ Portail LREGE
 echo ================================================
 echo.
 
-:: ── Detecter Python ───────────────────────────────────────
+:: ── Supprimer le verrou git si présent ────────────────────────
+if exist ".git\index.lock" del /f ".git\index.lock" >> "%LOG%" 2>&1
+
+:: ── Detecter Python ───────────────────────────────────────────
 set "PY="
 python --version >nul 2>&1 && set "PY=python" && goto PY_OK
 py --version >nul 2>&1 && set "PY=py" && goto PY_OK
 python3 --version >nul 2>&1 && set "PY=python3" && goto PY_OK
+echo [ERREUR] Python introuvable >> "%LOG%"
 echo [ERREUR] Python introuvable. Installez Python 3.9+ et cochez "Add to PATH".
-pause & exit /b 1
+goto FIN_ERREUR
 :PY_OK
+echo Python : %PY% >> "%LOG%"
 echo Python detecte : %PY%
 
-set /p VERSION="Numero de version (ex: 9.4) : "
-if "%VERSION%"=="" ( echo Erreur : version vide. & pause & exit /b 1 )
+set /p VERSION="Numero de version (ex: 9.5) : "
+if "%VERSION%"=="" ( echo Version vide >> "%LOG%" & echo Erreur : version vide. & goto FIN_ERREUR )
+echo Version : %VERSION% >> "%LOG%"
 
 set /p DESC="Description des changements : "
 if "%DESC%"=="" set DESC=Mise a jour v%VERSION%
+echo Description : %DESC% >> "%LOG%"
 
 echo.
 echo --- Etape 1/6 : Mise a jour des fichiers de version ---
-%PY% maj_versions.py %VERSION%
-if errorlevel 1 ( echo Erreur mise a jour versions. & pause & exit /b 1 )
+echo [ETAPE 1] maj_versions.py %VERSION% >> "%LOG%"
+%PY% maj_versions.py %VERSION% >> "%LOG%" 2>&1
+if errorlevel 1 ( echo [ERREUR] Etape 1 echouee. Voir %LOG% & goto FIN_ERREUR )
 echo OK
 
 echo.
 echo --- Etape 2/6 : Generation setup.iss ---
-%PY% generer_setup_iss.py %VERSION%
-if errorlevel 1 ( echo Erreur generation setup.iss. & pause & exit /b 1 )
+echo [ETAPE 2] generer_setup_iss.py >> "%LOG%"
+%PY% generer_setup_iss.py %VERSION% >> "%LOG%" 2>&1
+if errorlevel 1 ( echo [ERREUR] Etape 2 echouee. Voir %LOG% & goto FIN_ERREUR )
 echo OK
 
 echo.
-echo --- Etape 3/6 : Compilation PyInstaller (PortailLREGE.exe) ---
-%PY% -m PyInstaller PortailLREGE.spec --noconfirm
+echo --- Etape 3/6 : Compilation PyInstaller ---
+echo [ETAPE 3] PyInstaller >> "%LOG%"
+%PY% -m PyInstaller PortailLREGE.spec --noconfirm >> "%LOG%" 2>&1
 if errorlevel 1 (
-    echo [ATTENTION] PyInstaller a echoue.
-    echo Verifiez que PyInstaller est installe : %PY% -m pip install pyinstaller
-    pause & exit /b 1
+    echo [ERREUR] Etape 3 - PyInstaller a echoue. >> "%LOG%"
+    echo [ERREUR] PyInstaller a echoue.
+    echo Verifiez : %PY% -m pip install pyinstaller
+    echo Log complet : %LOG%
+    goto FIN_ERREUR
 )
 echo OK
 
 echo.
 echo --- Etape 4/6 : Compilation Inno Setup ---
-set ISCC=
+echo [ETAPE 4] Inno Setup >> "%LOG%"
+set "ISCC="
 if exist "C:\Program Files (x86)\Inno Setup 6\ISCC.exe" set "ISCC=C:\Program Files (x86)\Inno Setup 6\ISCC.exe"
-if exist "C:\Program Files\Inno Setup 6\ISCC.exe" set "ISCC=C:\Program Files\Inno Setup 6\ISCC.exe"
+if exist "C:\Program Files\Inno Setup 6\ISCC.exe"       set "ISCC=C:\Program Files\Inno Setup 6\ISCC.exe"
 
 if "%ISCC%"=="" (
-    echo [ATTENTION] Inno Setup 6 introuvable.
-    echo Telechargez-le sur : https://jrsoftware.org/isdl.php
-    echo Puis relancez ce script.
-    pause & exit /b 1
-) else (
-    "%ISCC%" setup.iss
-    if errorlevel 1 ( echo Erreur compilation Inno Setup. & pause & exit /b 1 )
-    echo OK
+    echo [ERREUR] Inno Setup 6 introuvable >> "%LOG%"
+    echo [ERREUR] Inno Setup 6 introuvable.
+    echo Telechargez : https://jrsoftware.org/isdl.php
+    goto FIN_ERREUR
 )
+"%ISCC%" setup.iss >> "%LOG%" 2>&1
+if errorlevel 1 ( echo [ERREUR] Etape 4 - Inno Setup echoue >> "%LOG%" & echo [ERREUR] Inno Setup a echoue. & goto FIN_ERREUR )
+echo OK
 
 set "EXE=dist\PortailLREGE_Setup_v%VERSION%.exe"
 if not exist "%EXE%" (
-    echo Fichier %EXE% introuvable apres compilation.
-    pause & exit /b 1
+    echo [ERREUR] Fichier %EXE% introuvable >> "%LOG%"
+    echo [ERREUR] Fichier %EXE% introuvable apres compilation.
+    goto FIN_ERREUR
 )
+echo EXE : %EXE% >> "%LOG%"
 
 echo.
-echo --- Etape 5/6 : Sauvegarde GitHub (sources uniquement) ---
-git config gc.auto 0
-:: Ajouter seulement les fichiers sources, pas les artefacts de build
-git add portail.py version.json setup.iss maj_versions.py generer_setup_iss.py
-git add PortailLREGE.spec LANCER_PORTAIL.bat PREMIER_LANCEMENT.bat PUBLIER_MAJ.bat
-git add SAUVEGARDER.bat .gitignore
-:: Ajouter les modules applicatifs
-git add SelecGE/ SelecMaster/ SuiviGE/ SuiviMaster/ CalendrierLREGE/ EscriTools/ SYNESC/
-git add crege_app/ routes/ services/
-git add -u
-git commit -m "Portail v%VERSION% - %DESC%"
-git push
-if errorlevel 1 (
-    echo [ERREUR] git push a echoue.
-    echo Verifiez votre connexion et vos droits sur le depot GitHub.
-    pause & exit /b 1
-)
+echo --- Etape 5/6 : Sauvegarde GitHub ---
+echo [ETAPE 5] git add + commit + push >> "%LOG%"
+git add portail.py version.json setup.iss maj_versions.py generer_setup_iss.py >> "%LOG%" 2>&1
+git add LANCER_PORTAIL.bat PUBLIER_MAJ.bat SAUVEGARDER.bat PortailLREGE.spec lanceur.py .gitignore >> "%LOG%" 2>&1
+git add SelecGE/ SelecMaster/ SuiviGE/ SuiviMaster/ CalendrierLREGE/ EscriTools/ >> "%LOG%" 2>&1
+git add crege_app/ routes/ services/ >> "%LOG%" 2>&1
+git add -u >> "%LOG%" 2>&1
+git commit -m "Portail v%VERSION% - %DESC%" >> "%LOG%" 2>&1
+git push >> "%LOG%" 2>&1
+if errorlevel 1 ( echo [ERREUR] Etape 5 - git push echoue >> "%LOG%" & echo [ERREUR] git push a echoue. & goto FIN_ERREUR )
 echo OK
 
 echo.
 echo --- Etape 6/6 : Publication GitHub Release ---
+echo [ETAPE 6] gh release create >> "%LOG%"
 gh --version >nul 2>&1
 if errorlevel 1 (
-    echo [ATTENTION] GitHub CLI (gh) non installe.
-    echo Installation automatique via winget...
-    winget install --id GitHub.cli -e --silent
+    echo gh CLI absent, tentative winget >> "%LOG%"
+    echo [INFO] Installation de GitHub CLI via winget...
+    winget install --id GitHub.cli -e --silent >> "%LOG%" 2>&1
     if errorlevel 1 (
-        echo Echec installation automatique.
-        echo Installez gh manuellement : https://cli.github.com
-        echo Puis authentifiez-vous avec : gh auth login
-        echo.
-        echo Le .exe a ete compile dans : %EXE%
-        echo Creez la release manuellement sur https://github.com/atrcrege-a11y/Portail-LREGE/releases/new
-        pause & exit /b 0
+        echo [ATTENTION] gh CLI non installe.
+        echo Uploadez manuellement %EXE% sur :
+        echo https://github.com/atrcrege-a11y/Portail-LREGE/releases/new
+        goto FIN_OK
     )
-    echo gh installe. Authentification requise :
+    echo gh installe. Authentification :
     gh auth login
 )
-
-gh release create "v%VERSION%" "%EXE%" --title "Portail LREGE v%VERSION%" --notes "%DESC%"
+gh release create "v%VERSION%" "%EXE%" --title "Portail LREGE v%VERSION%" --notes "%DESC%" >> "%LOG%" 2>&1
 if errorlevel 1 (
-    echo [ERREUR] GitHub Release failed.
-    echo Creez la release manuellement sur https://github.com/atrcrege-a11y/Portail-LREGE/releases/new
-    echo Et uploadez : %EXE%
-    pause & exit /b 1
+    echo [ERREUR] gh release create echoue >> "%LOG%"
+    echo [ATTENTION] Release GitHub echouee.
+    echo Uploadez manuellement %EXE% sur :
+    echo https://github.com/atrcrege-a11y/Portail-LREGE/releases/new
+    goto FIN_OK
 )
-echo OK
+echo OK >> "%LOG%"
 
+:FIN_OK
 echo.
 echo ================================================
 echo   MAJ v%VERSION% publiee avec succes !
-echo   Les utilisateurs verront la mise a jour
-echo   au prochain demarrage du Portail.
+echo ================================================
+echo Log : %LOG%
+pause
+exit /b 0
+
+:FIN_ERREUR
+echo.
+echo ================================================
+echo   ECHEC — Consultez le log pour le detail :
+echo   %LOG%
 echo ================================================
 pause
+exit /b 1
