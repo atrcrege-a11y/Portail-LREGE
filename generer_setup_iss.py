@@ -15,9 +15,7 @@ def extraire_version(portail_src):
 
 def extraire_outils(portail_src):
     """Extrait les clés de OUTILS et les dossiers associés (type web/tkinter)."""
-    # On cherche toutes les entrées de OUTILS avec leur cwd et type
     outils = []
-    # Regex : bloc par outil
     blocs = re.findall(
         r'"(\w+)":\s*\{[^}]+?"script":\s*os\.path\.join\(BASE_DIR,\s*"([^"]+)"[^}]+?"type":\s*"([^"]+)"',
         portail_src, re.DOTALL
@@ -27,17 +25,26 @@ def extraire_outils(portail_src):
     return outils
 
 def generer_iss(version, outils):
-    # Section [Files] dynamique
     files_statiques = """\
 Source: "portail.ico"; DestDir: "{app}"; Flags: ignoreversion
 Source: "portail.py"; DestDir: "{app}"; Flags: ignoreversion
 Source: "LANCER_PORTAIL.bat"; DestDir: "{app}"; Flags: ignoreversion
 Source: "PREMIER_LANCEMENT.bat"; DestDir: "{app}"; Flags: ignoreversion"""
 
+    # Patterns exclus de tous les dossiers outils
+    EXCLUDES = ",".join([
+        "*.pyc", "__pycache__",
+        ".venv\\*",
+        "*.pkl",
+        "sorties\\*",
+        "uploads\\*",
+        "*.log",
+    ])
+
     files_outils = ""
     for o in outils:
         d = o['dossier']
-        files_outils += f'\nSource: "{d}\\*"; DestDir: "{{app}}\\{d}"; Flags: ignoreversion recursesubdirs; Excludes: "*.pyc,__pycache__"'
+        files_outils += f'\nSource: "{d}\\*"; DestDir: "{{app}}\\{d}"; Flags: ignoreversion recursesubdirs; Excludes: "{EXCLUDES}"'
 
     iss = f"""; ================================================================
 ;  Portail LREGE - Installeur Inno Setup
@@ -112,7 +119,7 @@ def main():
 
     outils = extraire_outils(src)
     if not outils:
-        print("ERREUR : aucun outil trouvé dans portail.py")
+        print("ERREUR : aucun outil trouve dans portail.py")
         sys.exit(1)
 
     print(f"Version     : {version}")

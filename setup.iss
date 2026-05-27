@@ -1,12 +1,12 @@
 ; ================================================================
 ;  Portail LREGE - Installeur Inno Setup
 ;  Genere automatiquement par generer_setup_iss.py
-;  Version : 9.7
+;  Version : 9.8
 ;  Editeur : Escrime Grand Est
 ; ================================================================
 
 #define AppName    "Portail LREGE"
-#define AppVersion "9.7"
+#define AppVersion "9.8"
 #define AppPublisher "Escrime Grand Est"
 #define AppURL     "https://www.lrege.fr"
 
@@ -40,13 +40,13 @@ Source: "portail.ico"; DestDir: "{app}"; Flags: ignoreversion
 Source: "portail.py"; DestDir: "{app}"; Flags: ignoreversion
 Source: "LANCER_PORTAIL.bat"; DestDir: "{app}"; Flags: ignoreversion
 Source: "PREMIER_LANCEMENT.bat"; DestDir: "{app}"; Flags: ignoreversion
-Source: "SelecGE\*"; DestDir: "{app}\SelecGE"; Flags: ignoreversion recursesubdirs; Excludes: "*.pyc,__pycache__"
-Source: "SYNESC\*"; DestDir: "{app}\SYNESC"; Flags: ignoreversion recursesubdirs; Excludes: "*.pyc,__pycache__"
-Source: "EscriTools\*"; DestDir: "{app}\EscriTools"; Flags: ignoreversion recursesubdirs; Excludes: "*.pyc,__pycache__"
-Source: "CalendrierLREGE\*"; DestDir: "{app}\CalendrierLREGE"; Flags: ignoreversion recursesubdirs; Excludes: "*.pyc,__pycache__"
-Source: "SelecMaster\*"; DestDir: "{app}\SelecMaster"; Flags: ignoreversion recursesubdirs; Excludes: "*.pyc,__pycache__"
-Source: "SuiviGE\*"; DestDir: "{app}\SuiviGE"; Flags: ignoreversion recursesubdirs; Excludes: "*.pyc,__pycache__"
-Source: "SuiviMaster\*"; DestDir: "{app}\SuiviMaster"; Flags: ignoreversion recursesubdirs; Excludes: "*.pyc,__pycache__"
+Source: "SelecGE\*"; DestDir: "{app}\SelecGE"; Flags: ignoreversion recursesubdirs; Excludes: "*.pyc,__pycache__,.venv\*,*.pkl,sorties\*,uploads\*,*.log"
+Source: "SYNESC\*"; DestDir: "{app}\SYNESC"; Flags: ignoreversion recursesubdirs; Excludes: "*.pyc,__pycache__,.venv\*,*.pkl,sorties\*,uploads\*,*.log"
+Source: "EscriTools\*"; DestDir: "{app}\EscriTools"; Flags: ignoreversion recursesubdirs; Excludes: "*.pyc,__pycache__,.venv\*,*.pkl,sorties\*,uploads\*,*.log"
+Source: "CalendrierLREGE\*"; DestDir: "{app}\CalendrierLREGE"; Flags: ignoreversion recursesubdirs; Excludes: "*.pyc,__pycache__,.venv\*,*.pkl,sorties\*,uploads\*,*.log"
+Source: "SelecMaster\*"; DestDir: "{app}\SelecMaster"; Flags: ignoreversion recursesubdirs; Excludes: "*.pyc,__pycache__,.venv\*,*.pkl,sorties\*,uploads\*,*.log"
+Source: "SuiviGE\*"; DestDir: "{app}\SuiviGE"; Flags: ignoreversion recursesubdirs; Excludes: "*.pyc,__pycache__,.venv\*,*.pkl,sorties\*,uploads\*,*.log"
+Source: "SuiviMaster\*"; DestDir: "{app}\SuiviMaster"; Flags: ignoreversion recursesubdirs; Excludes: "*.pyc,__pycache__,.venv\*,*.pkl,sorties\*,uploads\*,*.log"
 
 [Icons]
 Name: "{group}\{#AppName}"; Filename: "{app}\LANCER_PORTAIL.bat"; WorkingDir: "{app}"; IconFilename: "{app}\portail.ico"
