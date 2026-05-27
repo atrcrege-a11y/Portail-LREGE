@@ -41,10 +41,7 @@ CATEGORIES = [
     {"id": "M20",     "label": "M20",          "competition": "Championnat de France",        "format": "jeunes",  "nationalite_fr": True,  "equipes": True},
     {"id": "M23",     "label": "M23",          "competition": "Championnat de France",        "format": "jeunes",  "nationalite_fr": True,  "equipes": False},
     {"id": "Seniors", "label": "Seniors",      "competition": "Championnat de France",        "format": "seniors", "nationalite_fr": True,  "equipes": True},
-    {"id": "V1",      "label": "Vétérans V1",  "competition": "Championnat de France Vétérans", "format": "seniors", "nationalite_fr": True, "equipes": True, "groupe_equipe": "Vétérans (V1+V2)"},
-    {"id": "V2",      "label": "Vétérans V2",  "competition": "Championnat de France Vétérans", "format": "seniors", "nationalite_fr": True, "equipes": True, "groupe_equipe": "Vétérans (V1+V2)"},
-    {"id": "V3",      "label": "Vétérans V3",  "competition": "Championnat de France Vétérans", "format": "seniors", "nationalite_fr": True, "equipes": True, "groupe_equipe": "Grands Vétérans (V3+V4)"},
-    {"id": "V4",      "label": "Vétérans V4",  "competition": "Championnat de France Vétérans", "format": "seniors", "nationalite_fr": True, "equipes": True, "groupe_equipe": "Grands Vétérans (V3+V4)"},
+    {"id": "V1",      "label": "Vétérans",      "competition": "Championnat de France Vétérans", "format": "seniors", "nationalite_fr": True, "equipes": True, "groupe_equipe": "Vétérans (V1+V2)"},
 ]
 ARMES  = [{"id": "S", "label": "Sabre"}, {"id": "F", "label": "Fleuret"}, {"id": "E", "label": "Épée"}]
 GENRES = [{"id": "H", "label": "Hommes"}, {"id": "D", "label": "Dames"}]

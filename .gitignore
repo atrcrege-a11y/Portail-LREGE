@@ -1,0 +1,29 @@
+# ── Environnements virtuels ──────────────────────────────
+**/.venv/
+**/venv/
+**/__pycache__/
+**/*.pyc
+**/*.pyo
+
+# ── Build PyInstaller ─────────────────────────────────────
+build/
+dist/*.exe
+dist/*.app
+
+# ── Données persistantes locales (ne pas partager) ────────
+**/.suivi_master.pkl
+**/.arbitres_master.pkl
+**/.cache_*.pkl
+**/uploads/
+**/sorties/
+**/tmp_*/
+
+# ── Fichiers système ──────────────────────────────────────
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# ── IDE ───────────────────────────────────────────────────
+.vscode/
+.idea/
+*.swp

@@ -78,8 +78,8 @@ def _construire_seniors(df_national, df_regional, config: dict, df_ffe=None) -> 
     # ── Mode classement national direct : Sabre, Épée, Vétérans ─────
     else:
         ge_n1 = df_nat[df_nat[COL_REGION].apply(est_grand_est)]
-        if not is_sabre:
-            ge_n1 = ge_n1.head(quota_n1)
+        if not is_sabre and quota_n1 > 0:
+            ge_n1 = ge_n1[ge_n1[COL_RANG] <= quota_n1]
         tireurs_n1 = [
             {"rang": f"CL NAT {r[COL_RANG]}", "nom": r[COL_NOM],
              "prenom": r[COL_PRENOM], "club": r[COL_CLUB], "note": ""}

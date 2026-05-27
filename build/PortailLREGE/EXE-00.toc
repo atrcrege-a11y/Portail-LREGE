@@ -121,7 +121,7 @@
  [],
  False,
  False,
- 1779810348,
+ 1779860838,
  [('runw.exe',
    'C:\\Users\\ATR '
    'EGE\\AppData\\Local\\Python\\pythoncore-3.14-64\\Lib\\site-packages\\PyInstaller\\bootloader\\Windows-64bit-intel\\runw.exe',
