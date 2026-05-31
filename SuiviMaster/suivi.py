@@ -401,7 +401,7 @@ def get_stats(arme, categorie):
                 "rem_confirmes": sum(1 for t in rem if t["appele"] and t["confirmation"] == "oui"),
             }
             stats["total"]["sel"]         += ts[genre]["sel"]
-            stats["total"]["oui"]         += ts[genre]["oui"]
+            stats["total"]["oui"]         += ts[genre]["oui"] + ts[genre]["rem_confirmes"]
             stats["total"]["non"]         += ts[genre]["non"]
             stats["total"]["attente"]     += ts[genre]["attente"]
             stats["total"]["rem_appeles"] += ts[genre]["rem_appeles"]
