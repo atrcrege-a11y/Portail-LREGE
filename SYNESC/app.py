@@ -14,7 +14,8 @@ from pathlib import Path
 from flask import Flask, render_template, request, jsonify, send_file, session
 
 from core.config import APP_NAME, APP_VERSION, APP_RELEASE_DATE, CHANGELOG
-from core.parser import parse_xml
+from core.parser import parse_xml, ParseError
+from core import sessions_store
 from competitions import get_competition, COMPETITIONS_META
 
 app = Flask(__name__)
@@ -89,13 +90,19 @@ def _process_xml(content, filename, store, errors):
                s[0]["categorie"] == meta["categorie"] and
                s[0]["type"] == meta["type"]
                for s in store):
-            errors.append(f"{filename} — déjà chargé.")
+            errors.append(f"{filename} — déjà chargé (doublon ignoré).")
             return None
         meta["uid"] = str(uuid.uuid4())
         store.append((meta, tireurs, arbitres))
         return _meta_to_dict(meta, tireurs, arbitres)
-    except Exception as e:
+    except ParseError as e:
         errors.append(f"{filename} — {e}")
+        return None
+    except Exception as e:
+        errors.append(
+            f"{filename} — Erreur inattendue lors du parsing : {e}. "
+            f"Vérifiez que le fichier est un export XML Engarde valide."
+        )
         return None
 
 
@@ -225,6 +232,76 @@ def preview():
 
 # ── Génération Excel
 
+
+
+
+@app.route("/api/sessions", methods=["GET"])
+def api_sessions_lister():
+    """Liste les sessions sauvegardées."""
+    return jsonify({"sessions": sessions_store.lister()})
+
+
+@app.route("/api/sessions/charger", methods=["POST"])
+def api_sessions_charger():
+    """Charge une session sauvegardée dans le store courant."""
+    data = request.get_json() or {}
+    session_id = data.get("id", "").strip()
+    if not session_id:
+        return jsonify({"error": "id manquant"}), 400
+
+    result = sessions_store.charger(session_id)
+    if result is None:
+        return jsonify({"error": f"Session '{session_id}' introuvable"}), 404
+
+    store_data, titre, comp_type = result
+    store = get_store()
+    store.clear()
+    for meta, tireurs, arbitres in store_data:
+        if "uid" not in meta:
+            import uuid as _uuid
+            meta["uid"] = str(_uuid.uuid4())
+        store.append((meta, tireurs, arbitres))
+
+    added = [_meta_to_dict(m, t, a) for m, t, a in store]
+    return jsonify({
+        "ok": True,
+        "titre": titre,
+        "comp_type": comp_type,
+        "nb": len(added),
+        "added": added,
+    })
+
+
+@app.route("/api/sessions/supprimer", methods=["POST"])
+def api_sessions_supprimer():
+    """Supprime une session sauvegardée."""
+    data = request.get_json() or {}
+    session_id = data.get("id", "").strip()
+    ok = sessions_store.supprimer(session_id)
+    return jsonify({"ok": ok})
+
+@app.route("/api/arbitres_liste", methods=["GET"])
+def api_arbitres_liste():
+    """Retourne la liste des noms depuis config_arbitres.xlsx."""
+    from core.arbitres import get_liste_noms, fichier_existe
+    return jsonify({"noms": get_liste_noms(), "fichier_present": fichier_existe()})
+
+
+@app.route("/api/upload_arbitres", methods=["POST"])
+def api_upload_arbitres():
+    """Téléverse un nouveau config_arbitres.xlsx."""
+    from core.arbitres import chemin_fichier
+    if "file" not in request.files:
+        return jsonify({"error": "Aucun fichier"}), 400
+    f = request.files["file"]
+    if not f.filename.endswith(".xlsx"):
+        return jsonify({"error": "Format attendu : .xlsx"}), 400
+    f.save(chemin_fichier())
+    from core.arbitres import get_liste_noms
+    noms = get_liste_noms()
+    return jsonify({"ok": True, "nb": len(noms), "noms": noms})
+
+
 @app.route("/api/generate", methods=["POST"])
 def generate():
     store = get_store()
@@ -239,8 +316,25 @@ def generate():
     titre = (f"{titre_long} - {lieu}" if titre_long and lieu
              else titre_long or lieu or "SYNESC")
 
+    # Responsables saisis dans l'interface
+    cra_nom        = data.get("cra_nom", "").strip()
+    sup_ge         = data.get("superviseur_ge", "").strip()
+    sups_lorraine  = [s.strip() for s in data.get("superviseurs_lorraine", []) if s and s.strip()]
+
+    resp_override = None
+    if comp_type in ("grand_est",) and (cra_nom or sup_ge):
+        resp_override = {"type": "cra",
+                         "noms": [cra_nom] if cra_nom else [],
+                         "noms_superviseur": [sup_ge] if sup_ge else []}
+    elif comp_type == "alsace" and cra_nom:
+        resp_override = {"type": "cra", "noms": [cra_nom]}
+    elif comp_type == "lorraine" and sups_lorraine:
+        resp_override = {"type": "superviseurs", "noms": sups_lorraine,
+                         "armes": ["Fleuret", "Épée", "Sabre"]}
+
     comp = get_competition(comp_type)
-    buf  = comp.generer_excel([(m, t, a) for m, t, a in store], titre_comp=titre)
+    buf  = comp.generer_excel([(m, t, a) for m, t, a in store],
+                              titre_comp=titre, responsables_override=resp_override)
 
     # Nom de fichier sans accents
     safe = unicodedata.normalize("NFD", titre)
@@ -248,6 +342,12 @@ def generate():
     safe = "".join(c for c in safe if c.isalnum() or c in " -_").strip()
     safe = re.sub(r" {2,}", " ", safe).replace(" ", "_")
     filename = f"{safe}.xlsx"
+
+    # Sauvegarde automatique de la session
+    try:
+        sessions_store.sauvegarder(store, titre, comp_type)
+    except Exception:
+        pass  # non bloquant
 
     return send_file(
         buf, as_attachment=True, download_name=filename,
@@ -1135,7 +1235,20 @@ def generate_mail():
 
     # Générer le fichier Excel
     comp = get_competition(comp_type)
-    excel_buf = comp.generer_excel(fichiers_list, titre_comp=titre)
+    cra_nom_m       = data.get("cra_nom", "").strip()
+    sup_ge_m        = data.get("superviseur_ge", "").strip()
+    sups_lorraine_m = [s.strip() for s in data.get("superviseurs_lorraine", []) if s and s.strip()]
+    resp_override_m = None
+    if comp_type in ("grand_est",) and (cra_nom_m or sup_ge_m):
+        resp_override_m = {"type": "cra", "noms": [cra_nom_m] if cra_nom_m else [],
+                           "noms_superviseur": [sup_ge_m] if sup_ge_m else []}
+    elif comp_type == "alsace" and cra_nom_m:
+        resp_override_m = {"type": "cra", "noms": [cra_nom_m]}
+    elif comp_type == "lorraine" and sups_lorraine_m:
+        resp_override_m = {"type": "superviseurs", "noms": sups_lorraine_m,
+                           "armes": ["Fleuret", "Épée", "Sabre"]}
+    excel_buf = comp.generer_excel(fichiers_list, titre_comp=titre,
+                                   responsables_override=resp_override_m)
     safe = unicodedata.normalize("NFD", titre)
     safe = "".join(c for c in safe if unicodedata.category(c) != "Mn")
     safe = "".join(c for c in safe if c.isalnum() or c in " -_").strip()

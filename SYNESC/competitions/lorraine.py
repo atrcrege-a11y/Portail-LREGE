@@ -62,7 +62,7 @@ class Lorraine(CompetitionBase):
 
     # ── Pipeline principal (surcharge totale)
 
-    def generer_excel(self, fichiers_list, titre_comp=""):
+    def generer_excel(self, fichiers_list, titre_comp="", responsables_override=None):
         """
         Génère le fichier Excel Lorraine :
           - Bilan Financier (en premier)
@@ -98,13 +98,17 @@ class Lorraine(CompetitionBase):
         # Récap Arbitres juste après
         ws_recap = wb.create_sheet("Récap Arbitres")
         from core.config import NOMS_SUPERVISEURS_LORRAINE
+        if responsables_override:
+            _resp = responsables_override
+        else:
+            _resp = {
+                "type": "superviseurs",
+                "noms": NOMS_SUPERVISEURS_LORRAINE,
+                "armes": ["Fleuret", "Épée", "Sabre"],
+            }
         feuille_recap_arbitres(ws_recap, arbitres_all, dates_ordonnees,
                                titre_excel, plages, ws_arb_name="Arbitres",
-                               responsables={
-                                   "type": "superviseurs",
-                                   "noms": NOMS_SUPERVISEURS_LORRAINE,
-                                   "armes": ["Fleuret", "Épée", "Sabre"],
-                               })
+                               responsables=_resp)
 
         # 1. Bilan Financier avec formules dynamiques
         ws_fin = wb.create_sheet("Bilan Financier")

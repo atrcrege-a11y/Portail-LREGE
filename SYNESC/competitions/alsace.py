@@ -348,7 +348,7 @@ class Alsace(GrandEst):
             ws.column_dimensions[get_column_letter(ci)].width = w
         ws.sheet_view.showGridLines = False
 
-    def generer_excel(self, fichiers_list, titre_comp=""):
+    def generer_excel(self, fichiers_list, titre_comp="", responsables_override=None):
         """
         Surcharge : génère des feuilles séparées par arme (F / E / S).
         """
@@ -380,9 +380,13 @@ class Alsace(GrandEst):
         # Récap Arbitres juste après
         ws_recap = wb.create_sheet("Récap Arbitres")
         from core.config import NOMS_CRA
+        if responsables_override:
+            _resp = responsables_override
+        else:
+            _resp = {"type": "cra", "noms": NOMS_CRA}
         feuille_recap_arbitres(ws_recap, arbitres_all, dates_ordonnees,
                                titre_excel, plages, ws_arb_name="Arbitres",
-                               responsables={"type": "cra", "noms": NOMS_CRA})
+                               responsables=_resp)
 
         # 1. Bilan Financier avec formules dynamiques liées aux vraies plages
         (groupes_indiv_bilan, _, _, _, _, _, _) = construire_donnees(

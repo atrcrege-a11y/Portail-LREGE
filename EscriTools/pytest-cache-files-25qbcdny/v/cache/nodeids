@@ -1,0 +1,21 @@
+[
+  "tests/test_escritools.py::TestBellepoule::test_charger_dates_absent",
+  "tests/test_escritools.py::TestBellepoule::test_charger_dates_csv",
+  "tests/test_escritools.py::TestBellepoule::test_convertir_fichier_absent",
+  "tests/test_escritools.py::TestBellepoule::test_ecrire_fff",
+  "tests/test_escritools.py::TestBellepoule::test_extraire_liste_appel",
+  "tests/test_escritools.py::TestBellepoule::test_trouver_entete_arme",
+  "tests/test_escritools.py::TestBellepoule::test_trouver_entete_categorie",
+  "tests/test_escritools.py::TestBellepoule::test_trouver_entete_defaults",
+  "tests/test_escritools.py::TestBellepoule::test_trouver_entete_sexe",
+  "tests/test_escritools.py::TestBellepoule::test_trouver_licence_absent",
+  "tests/test_escritools.py::TestBellepoule::test_trouver_licence_exact",
+  "tests/test_escritools.py::TestEquipeIndividuel::test_construire_classement_individuel",
+  "tests/test_escritools.py::TestEquipeIndividuel::test_extraire_classement_general_md",
+  "tests/test_escritools.py::TestEquipeIndividuel::test_generer_fff",
+  "tests/test_escritools.py::TestEquipeIndividuel::test_traiter_fichier_absent",
+  "tests/test_escritools.py::TestRenommage::test_cotcot_vers_xml",
+  "tests/test_escritools.py::TestRenommage::test_fichier_absent_erreur",
+  "tests/test_escritools.py::TestRenommage::test_ignore_mauvaise_extension",
+  "tests/test_escritools.py::TestRenommage::test_xml_vers_cotcot"
+]

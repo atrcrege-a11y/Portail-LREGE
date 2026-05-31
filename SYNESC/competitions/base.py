@@ -48,7 +48,7 @@ class CompetitionBase(ABC):
 
     # ── Pipeline principal
 
-    def generer_excel(self, fichiers_list, titre_comp=""):
+    def generer_excel(self, fichiers_list, titre_comp="", responsables_override=None):
         """
         Point d'entrée principal.
         Retourne un BytesIO contenant le fichier Excel.
@@ -77,10 +77,14 @@ class CompetitionBase(ABC):
         # Récap Arbitres juste après
         ws_recap = wb.create_sheet("Récap Arbitres")
         from core.config import NOMS_CRA, NOMS_SUPERVISEURS_GRAND_EST
+        if responsables_override:
+            _resp = responsables_override
+        else:
+            _resp = {"type": "cra", "noms": NOMS_CRA,
+                     "noms_superviseur": NOMS_SUPERVISEURS_GRAND_EST}
         feuille_recap_arbitres(ws_recap, arbitres_all, dates_ordonnees,
                                titre_excel, plages, ws_arb_name="Arbitres",
-                               responsables={"type": "cra", "noms": NOMS_CRA,
-                                             "noms_superviseur": NOMS_SUPERVISEURS_GRAND_EST})
+                               responsables=_resp)
 
         # 1. Bilan Financier avec formules dynamiques
         ws_fin = wb.create_sheet("Bilan Financier")

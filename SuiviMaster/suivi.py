@@ -12,6 +12,29 @@ _SUIVI_FILE = os.path.join(BASE_DIR, ".suivi_master.pkl")
 
 EFFECTIF_MAX = 16
 
+# ── Constantes format Excel SelecMaster ───────────────────────────────────────
+# Ces constantes doivent correspondre exactement aux labels générés par
+# SelecMaster/generateur.py. Si le format Excel change, modifier ici uniquement.
+EXCEL_FORMAT_VERSION   = "SELECMASTER_V1"   # marqueur dans cellule cachée (à venir)
+EXCEL_PREFIX_RANG      = "M "               # préfixe des lignes tireurs : "M 1", "M 2"
+EXCEL_RANG_MAX_LEN     = 5                  # longueur max du préfixe + numéro
+EXCEL_LABEL_SELECTIONNES    = "SÉLECTIONNÉS"
+EXCEL_LABEL_REMPLACANTS     = "REMPLAÇANTS"
+EXCEL_LABEL_NON_SELECTIONNABLE = "NON SÉLECTIONNABLE"
+EXCEL_ARMES_MAP = {
+    "ÉPÉE": "Épée", "EPEE": "Épée",
+    "FLEURET": "Fleuret",
+    "SABRE": "Sabre",
+}
+
+class ExcelParseError(ValueError):
+    """Erreur de parsing Excel SelecMaster avec message lisible."""
+    def __init__(self, message, hint=""):
+        super().__init__(message)
+        self.hint = hint
+    def __str__(self):
+        return f"{super().__str__()} — {self.hint}" if self.hint else super().__str__()
+
 ORDRE_PIOCHE = {
     "Champagne-Ardenne": ["Champagne-Ardenne", "Lorraine",           "Alsace"],
     "Lorraine":          ["Lorraine",           "Alsace",            "Champagne-Ardenne"],
@@ -23,7 +46,8 @@ NIVEAUX_ARB_OK   = {"Formation Régionale", "Régionale", "Formation Nationale",
                     "National", "International", ""}
 
 # ── Persistance ───────────────────────────────────────────────────────────────
-_db = {}  # clé : "arme|categorie"
+_db = {}           # clé : "arme|categorie"
+DB_VERSION = 2     # Incrémenté à chaque changement de structure _db
 
 
 def _cle(arme, categorie):
@@ -32,10 +56,37 @@ def _cle(arme, categorie):
 
 def _sauvegarder():
     try:
+        _db["__version__"] = DB_VERSION
         with open(_SUIVI_FILE, "wb") as f:
             pickle.dump(_db, f)
     except Exception as e:
         print(f"[SUIVI] Erreur sauvegarde : {e}")
+
+
+def _migrer(db_ancien):
+    """
+    Migre un _db d'une version antérieure vers DB_VERSION.
+    Retourne le dict migré. Tolère les clés manquantes.
+    """
+    version = db_ancien.get("__version__", 1)
+    if version == DB_VERSION:
+        return db_ancien
+
+    print(f"[SUIVI] Migration base v{version} → v{DB_VERSION}")
+    migre = {k: v for k, v in db_ancien.items() if k != "__version__"}
+
+    # v1 → v2 : garantir que chaque tireur a les champs appele + note
+    for cle, session in migre.items():
+        if not isinstance(session, dict):
+            continue
+        for territoire, tireurs in session.get("territoires", {}).items():
+            for t in tireurs:
+                t.setdefault("appele", False)
+                t.setdefault("note", "")
+                t.setdefault("confirmation_at", None)
+
+    migre["__version__"] = DB_VERSION
+    return migre
 
 
 def _charger():
@@ -43,10 +94,16 @@ def _charger():
     try:
         if os.path.isfile(_SUIVI_FILE):
             with open(_SUIVI_FILE, "rb") as f:
-                _db = pickle.load(f)
+                db_brut = pickle.load(f)
+            _db = _migrer(db_brut)
+            # Resauvegarder si migration a eu lieu
+            if db_brut.get("__version__", 1) != DB_VERSION:
+                _sauvegarder()
+        else:
+            _db = {"__version__": DB_VERSION}
     except Exception as e:
         print(f"[SUIVI] Erreur chargement : {e}")
-        _db = {}
+        _db = {"__version__": DB_VERSION}
 
 
 def _audit(cle, action, detail=""):
@@ -92,27 +149,28 @@ def lire_excel_selecmaster(contenu_bytes, territoire, territoire_organisateur):
                 for cell in row:
                     if cell and isinstance(cell, str):
                         s = cell.upper()
-                        for a in ["ÉPÉE", "EPEE", "FLEURET", "SABRE"]:
-                            if a in s:
-                                arme = "Épée" if "P" in a else a.capitalize()
-                        for c in ["M11", "M13"]:
-                            if c in s:
-                                categorie = c
+                        for label, val in EXCEL_ARMES_MAP.items():
+                            if label in s:
+                                arme = val
+                        for cat in ["M11", "M13"]:
+                            if cat in s:
+                                categorie = cat
 
             # Détecter section
-            if "SÉLECTIONNÉS" in val0.upper() or "SELECTIONNES" in val0.upper():
+            val0_up = val0.upper()
+            if EXCEL_LABEL_SELECTIONNES in val0_up or "SELECTIONNES" in val0_up:
                 statut_courant = "selectionne"
                 rang_sel = rang_rem = 0
                 continue
-            if "REMPLAÇANTS" in val0.upper() or "REMPLACANTS" in val0.upper():
+            if EXCEL_LABEL_REMPLACANTS in val0_up or "REMPLACANTS" in val0_up:
                 statut_courant = "remplacant"
                 continue
-            if "NON SÉLECTIONNABLE" in val0.upper():
+            if EXCEL_LABEL_NON_SELECTIONNABLE in val0_up:
                 statut_courant = None
                 continue
 
             # Ligne tireur : col A = "M 1", "M 2"...
-            if statut_courant and val0.startswith("M ") and len(val0) <= 5:
+            if statut_courant and val0.startswith(EXCEL_PREFIX_RANG) and len(val0) <= EXCEL_RANG_MAX_LEN:
                 nom    = str(row[1]).strip() if row[1] else ""
                 prenom = str(row[2]).strip() if row[2] else ""
                 club   = str(row[3]).strip() if row[3] else ""
@@ -141,8 +199,24 @@ def lire_excel_selecmaster(contenu_bytes, territoire, territoire_organisateur):
                     "note":           "",
                 })
 
+    # Validation : au moins un tireur doit avoir été extrait
+    if not tireurs:
+        raise ExcelParseError(
+            "Aucun tireur extrait du fichier Excel.",
+            hint=(
+                f"Vérifiez que le fichier est bien généré par SelecMaster "
+                f"(colonnes attendues : rang 'M 1', sections '{EXCEL_LABEL_SELECTIONNES}' / '{EXCEL_LABEL_REMPLACANTS}')."
+            )
+        )
+
+    if not arme:
+        raise ExcelParseError(
+            "Impossible de détecter l'arme dans le fichier Excel.",
+            hint="Le titre doit contenir 'Épée', 'Fleuret' ou 'Sabre'."
+        )
+
     return {
-        "arme":      arme or "Inconnu",
+        "arme":      arme,
         "categorie": categorie or "Inconnue",
         "tireurs":   tireurs,
     }
@@ -223,7 +297,7 @@ def importer_excel_retour(arme, categorie, territoire, contenu_bytes):
             if not row or row[0] is None:
                 continue
             val0 = str(row[0]).strip()
-            if not (val0.startswith("M ") and len(val0) <= 5):
+            if not (val0.startswith(EXCEL_PREFIX_RANG) and len(val0) <= EXCEL_RANG_MAX_LEN):
                 continue
 
             nom    = str(row[1]).strip() if row[1] else ""

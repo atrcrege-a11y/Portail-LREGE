@@ -37,16 +37,37 @@ def date_avec_jour(d):
 
 # ── Parsing XML
 
+class ParseError(ValueError):
+    """Erreur de parsing XML Engarde avec message lisible."""
+    pass
+
+
 def parse_xml(content_bytes, filename=""):
     """
     Parse un fichier XML Engarde.
     Retourne (meta, tireurs, arbitres).
-    ET.fromstring(bytes) respecte l'encodage ISO-8859-1 déclaré
-    et retourne des str Python unicode — pas besoin de ré-encoder.
+    Lève ParseError avec un message lisible si le fichier est invalide.
     """
     import xml.etree.ElementTree as ET
 
-    root = ET.fromstring(content_bytes)
+    # ── Parsing XML brut
+    try:
+        root = ET.fromstring(content_bytes)
+    except ET.ParseError as exc:
+        raise ParseError(
+            f"Fichier XML invalide ou corrompu — impossible de le lire. "
+            f"Vérifiez qu'il provient bien d'Engarde. Détail : {exc}"
+        ) from exc
+
+    # ── Vérification de la balise racine
+    BALISES_ENGARDE = {"CompetitionIndividuelle", "CompetitionEquipe",
+                       "CompetitionSynchrone", "Competition", "Epreuve"}
+    if root.tag not in BALISES_ENGARDE:
+        raise ParseError(
+            f"Ce fichier n'est pas un export Engarde reconnu "
+            f"(balise racine : <{root.tag}>). "
+            f"Format attendu : <CompetitionIndividuelle> ou <CompetitionEquipe>."
+        )
 
     ARME = {"F": "Fleuret", "E": "Épée", "S": "Sabre"}
     SEXE = {"M": "Hommes", "F": "Dames", "MF": "Mixte"}
@@ -54,13 +75,39 @@ def parse_xml(content_bytes, filename=""):
     def g(node, k, default=""):
         return node.attrib.get(k, default)
 
+    # ── Validation des champs obligatoires
+    arme_code = g(root, "Arme", "")
+    sexe_code = g(root, "Sexe", "")
+    categorie = g(root, "Categorie", "").strip().upper()
+    date_val  = g(root, "DateDebut") or g(root, "Date")
+
+    erreurs = []
+    if not arme_code:
+        erreurs.append("arme manquante (attribut 'Arme')")
+    elif arme_code not in ARME:
+        erreurs.append(f"arme inconnue : '{arme_code}' (valeurs attendues : F, E, S)")
+    if not sexe_code:
+        erreurs.append("sexe manquant (attribut 'Sexe')")
+    elif sexe_code not in SEXE:
+        erreurs.append(f"sexe inconnu : '{sexe_code}' (valeurs attendues : M, F, MF)")
+    if not categorie:
+        erreurs.append("catégorie manquante (attribut 'Categorie')")
+    if not date_val:
+        erreurs.append("date manquante (attributs 'DateDebut' ou 'Date')")
+
+    if erreurs:
+        raise ParseError(
+            f"Fichier Engarde incomplet — champ(s) manquant(s) : "
+            + " ; ".join(erreurs) + "."
+        )
+
     meta = {
-        "arme":        g(root, "Arme", "?"),
-        "arme_label":  ARME.get(g(root, "Arme", "?"), "?"),
-        "categorie":   g(root, "Categorie", "?").upper(),
-        "sexe":        g(root, "Sexe", "?"),
-        "sexe_label":  SEXE.get(g(root, "Sexe", "?"), "?"),
-        "titre":       g(root, "TitreLong"),
+        "arme":        arme_code,
+        "arme_label":  ARME[arme_code],
+        "categorie":   categorie,
+        "sexe":        sexe_code,
+        "sexe_label":  SEXE[sexe_code],
+        "titre":       g(root, "TitreLong") or f"{categorie} {ARME[arme_code]} {SEXE[sexe_code]}",
         "date":        g(root, "Date"),
         "date_debut":  g(root, "DateDebut") or g(root, "Date"),
         "date_fin":    g(root, "DateFin")   or g(root, "Date"),
@@ -69,10 +116,14 @@ def parse_xml(content_bytes, filename=""):
         "filename":    filename,
     }
 
+    # ── Tireurs
     tireurs = []
     for t in root.iter("Tireur"):
+        nom = g(t, "Nom", "").strip()
+        if not nom:
+            continue  # ignorer les nœuds Tireur vides
         tireurs.append({
-            "nom":       g(t, "Nom"),
+            "nom":       nom,
             "prenom":    g(t, "Prenom"),
             "licence":   g(t, "Licence"),
             "club":      g(t, "Club"),
@@ -84,6 +135,14 @@ def parse_xml(content_bytes, filename=""):
             "naissance": g(t, "DateNaissance"),
         })
 
+    if not tireurs:
+        raise ParseError(
+            f"Aucun tireur trouvé dans ce fichier. "
+            f"Vérifiez que l'export Engarde contient bien les participants "
+            f"(catégorie : {categorie}, arme : {ARME[arme_code]})."
+        )
+
+    # ── Arbitres (optionnels — pas d'erreur si absent)
     arbitres = []
     for a in root.iter("Arbitre"):
         arbitres.append({
@@ -94,7 +153,7 @@ def parse_xml(content_bytes, filename=""):
             "region":    g(a, "Region"),
             "ligue":     g(a, "Ligue"),
             "dept":      g(a, "Departement"),
-            "categorie": g(a, "Categorie"),   # niveau arbitre : D, FD, R, FR...
+            "categorie": g(a, "Categorie"),
         })
 
     return meta, tireurs, arbitres

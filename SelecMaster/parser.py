@@ -14,6 +14,17 @@ TERRITOIRES = {
     "grand est": "Grand Est",
 }
 
+# Patterns exacts pour détection dans le titre structuré (ex: "EHM13, Origine du tireur Lorraine")
+# Priorité : plus spécifique en premier
+_TERRITOIRE_PATTERNS = [
+    ("champagne-ardenne", "Champagne-Ardenne"),
+    ("champagne ardenne", "Champagne-Ardenne"),
+    ("champagne",         "Champagne-Ardenne"),
+    ("grand est",         "Grand Est"),
+    ("lorraine",          "Lorraine"),
+    ("alsace",            "Alsace"),
+]
+
 ARMES = {
     "E": "Épée",
     "F": "Fleuret",
@@ -31,10 +42,43 @@ CATEGORIES = {
 }
 
 
-def _detecter_territoire(texte):
+def _detecter_territoire_titre(titre: str):
+    """
+    Détection stricte dans le titre structuré BellePoule.
+    Cherche le territoire APRÈS la virgule (ex: "EHM13, Origine du tireur Lorraine").
+    Évite les faux positifs dus aux noms de clubs.
+    """
+    # Chercher dans la partie après la virgule si présente
+    parties = titre.split(",", 1)
+    zone = parties[1] if len(parties) > 1 else titre
+    zone_lower = zone.lower()
+    for pattern, val in _TERRITOIRE_PATTERNS:
+        if pattern in zone_lower:
+            return val
+    return None
+
+
+def _detecter_territoire_cid(cid: str):
+    """
+    Détection dans le champ CID du tableau compétition (ex: "Lorraine", "Alsace").
+    Le CID est un champ structuré court — peu de risque de faux positif.
+    """
+    cid_lower = cid.strip().lower()
+    for pattern, val in _TERRITOIRE_PATTERNS:
+        if pattern in cid_lower:
+            return val
+    return None
+
+
+def _detecter_territoire(texte: str):
+    """
+    Détection en dernier recours dans le texte libre.
+    UNIQUEMENT utilisée si titre + CID n'ont rien trouvé.
+    Risque de faux positif (nom de club contenant un territoire) — accepté en fallback.
+    """
     texte_lower = texte.lower()
-    for cle, val in TERRITOIRES.items():
-        if cle in texte_lower:
+    for pattern, val in _TERRITOIRE_PATTERNS:
+        if pattern in texte_lower:
             return val
     return None
 
@@ -54,7 +98,7 @@ def _parser_titre(titre):
         genre = GENRES.get(match.group(2))
         categorie = CATEGORIES.get(match.group(3))
 
-    territoire = _detecter_territoire(titre)
+    territoire = _detecter_territoire_titre(titre)
     return arme, genre, categorie, territoire
 
 
@@ -117,7 +161,16 @@ def _parser_format_competition(soup):
 
     table = _trouver_classement_competition(soup)
     if not table:
-        raise ValueError("Tableau de classement introuvable (Classement général).")
+        raise ParseurError(
+            "Tableau 'Classement général' introuvable dans le fichier compétition.",
+            hint="Vérifiez que le fichier contient bien un classement général BellePoule."
+        )
+    if not arme or not genre or not categorie:
+        manquants = [n for n, v in [("arme", arme), ("genre", genre), ("catégorie", categorie)] if not v]
+        raise ParseurError(
+            f"Impossible de détecter : {', '.join(manquants)} dans le fichier compétition.",
+            hint="Les titres H1 doivent contenir 'Épée/Fleuret/Sabre', 'Hommes/Dames', 'M11/M13'."
+        )
 
     rows = table.find_all('tr')
 
@@ -139,7 +192,7 @@ def _parser_format_competition(soup):
         cid    = cells[4] if len(cells) > 4 else ''
 
         if not territoire and cid:
-            territoire = _detecter_territoire(cid)
+            territoire = _detecter_territoire_cid(cid)
 
         # Dédupliquer (ex: ex-aequo en double dans certains exports)
         cle = (place, nom.upper(), prenom.upper())
@@ -169,18 +222,68 @@ def _parser_format_competition(soup):
     }
 
 
+class ParseurError(ValueError):
+    """
+    Erreur de parsing BellePoule avec message lisible pour l'utilisateur.
+    Contient un champ `hint` pour guider la correction.
+    """
+    def __init__(self, message: str, hint: str = ""):
+        super().__init__(message)
+        self.hint = hint
+
+    def __str__(self):
+        base = super().__str__()
+        return f"{base} — {self.hint}" if self.hint else base
+
+
+def _valider_html(soup):
+    """
+    Vérifie que le fichier HTML est bien un export BellePoule reconnu.
+    Lève ParseurError avec un message précis si un élément attendu est absent.
+    """
+    # Vérifier qu'il y a bien du contenu
+    if not soup or not soup.body:
+        raise ParseurError(
+            "Le fichier HTML est vide ou illisible.",
+            hint="Vérifiez que le fichier n'est pas corrompu."
+        )
+    # Vérifier la présence d'un marqueur BellePoule
+    has_bellepoule = (
+        soup.find('table', id='TableClsst') is not None
+        or soup.find('div', class_='Round') is not None
+        or any('bellepoule' in str(s).lower() for s in soup.find_all('script'))
+    )
+    if not has_bellepoule:
+        raise ParseurError(
+            "Ce fichier ne ressemble pas à un export BellePoule.",
+            hint="Utilisez le fichier HTML de classement exporté depuis BellePoule."
+        )
+
+
 def parser_html(contenu_bytes):
     """
     Parse un fichier HTML de classement BellePoule.
     Retourne un dict avec métadonnées + liste de tireurs.
+    Lève ParseurError avec un message précis si le fichier est invalide.
     """
-    # Essayer utf-8 puis latin-1
+    # Décodage
     try:
         content = contenu_bytes.decode('utf-8')
     except UnicodeDecodeError:
         content = contenu_bytes.decode('latin-1')
+    except Exception as e:
+        raise ParseurError(
+            f"Impossible de lire le fichier : {e}",
+            hint="Vérifiez que le fichier est bien un HTML BellePoule."
+        )
 
-    soup = BeautifulSoup(content, 'html.parser')
+    try:
+        soup = BeautifulSoup(content, 'html.parser')
+    except Exception as e:
+        raise ParseurError(f"Erreur de parsing HTML : {e}")
+
+    # Validation générale
+    _valider_html(soup)
 
     # Détecter le format et dispatcher
     fmt = _detecter_format(soup)
@@ -191,14 +294,29 @@ def parser_html(contenu_bytes):
     titre = soup.title.string if soup.title else ""
     arme, genre, categorie, territoire = _parser_titre(titre)
 
-    # Titre alternatif dans le body si titre absent
+    # Fallback : cherche dans le body UNIQUEMENT si le titre n'a rien trouvé
+    # Limité au premier ko pour éviter les faux positifs sur les noms de clubs
     if not territoire:
-        body_text = soup.get_text()
+        body_text = soup.get_text()[:2000]
         territoire = _detecter_territoire(body_text)
+
+    # Validation : titre doit avoir permis de détecter arme/genre/catégorie
+    manquants = []
+    if not arme:      manquants.append("arme (E/F/S)")
+    if not genre:     manquants.append("genre (H/D)")
+    if not categorie: manquants.append("catégorie (M11/M13)")
+    if manquants:
+        raise ParseurError(
+            f"Titre HTML non reconnu — impossible de détecter : {', '.join(manquants)}.",
+            hint=f"Titre lu : '{titre}'. Attendu : 'EHM13, Origine du tireur Lorraine' ou similaire."
+        )
 
     table = soup.find('table', id='TableClsst')
     if not table:
-        raise ValueError("Tableau 'TableClsst' introuvable dans le fichier HTML.")
+        raise ParseurError(
+            "Tableau de classement 'TableClsst' introuvable.",
+            hint="Ce fichier est peut-être un résultat de compétition et non un classement cumulatif."
+        )
 
     rows = table.find_all('tr')
 
@@ -215,7 +333,15 @@ def parser_html(contenu_bytes):
             dates_competitions = cells[1:]
 
     if header_idx is None:
-        raise ValueError("Ligne d'en-tête 'Place' introuvable dans le tableau.")
+        raise ParseurError(
+            "Ligne d'en-tête 'Place' introuvable dans le tableau BellePoule.",
+            hint="La structure du tableau a peut-être changé. Vérifiez la version de BellePoule."
+        )
+    if len(rows) <= header_idx + 1:
+        raise ParseurError(
+            "Aucun tireur trouvé dans le tableau.",
+            hint="Le fichier est peut-être vide ou le classement n'a pas encore été généré."
+        )
 
     nb_competitions = len(dates_competitions)
 
@@ -281,6 +407,12 @@ def parser_html(contenu_bytes):
             "resultats": resultats_competitions,
             "est_m11_dans_m13": est_m11_dans_m13,
         })
+
+    if not tireurs:
+        raise ParseurError(
+            "Aucun tireur extrait du fichier.",
+            hint="Vérifiez que le classement contient bien des données de tireurs."
+        )
 
     return {
         "arme": arme,

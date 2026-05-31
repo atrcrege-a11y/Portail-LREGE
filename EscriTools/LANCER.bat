@@ -1,24 +1,13 @@
 @echo off
-title EscriTools
-
-python --version >nul 2>&1
-if errorlevel 1 (
-    echo Python n'est pas installe.
-    echo Telechargez-le sur https://python.org
-    pause
-    exit /b 1
+chcp 65001 >nul
+cd /d "%~dp0"
+where python >nul 2>&1 || (echo Python introuvable. & pause & exit /b 1)
+if not exist .venv\Scripts\activate.bat (
+    python -m venv .venv
+    call .venv\Scripts\activate.bat
+    pip install -r requirements.txt -q
+) else (
+    call .venv\Scripts\activate.bat
 )
-
-python -c "import pdfplumber" >nul 2>&1
-if errorlevel 1 (
-    echo Installation de pdfplumber...
-    python -m pip install pdfplumber --quiet
-)
-
-python -c "import reportlab" >nul 2>&1
-if errorlevel 1 (
-    echo Installation de reportlab...
-    python -m pip install reportlab --quiet
-)
-
-python escritools.py
+start "" http://localhost:5002
+python app.py

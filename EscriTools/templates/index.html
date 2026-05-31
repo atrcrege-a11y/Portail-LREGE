@@ -1,0 +1,390 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<title>EscriTools — LREGE Grand Est</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Segoe UI',sans-serif;background:#0f1420;color:#c8d0e8;min-height:100vh}
+header{background:#1a2040;border-bottom:1px solid #2a3050;padding:14px 24px;display:flex;align-items:center;gap:12px}
+header h1{font-size:1.2rem;font-weight:700;color:#fff}
+header span{font-size:.8rem;color:#6a7390;margin-left:auto}
+nav{display:flex;gap:0;background:#141828;border-bottom:1px solid #2a3050;overflow-x:auto}
+nav button{padding:12px 20px;background:none;border:none;border-bottom:2px solid transparent;color:#6a7390;font-size:.85rem;cursor:pointer;white-space:nowrap;transition:.15s}
+nav button.active{color:#fff;border-bottom-color:#2563A8}
+nav button:hover{color:#c8d0e8}
+.tab{display:none;padding:24px;max-width:760px;margin:0 auto}
+.tab.active{display:block}
+.card{background:#1a2040;border:1px solid #2a3050;border-radius:8px;padding:20px;margin-bottom:16px}
+.card h2{font-size:.85rem;font-weight:600;color:#8a93b0;text-transform:uppercase;letter-spacing:.06em;margin-bottom:14px}
+label{display:block;font-size:.8rem;color:#8a93b0;margin-bottom:4px;margin-top:10px}
+label:first-child{margin-top:0}
+input[type=text],input[type=date],select{width:100%;padding:8px 10px;background:#0f1420;border:1px solid #2a3050;border-radius:5px;color:#c8d0e8;font-size:.85rem}
+input[type=text]:focus,select:focus{outline:none;border-color:#2563A8}
+.dropzone{border:2px dashed #2a3050;border-radius:8px;padding:28px;text-align:center;cursor:pointer;transition:.15s;margin-bottom:12px}
+.dropzone:hover,.dropzone.over{border-color:#2563A8;background:#1a2040}
+.dropzone p{font-size:.85rem;color:#6a7390;margin-top:6px}
+.dropzone input{display:none}
+.file-list{display:flex;flex-direction:column;gap:4px;margin-bottom:10px}
+.file-item{display:flex;align-items:center;gap:8px;background:#0f1420;padding:5px 10px;border-radius:4px;font-size:.78rem}
+.file-item span{flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.file-item button{background:none;border:none;color:#e07070;cursor:pointer;font-size:.9rem;padding:0 4px}
+.row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.row3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px}
+.btn{padding:10px 20px;border:none;border-radius:6px;font-size:.9rem;font-weight:600;cursor:pointer;transition:.15s;width:100%}
+.btn-primary{background:#2563A8;color:#fff}
+.btn-primary:hover{background:#1a4f8a}
+.btn-primary:disabled{background:#2a3050;color:#6a7390;cursor:not-allowed}
+.btn-green{background:#2e7d32;color:#fff}
+.btn-purple{background:#6a1b9a;color:#fff}
+.btn-navy{background:#1F3864;color:#fff}
+.log{background:#0a0f1a;border:1px solid #2a3050;border-radius:6px;padding:12px;font-family:Consolas,monospace;font-size:.75rem;max-height:200px;overflow-y:auto;margin-top:12px;white-space:pre-wrap;color:#a0b0c8}
+.results{margin-top:12px}
+.result-item{display:flex;align-items:center;gap:8px;padding:8px 12px;background:#0f1a10;border:1px solid #1a5e20;border-radius:6px;margin-bottom:6px;font-size:.8rem}
+.result-item a{color:#66BB6A;text-decoration:none;margin-left:auto;padding:3px 10px;background:#1a5e20;border-radius:4px}
+.error-item{background:#1a0f10;border-color:#7b0000;color:#ef9a9a}
+.checkbox-row{display:flex;align-items:center;gap:8px;margin-top:10px;font-size:.85rem}
+.checkbox-row input{width:auto}
+footer{text-align:center;padding:20px;color:#3a4060;font-size:.75rem;border-top:1px solid #1a2040;margin-top:40px}
+.badge{display:inline-block;padding:2px 8px;border-radius:12px;font-size:.7rem;background:#2563A8;color:#fff;margin-left:8px}
+</style>
+</head>
+<body>
+<header>
+  <h1>⚔ EscriTools</h1>
+  <span>LREGE Grand Est — v2.0</span>
+</header>
+<nav>
+  <button class="active" onclick="showTab('fff')">BellePoule → FFF</button>
+  <button onclick="showTab('pdf2md')">PDF → Markdown</button>
+  <button onclick="showTab('md2pdf')">Markdown → PDF</button>
+  <button onclick="showTab('renommage')">Renommage XML</button>
+  <button onclick="showTab('equipe')">Équipe → Individuel</button>
+</nav>
+
+<!-- ── BellePoule → FFF ──────────────────────────────────────────────────── -->
+<div id="tab-fff" class="tab active">
+  <div class="card">
+    <h2>BellePoule → FFF <span class="badge">Individuel</span></h2>
+    <p style="font-size:.8rem;color:#6a7390;margin-bottom:14px">
+      Convertit un PDF BellePoule en fichier .fff compatible WIN (FFE).
+    </p>
+    <label>PDF BellePoule</label>
+    <div class="dropzone" id="dz-fff" onclick="document.getElementById('inp-fff-pdf').click()"
+         ondragover="dzOver(event,'dz-fff')" ondragleave="dzLeave('dz-fff')" ondrop="dzDrop(event,'dz-fff','pdf')">
+      <input type="file" id="inp-fff-pdf" accept=".pdf" onchange="addFile(this,'fff','pdf')">
+      <div style="font-size:2rem">📄</div>
+      <p>Glisser le PDF ici ou cliquer</p>
+    </div>
+    <div class="file-list" id="fl-fff-pdf"></div>
+    <label>Dates de naissance (CSV optionnel — format : licence,jj/mm/aaaa)</label>
+    <div class="dropzone" id="dz-fff-csv" onclick="document.getElementById('inp-fff-csv').click()"
+         ondragover="dzOver(event,'dz-fff-csv')" ondragleave="dzLeave('dz-fff-csv')" ondrop="dzDrop(event,'dz-fff-csv','csv')">
+      <input type="file" id="inp-fff-csv" accept=".csv" onchange="addFile(this,'fff','csv')">
+      <p>CSV optionnel</p>
+    </div>
+    <div class="file-list" id="fl-fff-csv"></div>
+    <button class="btn btn-green" id="btn-fff" onclick="convertirFFF()" disabled>Convertir en .fff</button>
+    <div class="log" id="log-fff" style="display:none"></div>
+    <div class="results" id="res-fff"></div>
+  </div>
+</div>
+
+<!-- ── PDF → Markdown ────────────────────────────────────────────────────── -->
+<div id="tab-pdf2md" class="tab">
+  <div class="card">
+    <h2>PDF → Markdown</h2>
+    <p style="font-size:.8rem;color:#6a7390;margin-bottom:14px">
+      Convertit un ou plusieurs PDFs en Markdown structuré (titres, listes, tableaux détectés automatiquement).
+    </p>
+    <label>Fichiers PDF</label>
+    <div class="dropzone" id="dz-pdf2md" onclick="document.getElementById('inp-pdf2md').click()"
+         ondragover="dzOver(event,'dz-pdf2md')" ondragleave="dzLeave('dz-pdf2md')" ondrop="dzDrop(event,'dz-pdf2md','pdfs')">
+      <input type="file" id="inp-pdf2md" accept=".pdf" multiple onchange="addFiles(this,'pdf2md','pdfs')">
+      <div style="font-size:2rem">📑</div>
+      <p>Glisser les PDFs ici ou cliquer</p>
+    </div>
+    <div class="file-list" id="fl-pdf2md-pdfs"></div>
+    <div class="checkbox-row">
+      <input type="checkbox" id="fusion-pdf2md">
+      <label for="fusion-pdf2md" style="margin:0">Fusionner en un seul fichier .md</label>
+    </div>
+    <button class="btn btn-primary" id="btn-pdf2md" onclick="convertirPDF2MD()" disabled style="margin-top:12px">Convertir en Markdown</button>
+    <div class="log" id="log-pdf2md" style="display:none"></div>
+    <div class="results" id="res-pdf2md"></div>
+  </div>
+</div>
+
+<!-- ── Markdown → PDF ────────────────────────────────────────────────────── -->
+<div id="tab-md2pdf" class="tab">
+  <div class="card">
+    <h2>Markdown → PDF</h2>
+    <p style="font-size:.8rem;color:#6a7390;margin-bottom:14px">
+      Convertit un ou plusieurs fichiers .md en PDF soigné (titres, listes, tableaux, gras/italique).
+    </p>
+    <label>Fichiers Markdown</label>
+    <div class="dropzone" id="dz-md2pdf" onclick="document.getElementById('inp-md2pdf').click()"
+         ondragover="dzOver(event,'dz-md2pdf')" ondragleave="dzLeave('dz-md2pdf')" ondrop="dzDrop(event,'dz-md2pdf','mds')">
+      <input type="file" id="inp-md2pdf" accept=".md" multiple onchange="addFiles(this,'md2pdf','mds')">
+      <div style="font-size:2rem">📝</div>
+      <p>Glisser les fichiers .md ici ou cliquer</p>
+    </div>
+    <div class="file-list" id="fl-md2pdf-mds"></div>
+    <div class="checkbox-row">
+      <input type="checkbox" id="fusion-md2pdf">
+      <label for="fusion-md2pdf" style="margin:0">Fusionner en un seul PDF</label>
+    </div>
+    <button class="btn btn-purple" id="btn-md2pdf" onclick="convertirMD2PDF()" disabled style="margin-top:12px">Convertir en PDF</button>
+    <div class="log" id="log-md2pdf" style="display:none"></div>
+    <div class="results" id="res-md2pdf"></div>
+  </div>
+</div>
+
+<!-- ── Renommage XML ──────────────────────────────────────────────────────── -->
+<div id="tab-renommage" class="tab">
+  <div class="card">
+    <h2>Renommage XML ↔ .cotcot</h2>
+    <p style="font-size:.8rem;color:#6a7390;margin-bottom:14px">
+      Renomme les fichiers XML en .cotcot (masquage pour FFE WIN) ou restaure les .cotcot en .xml.
+    </p>
+    <label>Fichiers</label>
+    <div class="dropzone" id="dz-ren" onclick="document.getElementById('inp-ren').click()"
+         ondragover="dzOver(event,'dz-ren')" ondragleave="dzLeave('dz-ren')" ondrop="dzDrop(event,'dz-ren','rens')">
+      <input type="file" id="inp-ren" accept=".xml,.cotcot" multiple onchange="addFiles(this,'ren','rens')">
+      <div style="font-size:2rem">📂</div>
+      <p>Glisser les fichiers XML ou .cotcot ici</p>
+    </div>
+    <div class="file-list" id="fl-ren-rens"></div>
+    <div style="display:flex;gap:10px;margin-top:12px">
+      <button class="btn btn-navy" id="btn-xml2cot" onclick="renommer('xml2cot')" disabled>XML → .cotcot</button>
+      <button class="btn btn-primary" id="btn-cot2xml" onclick="renommer('cot2xml')" disabled>.cotcot → XML</button>
+    </div>
+    <div class="log" id="log-ren" style="display:none"></div>
+    <div class="results" id="res-ren"></div>
+  </div>
+</div>
+
+<!-- ── Équipe → Individuel ───────────────────────────────────────────────── -->
+<div id="tab-equipe" class="tab">
+  <div class="card">
+    <h2>Équipe → Individuel <span class="badge">BellePoule</span></h2>
+    <p style="font-size:.8rem;color:#6a7390;margin-bottom:14px">
+      Convertit des résultats d'épreuves par équipes (BellePoule .pdf ou .md) en classement individuel .fff.
+    </p>
+    <label>Fichiers BellePoule (.pdf ou .md)</label>
+    <div class="dropzone" id="dz-eq" onclick="document.getElementById('inp-eq').click()"
+         ondragover="dzOver(event,'dz-eq')" ondragleave="dzLeave('dz-eq')" ondrop="dzDrop(event,'dz-eq','eqs')">
+      <input type="file" id="inp-eq" accept=".pdf,.md" multiple onchange="addFiles(this,'eq','eqs')">
+      <div style="font-size:2rem">🏆</div>
+      <p>Glisser les fichiers ici</p>
+    </div>
+    <div class="file-list" id="fl-eq-eqs"></div>
+  </div>
+  <div class="card">
+    <h2>Paramètres compétition</h2>
+    <div class="row3">
+      <div><label>Date (JJ/MM/AAAA)</label><input type="text" id="eq-date" placeholder="27/06/2026"></div>
+      <div><label>Arme</label>
+        <select id="eq-arme"><option>Epee</option><option>Fleuret</option><option>Sabre</option></select>
+      </div>
+      <div><label>Catégorie</label><input type="text" id="eq-cat" placeholder="M13"></div>
+    </div>
+    <div class="row3">
+      <div><label>Sexe</label>
+        <select id="eq-sexe"><option value="M">Hommes</option><option value="F">Dames</option></select>
+      </div>
+      <div><label>Nom compétition</label><input type="text" id="eq-nom" placeholder="CDA Grand Est"></div>
+      <div><label>Lieu</label><input type="text" id="eq-lieu" placeholder="Strasbourg"></div>
+    </div>
+    <button class="btn btn-navy" id="btn-eq" onclick="convertirEquipe()" disabled style="margin-top:16px">Générer .fff individuel</button>
+    <div class="log" id="log-eq" style="display:none"></div>
+    <div class="results" id="res-eq"></div>
+  </div>
+</div>
+
+<footer>EscriTools v2.0 — LREGE Grand Est</footer>
+
+<script>
+// ── Navigation ─────────────────────────────────────────────────────────────
+function showTab(id) {
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('nav button').forEach(b => b.classList.remove('active'));
+  document.getElementById('tab-' + id).classList.add('active');
+  event.currentTarget.classList.add('active');
+}
+
+// ── Gestion fichiers ────────────────────────────────────────────────────────
+const _stores = {};
+function _store(key) { if (!_stores[key]) _stores[key] = []; return _stores[key]; }
+
+function addFile(input, ns, key) {
+  const f = input.files[0]; if (!f) return;
+  _store(ns+'-'+key).length = 0;
+  _store(ns+'-'+key).push(f);
+  renderFiles(ns, key);
+  updateBtns(ns);
+  input.value = '';
+}
+function addFiles(input, ns, key) {
+  const store = _store(ns+'-'+key);
+  for (const f of input.files) if (!store.find(x => x.name === f.name)) store.push(f);
+  renderFiles(ns, key);
+  updateBtns(ns);
+  input.value = '';
+}
+function removeFile(ns, key, idx) {
+  _store(ns+'-'+key).splice(idx, 1);
+  renderFiles(ns, key);
+  updateBtns(ns);
+}
+function renderFiles(ns, key) {
+  const el = document.getElementById('fl-'+ns+'-'+key);
+  if (!el) return;
+  const store = _store(ns+'-'+key);
+  el.innerHTML = store.map((f, i) =>
+    `<div class="file-item"><span>📄 ${f.name}</span><button onclick="removeFile('${ns}','${key}',${i})">✕</button></div>`
+  ).join('');
+}
+function updateBtns(ns) {
+  const hasPdf  = (_store('fff-pdf').length > 0);
+  const hasPdfs = (_store('pdf2md-pdfs').length > 0);
+  const hasMds  = (_store('md2pdf-mds').length > 0);
+  const hasRens = (_store('ren-rens').length > 0);
+  const hasEqs  = (_store('eq-eqs').length > 0);
+  const set = (id, v) => { const b = document.getElementById(id); if (b) b.disabled = !v; };
+  set('btn-fff', hasPdf);
+  set('btn-pdf2md', hasPdfs);
+  set('btn-md2pdf', hasMds);
+  set('btn-xml2cot', hasRens);
+  set('btn-cot2xml', hasRens);
+  set('btn-eq', hasEqs);
+}
+
+// ── Drag & drop ─────────────────────────────────────────────────────────────
+function dzOver(e, id) { e.preventDefault(); document.getElementById(id).classList.add('over'); }
+function dzLeave(id) { document.getElementById(id).classList.remove('over'); }
+function dzDrop(e, id, key) {
+  e.preventDefault();
+  dzLeave(id);
+  const ns = id.replace('dz-','').split('-')[0];
+  const files = [...e.dataTransfer.files];
+  const store = _store(ns+'-'+key);
+  files.forEach(f => { if (!store.find(x => x.name === f.name)) store.push(f); });
+  renderFiles(ns, key);
+  updateBtns(ns);
+}
+
+// ── Log + résultats ─────────────────────────────────────────────────────────
+function showLog(id, lines) {
+  const el = document.getElementById('log-'+id);
+  el.style.display = 'block';
+  el.textContent = lines.join('\n');
+  el.scrollTop = el.scrollHeight;
+}
+function showResults(id, resultats, erreurs) {
+  const el = document.getElementById('res-'+id);
+  let html = '';
+  for (const r of (resultats || [])) {
+    html += `<div class="result-item">✅ ${r.fichier}<a href="${r.url}" download>Télécharger</a></div>`;
+  }
+  for (const e of (erreurs || [])) {
+    html += `<div class="result-item error-item">❌ ${e.fichier || ''} — ${e.erreur}</div>`;
+  }
+  el.innerHTML = html;
+}
+
+// ── Conversions ─────────────────────────────────────────────────────────────
+async function convertirFFF() {
+  const btn = document.getElementById('btn-fff');
+  btn.disabled = true; btn.textContent = 'Conversion en cours...';
+  const fd = new FormData();
+  fd.append('pdf', _store('fff-pdf')[0]);
+  if (_store('fff-csv').length) fd.append('csv', _store('fff-csv')[0]);
+  try {
+    const res = await fetch('/api/bellepoule/convertir', { method: 'POST', body: fd });
+    const data = await res.json();
+    showLog('fff', data.logs || []);
+    if (data.ok) {
+      showResults('fff',
+        [{ fichier: data.filename, url: `/api/bellepoule/telecharger/${data.filename}` }], []);
+    } else {
+      showResults('fff', [], [{ fichier: '', erreur: data.error }]);
+    }
+  } catch(e) { showResults('fff', [], [{fichier:'', erreur: e.message}]); }
+  btn.disabled = false; btn.textContent = 'Convertir en .fff';
+}
+
+async function convertirPDF2MD() {
+  const btn = document.getElementById('btn-pdf2md');
+  btn.disabled = true; btn.textContent = 'Conversion en cours...';
+  const fd = new FormData();
+  _store('pdf2md-pdfs').forEach(f => fd.append('pdf', f));
+  fd.append('fusion', document.getElementById('fusion-pdf2md').checked);
+  try {
+    const res = await fetch('/api/pdf2md/convertir', { method: 'POST', body: fd });
+    const data = await res.json();
+    const logs = data.resultats?.flatMap(r => r.logs || []) || [];
+    showLog('pdf2md', logs);
+    showResults('pdf2md', data.resultats, data.erreurs);
+  } catch(e) { showResults('pdf2md', [], [{fichier:'', erreur: e.message}]); }
+  btn.disabled = false; btn.textContent = 'Convertir en Markdown';
+}
+
+async function convertirMD2PDF() {
+  const btn = document.getElementById('btn-md2pdf');
+  btn.disabled = true; btn.textContent = 'Conversion en cours...';
+  const fd = new FormData();
+  _store('md2pdf-mds').forEach(f => fd.append('md', f));
+  fd.append('fusion', document.getElementById('fusion-md2pdf').checked);
+  try {
+    const res = await fetch('/api/md2pdf/convertir', { method: 'POST', body: fd });
+    const data = await res.json();
+    showLog('md2pdf', data.logs || []);
+    showResults('md2pdf', data.resultats, data.erreurs);
+  } catch(e) { showResults('md2pdf', [], [{fichier:'', erreur: e.message}]); }
+  btn.disabled = false; btn.textContent = 'Convertir en PDF';
+}
+
+async function renommer(sens) {
+  const id = sens === 'xml2cot' ? 'btn-xml2cot' : 'btn-cot2xml';
+  const btn = document.getElementById(id);
+  btn.disabled = true;
+  const fd = new FormData();
+  _store('ren-rens').forEach(f => fd.append('files', f));
+  fd.append('sens', sens);
+  try {
+    const res = await fetch('/api/renommage/renommer', { method: 'POST', body: fd });
+    const data = await res.json();
+    showLog('ren', (data.succes || []).map(s => `${s.original} → ${s.renomme}`));
+    showResults('ren', data.succes?.map(s => ({fichier: s.renomme, url: s.url})), data.erreurs);
+  } catch(e) { showResults('ren', [], [{fichier:'', erreur: e.message}]); }
+  btn.disabled = false;
+}
+
+async function convertirEquipe() {
+  const btn = document.getElementById('btn-eq');
+  btn.disabled = true; btn.textContent = 'Conversion en cours...';
+  const fd = new FormData();
+  _store('eq-eqs').forEach(f => fd.append('files', f));
+  fd.append('date',      document.getElementById('eq-date').value);
+  fd.append('arme',      document.getElementById('eq-arme').value);
+  fd.append('sexe',      document.getElementById('eq-sexe').value);
+  fd.append('categorie', document.getElementById('eq-cat').value);
+  fd.append('nom_comp',  document.getElementById('eq-nom').value);
+  fd.append('lieu',      document.getElementById('eq-lieu').value);
+  try {
+    const res = await fetch('/api/equipe_indiv/convertir', { method: 'POST', body: fd });
+    const data = await res.json();
+    if (data.error) { showResults('eq', [], [{fichier:'', erreur: data.error}]); }
+    else {
+      const logs = data.resultats?.flatMap(r => r.logs || []) || [];
+      showLog('eq', logs);
+      showResults('eq', data.resultats, data.erreurs);
+    }
+  } catch(e) { showResults('eq', [], [{fichier:'', erreur: e.message}]); }
+  btn.disabled = false; btn.textContent = 'Générer .fff individuel';
+}
+</script>
+</body>
+</html>

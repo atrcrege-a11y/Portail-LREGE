@@ -957,6 +957,20 @@ tbody td:first-child {
             <div class="stat-label">Clubs</div>
           </div>
         </div>
+
+      <!-- Sessions sauvegardées -->
+      <div style="margin-top:1rem;">
+        <div style="display:flex;align-items:center;justify-content:space-between;">
+          <div class="section-label" style="margin:0;">Sessions sauvegardées</div>
+          <button onclick="_rafraichirSessions()" title="Rafraîchir"
+                  style="background:none;border:none;cursor:pointer;color:#8a93b0;font-size:.8rem;padding:0;">
+            ↻
+          </button>
+        </div>
+        <div id="sessions-list" style="margin-top:.5rem;display:flex;flex-direction:column;gap:4px;">
+          <div style="font-size:.72rem;color:#6a7390;font-style:italic;">Chargement...</div>
+        </div>
+      </div>
       </div>
     </div>
 
@@ -976,6 +990,58 @@ tbody td:first-child {
       <div class="titre-preview" id="titre-preview" style="display:none;">
         <span class="titre-preview-label">Titre final :</span>
         <span id="titre-preview-val"></span>
+      </div>
+
+
+      <!-- Responsables arbitrage -->
+      <div id="section-responsables" style="margin-top:1rem;">
+        <div class="section-label">Responsables arbitrage</div>
+
+        <!-- CRA (Grand Est + Alsace) -->
+        <div id="row-cra" class="input-group" style="margin-top:.5rem;">
+          <label class="input-label">Responsable CRA</label>
+          <div style="display:flex;gap:6px;">
+            <input list="dl-arbitres" class="input-field" id="cra-nom-input"
+                   placeholder="Choisir ou saisir..." style="flex:1;">
+          </div>
+        </div>
+
+        <!-- Superviseur Grand Est -->
+        <div id="row-sup-ge" class="input-group" style="margin-top:.5rem;">
+          <label class="input-label">Superviseur Grand Est</label>
+          <input list="dl-arbitres" class="input-field" id="superviseur-ge-input"
+                 placeholder="Choisir ou saisir...">
+        </div>
+
+        <!-- Superviseurs Lorraine (1 par arme) -->
+        <div id="row-sup-lorraine" class="input-group" style="margin-top:.5rem;display:none;">
+          <label class="input-label">Superviseurs Lorraine</label>
+          <input list="dl-arbitres" class="input-field" id="sup-lorraine-fleuret"
+                 placeholder="Fleuret" style="margin-bottom:4px;">
+          <input list="dl-arbitres" class="input-field" id="sup-lorraine-epee"
+                 placeholder="Épée" style="margin-bottom:4px;">
+          <input list="dl-arbitres" class="input-field" id="sup-lorraine-sabre"
+                 placeholder="Sabre">
+        </div>
+
+        <!-- Datalist partagée -->
+        <datalist id="dl-arbitres"></datalist>
+
+        <!-- Upload liste arbitres -->
+        <div style="margin-top:.6rem;display:flex;align-items:center;gap:8px;">
+          <label style="font-size:.7rem;color:#8a93b0;cursor:pointer;display:flex;align-items:center;gap:4px;"
+                 title="Format attendu : Excel avec colonnes Prenom / Nom (/ Role optionnel)">
+            <input type="file" accept=".xlsx" id="arbitres-file-input" style="display:none"
+                   onchange="uploadArbitresListe(this)">
+            <span id="arbitres-liste-label" style="font-size:.7rem;color:#8a93b0;">
+              📋 Charger liste arbitres (.xlsx)
+            </span>
+          </label>
+          <button onclick="document.getElementById('arbitres-file-input').click()"
+                  style="font-size:.7rem;padding:2px 8px;background:none;border:1px solid #3a4060;border-radius:4px;color:#8a93b0;cursor:pointer;">
+            Parcourir
+          </button>
+        </div>
       </div>
 
       <div style="margin-top:1rem;">
@@ -1157,7 +1223,82 @@ function selectCompType(btn) {
   document.querySelectorAll('.comp-type-btn').forEach(b => b.classList.remove('active'));
   btn.classList.add('active');
   state.compType = btn.dataset.type;
+  _updateResponsablesVisibility();
 }
+
+function _updateResponsablesVisibility() {
+  const t = state.compType;
+  const rowCra      = document.getElementById('row-cra');
+  const rowSupGe    = document.getElementById('row-sup-ge');
+  const rowSupLorr  = document.getElementById('row-sup-lorraine');
+  if (rowCra)     rowCra.style.display     = (t === 'grand_est' || t === 'alsace') ? '' : 'none';
+  if (rowSupGe)   rowSupGe.style.display   = (t === 'grand_est') ? '' : 'none';
+  if (rowSupLorr) rowSupLorr.style.display = (t === 'lorraine')  ? '' : 'none';
+}
+
+async function uploadArbitresListe(input) {
+  const file = input.files[0];
+  if (!file) return;
+  const fd = new FormData();
+  fd.append('file', file);
+  const res = await fetch('/api/upload_arbitres', { method: 'POST', body: fd });
+  const data = await res.json();
+  if (data.ok) {
+    _peuplerDatalist(data.noms);
+    document.getElementById('arbitres-liste-label').textContent =
+      `✅ ${data.nb} arbitre(s) chargé(s)`;
+  } else {
+    alert('Erreur : ' + (data.error || 'fichier invalide'));
+  }
+  input.value = '';
+}
+
+function _peuplerDatalist(noms) {
+  const dl = document.getElementById('dl-arbitres');
+  if (!dl) return;
+  dl.innerHTML = '';
+  noms.forEach(n => {
+    const opt = document.createElement('option');
+    opt.value = n;
+    dl.appendChild(opt);
+  });
+}
+
+function _getResponsables() {
+  const t = state.compType;
+  if (t === 'grand_est') {
+    return {
+      cra_nom:       document.getElementById('cra-nom-input')?.value.trim() || '',
+      superviseur_ge: document.getElementById('superviseur-ge-input')?.value.trim() || '',
+    };
+  } else if (t === 'alsace') {
+    return { cra_nom: document.getElementById('cra-nom-input')?.value.trim() || '' };
+  } else if (t === 'lorraine') {
+    return {
+      superviseurs_lorraine: [
+        document.getElementById('sup-lorraine-fleuret')?.value.trim() || '',
+        document.getElementById('sup-lorraine-epee')?.value.trim()    || '',
+        document.getElementById('sup-lorraine-sabre')?.value.trim()   || '',
+      ].filter(Boolean),
+    };
+  }
+  return {};
+}
+
+// Charger la liste d'arbitres au démarrage
+(async () => {
+  try {
+    const res = await fetch('/api/arbitres_liste');
+    const data = await res.json();
+    if (data.noms && data.noms.length) {
+      _peuplerDatalist(data.noms);
+      if (data.fichier_present) {
+        document.getElementById('arbitres-liste-label').textContent =
+          `📋 ${data.noms.length} arbitre(s) en liste`;
+      }
+    }
+  } catch(e) {}
+})();
 
 // ── Drop zone
 const dz    = document.getElementById('dropzone');
@@ -1349,7 +1490,7 @@ async function generer() {
     const res = await fetch('/api/generate', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ titre_long: titreLong, lieu: lieu, comp_type: state.compType })
+      body: JSON.stringify({ titre_long: titreLong, lieu: lieu, comp_type: state.compType, ..._getResponsables() })
     });
 
     if (!res.ok) {
@@ -1450,7 +1591,7 @@ async function ouvrirGmail() {
     const res = await fetch('/api/mail_body', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ titre_long: titreLong, lieu: lieu, comp_type: state.compType })
+      body: JSON.stringify({ titre_long: titreLong, lieu: lieu, comp_type: state.compType, ..._getResponsables() })
     });
     if (!res.ok) {
       let msg = `Erreur ${res.status}`;
@@ -1716,6 +1857,88 @@ function toast(msg, type = 'info') {
   ping();
   setInterval(ping, 10000);
 })();
+
+// ── Sessions sauvegardées
+async function _rafraichirSessions() {
+  const container = document.getElementById('sessions-list');
+  if (!container) return;
+  try {
+    const res = await fetch('/api/sessions');
+    const data = await res.json();
+    const sessions = data.sessions || [];
+    if (!sessions.length) {
+      container.innerHTML = '<div style="font-size:.72rem;color:#6a7390;font-style:italic;">Aucune session sauvegardée</div>';
+      return;
+    }
+    container.innerHTML = sessions.map(s => {
+      const compLabel = {'grand_est':'GE','alsace':'ALS','lorraine':'LOR'}[s.comp_type] || s.comp_type;
+      return `<div style="display:flex;align-items:center;gap:5px;padding:4px 6px;background:#1a2040;border-radius:5px;border:1px solid #2a3050;">
+        <div style="flex:1;min-width:0;">
+          <div style="font-size:.72rem;font-weight:600;color:#c8d0e8;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;"
+               title="${s.titre}">${s.titre}</div>
+          <div style="font-size:.65rem;color:#6a7390;">${compLabel} · ${s.nb_fichiers} fichier(s) · ${s.sauvegarde}</div>
+        </div>
+        <button onclick="_chargerSession('${s.id}')" title="Recharger cette session"
+                style="flex-shrink:0;padding:2px 7px;font-size:.68rem;background:#2563A8;border:none;border-radius:3px;color:#fff;cursor:pointer;">
+          Charger
+        </button>
+        <button onclick="_supprimerSession('${s.id}')" title="Supprimer"
+                style="flex-shrink:0;padding:2px 5px;font-size:.68rem;background:none;border:1px solid #3a4060;border-radius:3px;color:#6a7390;cursor:pointer;">
+          ✕
+        </button>
+      </div>`;
+    }).join('');
+  } catch(e) {
+    container.innerHTML = '<div style="font-size:.72rem;color:#e07070;">Erreur de chargement</div>';
+  }
+}
+
+async function _chargerSession(sessionId) {
+  const res = await fetch('/api/sessions/charger', {
+    method: 'POST',
+    headers: {'Content-Type':'application/json'},
+    body: JSON.stringify({id: sessionId})
+  });
+  const data = await res.json();
+  if (!res.ok || data.error) {
+    alert('Erreur : ' + (data.error || 'chargement impossible'));
+    return;
+  }
+  // Mettre à jour le titre et comp_type
+  if (data.titre) {
+    const titreInput = document.getElementById('titre-long-input');
+    if (titreInput) titreInput.value = data.titre;
+    updateTitrePreview && updateTitrePreview();
+  }
+  if (data.comp_type) {
+    const btn = document.querySelector(`.comp-type-btn[data-type="${data.comp_type}"]`);
+    if (btn) selectCompType(btn);
+  }
+  // Mettre à jour la file-list
+  if (typeof _refreshFileList === 'function') {
+    _refreshFileList(data.added || []);
+  } else if (data.added) {
+    // Fallback : déclencher un appel /api/preview
+    const preview = await fetch('/api/preview');
+    const pdata = await preview.json();
+    if (typeof renderPreview === 'function') renderPreview(pdata);
+  }
+  showToast && showToast(`✅ Session rechargée — ${data.nb} fichier(s)`, 'success');
+}
+
+async function _supprimerSession(sessionId) {
+  if (!confirm('Supprimer cette session sauvegardée ?')) return;
+  await fetch('/api/sessions/supprimer', {
+    method: 'POST',
+    headers: {'Content-Type':'application/json'},
+    body: JSON.stringify({id: sessionId})
+  });
+  _rafraichirSessions();
+}
+
+// Charger les sessions au démarrage
+_rafraichirSessions();
+
 </script>
 </body>
 </html>

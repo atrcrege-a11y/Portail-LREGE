@@ -11,9 +11,35 @@ _SUIVI_FILE = os.path.join(BASE_DIR, ".suivi_ge.pkl")
 
 CONFIRMATIONS_OK = {"oui", "non", "attente"}
 
+# ── Constantes format Excel SelecGE ───────────────────────────────────────────
+# Correspondent exactement aux labels générés par SelecGE/generateur.py
+EXCEL_PREFIX_INDIV   = r"^CL\s+(NAT|GE)\s+\d+"   # ex: "CL NAT 1", "CL GE 3"
+EXCEL_PREFIX_EQUIPE  = r"^N°\s*\d+"                # ex: "N° 1", "N°2"
+EXCEL_PREFIX_COMPO   = r"^\d{1,2}$"                 # ex: "1", "2" (après strip des espaces)
+EXCEL_LABEL_QUALIFIE      = "QUALIFIÉ"
+EXCEL_LABEL_REMPLACANT    = "REMPLAÇANT"
+EXCEL_LABEL_QUALIFIEE_EQ  = "QUALIFIÉE"
+EXCEL_ARMES_MAP = {
+    "FLEURET": "Fleuret",
+    "ÉPÉE": "Épée", "EPEE": "Épée",
+    "SABRE": "Sabre",
+}
+EXCEL_CATS = ["M13", "M15", "M17", "M20", "M23", "SENIORS", "VÉTÉRANS", "VETERANS"]
+
+
+class ExcelParseError(ValueError):
+    """Erreur de parsing Excel SelecGE avec message lisible."""
+    def __init__(self, message, hint=""):
+        super().__init__(message)
+        self.hint = hint
+    def __str__(self):
+        return f"{super().__str__()} — {self.hint}" if self.hint else super().__str__()
+
+
+DB_VERSION = 2
+
 # ── Persistance ───────────────────────────────────────────────────────────────
-_db = {}  # clé : "type|arme|categorie|genre"
-           # type = "indiv" ou "equipe"
+_db = {}  # clé : "type|arme|categorie|genre" — NB: "__version__" est aussi dans _db
 
 
 def _cle(type_, arme, categorie, genre):
@@ -22,10 +48,32 @@ def _cle(type_, arme, categorie, genre):
 
 def _sauvegarder():
     try:
+        _db["__version__"] = DB_VERSION
         with open(_SUIVI_FILE, "wb") as f:
             pickle.dump(_db, f)
     except Exception as e:
         print(f"[SUIVI] Erreur sauvegarde : {e}")
+
+
+def _migrer(db_brut):
+    version = db_brut.get("__version__", 1)
+    if version == DB_VERSION:
+        return db_brut
+    print(f"[SUIVI] Migration base v{version} -> v{DB_VERSION}")
+    migre = {k: v for k, v in db_brut.items() if k != "__version__"}
+    # v1 -> v2 : garantir champs manquants sur tireurs et équipes
+    for cle, session in migre.items():
+        if not isinstance(session, dict):
+            continue
+        for t in session.get("tireurs", []):
+            t.setdefault("note", "")
+            t.setdefault("confirmation_at", None)
+        for eq in session.get("equipes", []):
+            eq.setdefault("note", "")
+            eq.setdefault("confirmation_at", None)
+            eq.setdefault("composition", [])
+    migre["__version__"] = DB_VERSION
+    return migre
 
 
 def _charger():
@@ -33,10 +81,15 @@ def _charger():
     try:
         if os.path.isfile(_SUIVI_FILE):
             with open(_SUIVI_FILE, "rb") as f:
-                _db = pickle.load(f)
+                db_brut = pickle.load(f)
+            _db = _migrer(db_brut)
+            if db_brut.get("__version__", 1) != DB_VERSION:
+                _sauvegarder()
+        else:
+            _db = {"__version__": DB_VERSION}
     except Exception as e:
         print(f"[SUIVI] Erreur chargement : {e}")
-        _db = {}
+        _db = {"__version__": DB_VERSION}
 
 
 def _audit(cle, action, detail=""):
@@ -57,13 +110,13 @@ def _extraire_meta_titre(ws):
     ligne3      = str(rows[2][0] or "").strip() if len(rows) > 2 else ""
 
     arme = categorie = genre = None
-    for a in ["FLEURET", "ÉPÉE", "EPEE", "SABRE"]:
-        if a in ligne3.upper():
-            arme = "Épée" if "P" in a else a.capitalize()
+    for label, val in EXCEL_ARMES_MAP.items():
+        if label in ligne3.upper():
+            arme = val
     for g in ["HOMMES", "DAMES"]:
         if g in ligne3.upper():
             genre = "H" if g == "HOMMES" else "D"
-    for cat in ["M13", "M15", "M17", "M20", "M23", "SENIORS", "VÉTÉRANS", "VETERANS"]:
+    for cat in EXCEL_CATS:
         if cat in ligne3.upper() or cat in competition.upper():
             categorie = cat.replace("VÉTÉRANS", "Vétérans").replace(
                 "VETERANS", "Vétérans").replace("SENIORS", "Seniors")
@@ -99,10 +152,10 @@ def lire_excel_indiv(contenu_bytes):
             val0u = val0.upper()
 
             # Détecter sections
-            if "REMPLAÇANT" in val0u or "REMPLACANT" in val0u:
+            if EXCEL_LABEL_REMPLACANT in val0u or "REMPLACANT" in val0u:
                 section = "remplacant"
                 continue
-            if "QUALIFIÉ" in val0u or "QUALIFIE" in val0u:
+            if EXCEL_LABEL_QUALIFIE in val0u or "QUALIFIE" in val0u:
                 section = "qualifie"
                 continue
             if "Rang / Classement" in val0:
@@ -116,7 +169,7 @@ def lire_excel_indiv(contenu_bytes):
                 continue
 
             # Ligne tireur : col A = "CL NAT X" ou "CL GE X"
-            if re.match(r'^CL\s+(NAT|GE)\s+\d+', val0):
+            if re.match(EXCEL_PREFIX_INDIV, val0):
                 nom    = str(row[1]).strip() if row[1] else ""
                 prenom = str(row[2]).strip() if row[2] else ""
                 club   = str(row[3]).strip() if row[3] else ""
@@ -177,12 +230,12 @@ def lire_excel_equipes(contenu_bytes):
 
             if "Rang / Classement" in val0:
                 continue
-            if "QUALIFIÉE" in val0u or "QUALIFIEE" in val0u:
+            if EXCEL_LABEL_QUALIFIEE_EQ in val0u or "QUALIFIEE" in val0u:
                 section = "qualifiee"
                 continue
 
             # Ligne équipe : col A = "N° X"
-            if re.match(r'^N°\s*\d+', val0):
+            if re.match(EXCEL_PREFIX_EQUIPE, val0):
                 if equipe_courante:
                     equipes.append(equipe_courante)
                 nom_eq  = str(row[1]).strip() if row[1] and str(row[1]).strip() else ""
@@ -203,7 +256,7 @@ def lire_excel_equipes(contenu_bytes):
                 continue
 
             # Ligne composition : col A = "  1", "  2"...
-            if equipe_courante and re.match(r'^\s+\d+$', val0):
+            if equipe_courante and re.match(EXCEL_PREFIX_COMPO, val0):
                 nom_t    = str(row[1]).strip() if row[1] else ""
                 prenom_t = str(row[2]).strip() if row[2] else ""
                 if nom_t and nom_t != "Nom":
@@ -236,6 +289,8 @@ def initialiser_indiv(contenu_bytes):
     for f in feuilles:
         arme, cat, genre = f["arme"], f["categorie"], f["genre"]
         if not all([arme, cat, genre]):
+            manquants = [n for n, v in [("arme", arme), ("catégorie", cat), ("genre", genre)] if not v]
+            print(f"[SUIVI] Feuille ignorée — champs non détectés : {manquants}")
             continue
         cle = _cle("indiv", arme, cat, genre)
 
@@ -287,6 +342,8 @@ def initialiser_equipes(contenu_bytes):
     for f in feuilles:
         arme, cat, genre = f["arme"], f["categorie"], f["genre"]
         if not all([arme, cat, genre]):
+            manquants = [n for n, v in [("arme", arme), ("catégorie", cat), ("genre", genre)] if not v]
+            print(f"[SUIVI] Feuille équipes ignorée — champs non détectés : {manquants}")
             continue
         cle = _cle("equipe", arme, cat, genre)
 
@@ -372,6 +429,8 @@ def importer_retour_equipes(contenu_bytes):
     for f in feuilles:
         arme, cat, genre = f["arme"], f["categorie"], f["genre"]
         if not all([arme, cat, genre]):
+            manquants = [n for n, v in [("arme", arme), ("catégorie", cat), ("genre", genre)] if not v]
+            print(f"[SUIVI] Feuille équipes ignorée — champs non détectés : {manquants}")
             continue
         cle = _cle("equipe", arme, cat, genre)
         if cle not in _db:
@@ -470,6 +529,8 @@ def maj_composition_equipe(arme, categorie, genre, rang, composition):
 def get_tous_suivis():
     res = {}
     for k, v in _db.items():
+        if k == "__version__":
+            continue
         res[k] = {
             "type":       v["type"],
             "arme":       v["arme"],

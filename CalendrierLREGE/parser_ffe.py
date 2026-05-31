@@ -3,6 +3,28 @@ import json
 from datetime import datetime
 import uuid
 
+# ── Constantes colonnes FFE ───────────────────────────────────────────────────
+# Si FFE renomme une colonne, modifier ici uniquement.
+COL_DATE_DEBUT  = 'Date début compétition'
+COL_DATE_FIN    = 'Date fin compétition'
+COL_INTITULE    = 'Intitulé'
+COL_LIEU        = 'Lieu'
+COL_ARME_SEXE   = 'Arme/Sexe'
+COL_CATEGORIE   = 'Catégorie'
+COL_NIVEAU      = 'Niveau'
+COL_STATUT      = 'Statut'
+COL_TYPE_COMP   = 'Type de compétition'
+COL_NUMERO      = 'Numéro'
+COL_PERIMETRE   = 'Périmètre'
+COL_TYPE        = 'Type'
+COL_URL         = 'url'
+
+COLONNES_OBLIGATOIRES = [COL_DATE_DEBUT, COL_INTITULE]
+COLONNES_ATTENDUES    = [COL_DATE_DEBUT, COL_DATE_FIN, COL_INTITULE, COL_LIEU,
+                         COL_ARME_SEXE, COL_CATEGORIE, COL_NIVEAU, COL_PERIMETRE]
+
+JSON_VERSION = 1   # Incrémenter si le schéma d'un événement change
+
 ARME_DECODE = {
     'EPEM':('épée','H'),'EPEF':('épée','D'),'EPEMF':('épée','H+D'),
     'FLEM':('fleuret','H'),'FLEF':('fleuret','D'),'FLEMF':('fleuret','H+D'),
@@ -15,7 +37,9 @@ NIVEAU_MAP = {
     'De Zone':'zone','Régional(e)':'regional','Interrégional':'regional',
     'Départemental(e)':'departemental','Club':'club',
 }
-PERIMETRE_GE = {'Régional','Interrégional'}
+# Périmètres Grand Est — variantes FFE (avec/sans accents, parenthèses)
+PERIMETRE_GE = {'Régional','Interrégional','Régional(e)','Interrégional(e)',
+                'Regional','Interregional'}
 MOTS_GE = ['grand est','lrege','crege']
 
 def parse_date(s):
@@ -24,8 +48,8 @@ def parse_date(s):
     except: return None
 
 def is_grand_est(row):
-    p = str(row.get('Périmètre','') or '').strip()
-    t = str(row.get('Intitulé','') or '').lower()
+    p = str(row.get(COL_PERIMETRE,'') or '').strip()
+    t = str(row.get(COL_INTITULE,'') or '').lower()
     if p in PERIMETRE_GE: return True
     return any(m in t for m in MOTS_GE)
 
@@ -45,37 +69,38 @@ def parse_xlsx(filepath):
     df = pd.read_excel(filepath)
     dedup = {}
     for _, row in df.iterrows():
-        d0 = parse_date(row.get('Date début compétition'))
+        d0 = parse_date(row.get(COL_DATE_DEBUT))
         if not d0: continue
-        intitule_raw = str(row.get('Intitulé','') or '').strip()
-        lieu = str(row.get('Lieu','') or '').strip()
+        intitule_raw = str(row.get(COL_INTITULE,'') or '').strip()
+        lieu = str(row.get(COL_LIEU,'') or '').strip()
         intitule = intitule_raw if intitule_raw.lower() not in ('nan','') else lieu or '—'
         key = (d0, intitule.lower(), lieu.lower())
-        arme, sexe = parse_arme(row.get('Arme/Sexe'))
-        cats = [c.strip() for c in str(row.get('Catégorie','') or '').split(',') if c.strip()]
+        arme, sexe = parse_arme(row.get(COL_ARME_SEXE))
+        cats = [c.strip() for c in str(row.get(COL_CATEGORIE,'') or '').split(',') if c.strip()]
         if key in dedup:
             e = dedup[key]
             if arme and arme not in e['armes']: e['armes'].append(arme)
             for c in cats:
                 if c not in e['categories']: e['categories'].append(c)
         else:
-            niv_raw = str(row.get('Niveau','') or '')
+            niv_raw = str(row.get(COL_NIVEAU,'') or '')
             dedup[key] = {
                 'id': str(uuid.uuid4()), 'source':'ffe', 'manuel':False,
                 'type_evenement': detect_type(intitule),
-                'statut': str(row.get('Statut','') or ''),
+                'statut': str(row.get(COL_STATUT,'') or ''),
                 'date_debut': d0,
                 'date_fin': parse_date(row.get('Date fin compétition')),
-                'type_competition': str(row.get('Type de compétition','') or ''),
+                'type_competition': str(row.get(COL_TYPE_COMP,'') or ''),
                 'niveau': NIVEAU_MAP.get(niv_raw,'autre'), 'niveau_raw': niv_raw,
-                'numero': str(row.get('Numéro','') or ''),
+                'numero': str(row.get(COL_NUMERO,'') or ''),
                 'intitule': intitule, 'lieu': lieu,
-                'perimetre': str(row.get('Périmètre','') or ''),
+                'perimetre': str(row.get(COL_PERIMETRE,'') or ''),
                 'armes': [arme] if arme else [], 'arme': arme, 'sexe': sexe,
                 'categories': cats,
-                'type_epreuve': str(row.get('Type','') or ''),
-                'url': str(row.get('url','') or ''),
+                'type_epreuve': str(row.get(COL_TYPE,'') or ''),
+                'url': str(row.get(COL_URL,'') or ''),
                 'grand_est': is_grand_est(row), 'notes':'',
+                '__version__': JSON_VERSION,
             }
     return sorted(dedup.values(), key=lambda e: e['date_debut'])
 

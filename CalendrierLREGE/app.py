@@ -1,7 +1,7 @@
 from flask import Flask, render_template, request, jsonify, send_file
 import json, os, uuid, io
 from datetime import datetime
-from parser_ffe import parse_xlsx
+from parser_ffe import parse_xlsx, ParseError, JSON_VERSION
 from exports import build_ical, build_excel, build_pdf
 
 app = Flask(__name__)
@@ -10,7 +10,18 @@ DATA_FILE = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'data', 'ca
 
 def load_events():
     if not os.path.exists(DATA_FILE): return []
-    with open(DATA_FILE, encoding='utf-8') as f: return json.load(f)
+    with open(DATA_FILE, encoding='utf-8') as f:
+        events = json.load(f)
+    # Migration : ajouter champs manquants pour compatibilité ascendante
+    for e in events:
+        e.setdefault('notes', '')
+        e.setdefault('manuel', False)
+        e.setdefault('source', 'ffe')
+        e.setdefault('type_evenement', 'competition')
+        e.setdefault('categories', [])
+        e.setdefault('armes', [e.get('arme', '')] if e.get('arme') else [])
+        e.setdefault('__version__', 0)
+    return events
 
 def save_events(events):
     os.makedirs(os.path.dirname(DATA_FILE), exist_ok=True)
@@ -70,29 +81,50 @@ def import_xlsx():
     if 'file' not in request.files: return jsonify({'error':'Aucun fichier'}),400
     f = request.files['file']
     if not f.filename.endswith('.xlsx'): return jsonify({'error':'Format .xlsx attendu'}),400
-    tmp = '/tmp/import_cal.xlsx'; f.save(tmp)
+    import tempfile, os as _os
+    tmp = tempfile.NamedTemporaryFile(suffix='.xlsx', delete=False)
+    tmp.close()
+    f.save(tmp.name)
     try:
-        new_events = parse_xlsx(tmp)
+        new_events = parse_xlsx(tmp.name)
         manuels = [e for e in load_events() if e.get('manuel')]
         merged = new_events + manuels
         merged.sort(key=lambda e: e.get('date_debut',''))
         save_events(merged)
         return jsonify({'success':True,'total':len(merged),'ffe':len(new_events),'manuels':len(manuels)})
+    except ParseError as ex:
+        return jsonify({'error': str(ex.args[0]), 'hint': ex.hint}),400
     except Exception as ex:
         return jsonify({'error':str(ex)}),500
+    finally:
+        try: _os.unlink(tmp.name)
+        except: pass
 
 @app.route('/api/events', methods=['POST'])
 def add_event():
-    data = request.json
+    data = request.json or {}
+    # Validation champs obligatoires
+    date_debut = (data.get('date_debut') or '').strip()
+    intitule   = (data.get('intitule')   or '').strip()
+    if not date_debut:
+        return jsonify({'error': "Le champ 'date_debut' est obligatoire (format AAAA-MM-JJ)"}), 400
+    if not intitule:
+        return jsonify({'error': "Le champ 'intitule' est obligatoire"}), 400
+    # Validation format date
+    try:
+        datetime.strptime(date_debut, '%Y-%m-%d')
+    except ValueError:
+        return jsonify({'error': f"Format date invalide : '{date_debut}' — attendu AAAA-MM-JJ"}), 400
+
     events = load_events()
     e = {
         'id': str(uuid.uuid4()), 'source':'manuel', 'manuel':True,
         'type_evenement': data.get('type_evenement','competition'),
         'statut': data.get('statut','À venir'),
-        'date_debut': data.get('date_debut',''), 'date_fin': data.get('date_fin',''),
+        'date_debut': date_debut, 'date_fin': (data.get('date_fin') or '').strip(),
         'type_competition': '', 'niveau': data.get('niveau','regional'),
         'niveau_raw': data.get('niveau','regional'), 'numero':'',
-        'intitule': data.get('intitule',''), 'lieu': data.get('lieu',''),
+        'intitule': intitule, 'lieu': (data.get('lieu') or '').strip(),
         'perimetre': data.get('perimetre','Régional'),
         'armes': [data.get('arme','')] if data.get('arme') else [],
         'arme': data.get('arme',''), 'sexe': data.get('sexe',''),
@@ -101,6 +133,7 @@ def add_event():
         'url': data.get('url',''),
         'grand_est': data.get('grand_est', True),
         'notes': data.get('notes',''),
+        '__version__': JSON_VERSION,
     }
     events.append(e)
     events.sort(key=lambda x: x.get('date_debut',''))

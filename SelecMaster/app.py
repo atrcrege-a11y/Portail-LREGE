@@ -3,7 +3,7 @@ app.py — SelecMaster : sélection Master Grand Est M11/M13 — Port 5004
 """
 import os
 from flask import Flask, request, jsonify, render_template, send_file
-from parser import parser_html
+from parser import parser_html, ParseurError
 from selection import calculer_selection, enrichir_alertes_m11
 from generateur import generer_excel
 import suivi as suivi_module
@@ -69,8 +69,11 @@ def upload():
 
     try:
         donnees = parser_html(fichier.read())
+    except ParseurError as e:
+        msg = str(e.args[0]) if e.args else str(e)
+        return jsonify({"erreur": msg, "hint": e.hint}), 400
     except Exception as e:
-        return jsonify({"erreur": f"Erreur de lecture : {str(e)}"}), 400
+        return jsonify({"erreur": f"Erreur inattendue : {str(e)}"}), 400
 
     # Vérification cohérence genre
     if donnees.get("genre") and donnees["genre"] != genre:
