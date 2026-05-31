@@ -681,18 +681,32 @@ def importer_arbitres_excel(arme, territoire, contenu_bytes):
             val0 = str(row[0]).strip()
             if "Arbitre" not in val0:
                 continue
-            # Col B = Nom Prénom, Col D = Club, Col E ou F = Niveau
-            nom_prenom = str(row[1]).strip() if row[1] else ""
-            club_arb   = str(row[4]).strip() if len(row) > 4 and row[4] else ""
-            niveau_arb = str(row[5]).strip() if len(row) > 5 and row[5] else ""
+            # Layout réel SelecMaster :
+            #   Col B = Nom  (ou "Nom Prénom" fusionné si feuille Dames)
+            #   Col C = Prénom (None si fusionné)
+            #   Col D = Club
+            #   Col E = Niveau
+            col_b      = str(row[1]).strip() if len(row) > 1 and row[1] else ""
+            col_c      = str(row[2]).strip() if len(row) > 2 and row[2] else ""
+            club_arb   = str(row[3]).strip() if len(row) > 3 and row[3] else ""
+            niveau_arb = str(row[4]).strip() if len(row) > 4 and row[4] else ""
 
-            if "Cliquer" in niveau_arb or not nom_prenom or nom_prenom == "Nom  Prénom":
+            # Nom et prénom séparés (Hommes) ou fusionnés (Dames)
+            if col_c:
+                nom_arb    = col_b
+                prenom_arb = col_c
+            else:
+                parts      = col_b.split(" ", 1)
+                nom_arb    = parts[0]
+                prenom_arb = parts[1] if len(parts) > 1 else ""
+
+            if not nom_arb or nom_arb in ("Nom", "Nom  Prénom"):
                 continue
-            if niveau_arb not in NIVEAUX_ARB_VALS:
+            if "Cliquer" in niveau_arb or niveau_arb not in NIVEAUX_ARB_VALS:
                 niveau_arb = ""
 
             try:
-                a = ajouter_arbitre(arme, nom_prenom, "", niveau_arb, club_arb, territoire)
+                a = ajouter_arbitre(arme, nom_arb, prenom_arb, niveau_arb, club_arb, territoire)
                 importes.append(a)
             except ValueError as e:
                 erreurs.append(str(e))
