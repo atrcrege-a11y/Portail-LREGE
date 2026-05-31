@@ -533,6 +533,7 @@ def get_tous_suivis():
             "nb_terr":    len(v["territoires"]),
         }
         for k, v in _db.items()
+        if not k.startswith("__")
     }
 
 
