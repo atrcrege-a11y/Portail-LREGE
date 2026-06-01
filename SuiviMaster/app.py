@@ -246,6 +246,35 @@ def arbitres_export_pdf():
         return jsonify({"erreur": str(e), "detail": traceback.format_exc()}), 500
 
 
+@app.route("/api/recap")
+def recap():
+    """Récap des confirmés (sélectionnés oui + remplaçants appelés oui) par arme/catégorie/genre."""
+    suivis = sv.get_tous_suivis()
+    result = {}
+    for cle in suivis:
+        arme, categorie = cle.split("|", 1)
+        detail = sv.get_detail(arme, categorie)
+        if not detail:
+            continue
+        entry = {"arme": arme, "categorie": categorie, "H": [], "D": []}
+        for tireurs in detail["territoires"].values():
+            for t in tireurs:
+                confirme = (
+                    (t["statut"] == "selectionne" and t["confirmation"] == "oui") or
+                    (t["statut"] == "remplacant"  and t["appele"]      and t["confirmation"] == "oui")
+                )
+                if confirme:
+                    entry[t["genre"]].append({
+                        "nom":        t["nom"],
+                        "prenom":     t["prenom"],
+                        "club":       t["club"],
+                        "territoire": t["territoire"],
+                        "remplacant": t["statut"] == "remplacant",
+                    })
+        result[cle] = entry
+    return jsonify(result)
+
+
 def generer_pdf_arbitres():
     """Génère le PDF arbitres avec reportlab."""
     from reportlab.lib.pagesizes import A4

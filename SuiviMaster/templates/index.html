@@ -115,6 +115,7 @@ select.conf-sel { font-size: 8pt; padding: 2px 4px; border: 1px solid #ccc; bord
   <button class="nav-btn" data-page="import">📥 Import</button>
   <button class="nav-btn" data-page="suivi" id="nav-suivi">📋 Suivi</button>
   <button class="nav-btn" data-page="arbitres">⚖️ Arbitres</button>
+  <button class="nav-btn" data-page="recap">✅ Récap confirmés</button>
 </div>
 
 <main>
@@ -393,6 +394,14 @@ select.conf-sel { font-size: 8pt; padding: 2px 4px; border: 1px solid #ccc; bord
   </div>
 
 </div>
+<!-- ── Page Récap confirmés ──────────────────────────────────────────────── -->
+<div id="page-recap" class="page">
+  <div class="card">
+    <h2>✅ Récapitulatif des confirmés</h2>
+    <div id="recap-contenu"><p style="color:#888;font-size:9pt">Chargement…</p></div>
+  </div>
+</div>
+
 </main>
 
 <script>
@@ -416,6 +425,7 @@ function afficherPage(page) {
   document.querySelector(`.nav-btn[data-page="${page}"]`)?.classList.add('active');
   if (page === 'accueil') chargerAccueil();
   if (page === 'suivi')   chargerSuivi();
+  if (page === 'recap')   chargerRecap();
 }
 
 document.querySelectorAll('.nav-btn').forEach(b => {
@@ -859,6 +869,80 @@ function exporterPDF() {
 // Charger arbitres quand on arrive sur l'onglet
 document.querySelector('.nav-btn[data-page="arbitres"]')
   ?.addEventListener('click', chargerArbitres);
+// ── Récap confirmés ───────────────────────────────────────────────────────────
+async function chargerRecap() {
+  const div = document.getElementById('recap-contenu');
+  div.innerHTML = '<p style="color:#888;font-size:9pt">Chargement…</p>';
+  try {
+    const data = await (await fetch(API + '/api/recap')).json();
+    const cles = Object.keys(data);
+    if (!cles.length) {
+      div.innerHTML = '<p style="color:#888;font-size:9pt">Aucun suivi actif.</p>';
+      return;
+    }
+
+    const QUOTA = 16;
+
+    let html = '';
+    for (const cle of cles) {
+      const e = data[cle];
+      html += `<div style="margin-bottom:28px">
+        <h3 style="color:#1F3864;font-size:11pt;border-bottom:2px solid #2E75B6;padding-bottom:5px;margin-bottom:12px">
+          ${e.arme} ${e.categorie}
+        </h3>
+        <div style="display:flex;gap:24px;flex-wrap:wrap">`;
+
+      for (const genre of ['H', 'D']) {
+        const label    = genre === 'H' ? 'Hommes' : 'Dames';
+        const tireurs  = e[genre];
+        const n        = tireurs.length;
+        const pct      = Math.round(n / QUOTA * 100);
+        const couleur  = n >= QUOTA ? '#375623' : n >= QUOTA * 0.6 ? '#7F6000' : '#7B0C0C';
+        const bgBarre  = n >= QUOTA ? '#70AD47' : n >= QUOTA * 0.6 ? '#FFD966' : '#FF7C7C';
+
+        html += `<div style="flex:1;min-width:320px;border:1px solid #ddd;border-radius:6px;padding:12px">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+            <strong style="font-size:10pt">${label}</strong>
+            <span style="font-size:10pt;font-weight:bold;color:${couleur}">${n} / ${QUOTA}</span>
+          </div>
+          <div style="background:#eee;border-radius:4px;height:8px;margin-bottom:10px">
+            <div style="background:${bgBarre};width:${Math.min(pct,100)}%;height:8px;border-radius:4px;transition:width .3s"></div>
+          </div>`;
+
+        if (tireurs.length) {
+          html += `<table style="width:100%;border-collapse:collapse;font-size:8.5pt">
+            <thead>
+              <tr style="background:#DEEAF1;color:#1F3864">
+                <th style="padding:4px 6px;text-align:left">Nom</th>
+                <th style="padding:4px 6px;text-align:left">Prénom</th>
+                <th style="padding:4px 6px;text-align:left">Club</th>
+                <th style="padding:4px 6px;text-align:left">Territoire</th>
+              </tr>
+            </thead>
+            <tbody>`;
+          tireurs.forEach((t, i) => {
+            const bg  = i % 2 === 0 ? '#fff' : '#f7f9fc';
+            const rem = t.remplacant ? ' <span style="font-size:7.5pt;color:#843C0C;background:#FCE4D6;padding:1px 5px;border-radius:8px">R</span>' : '';
+            html += `<tr style="background:${bg}">
+              <td style="padding:4px 6px;font-weight:bold">${t.nom}${rem}</td>
+              <td style="padding:4px 6px">${t.prenom}</td>
+              <td style="padding:4px 6px">${t.club}</td>
+              <td style="padding:4px 6px">${t.territoire}</td>
+            </tr>`;
+          });
+          html += `</tbody></table>`;
+        } else {
+          html += `<p style="color:#888;font-size:8.5pt;font-style:italic">Aucun confirmé.</p>`;
+        }
+        html += `</div>`;
+      }
+      html += `</div></div>`;
+    }
+    div.innerHTML = html;
+  } catch(err) {
+    div.innerHTML = `<p class="msg-err">Erreur chargement : ${err.message}</p>`;
+  }
+}
 </script>
 </body>
 </html>
