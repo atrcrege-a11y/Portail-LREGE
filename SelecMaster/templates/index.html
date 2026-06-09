@@ -602,6 +602,8 @@ function cacherErreur() {
 .sv-badge-non     { background:#FFCCCC;color:#7B0C0C;padding:2px 8px;border-radius:10px;font-size:8pt;font-weight:bold }
 .sv-badge-attente { background:#FFF2CC;color:#7F6000;padding:2px 8px;border-radius:10px;font-size:8pt;font-weight:bold }
 .sv-badge-appele  { background:#DEEAF1;color:#1F3864;padding:2px 8px;border-radius:10px;font-size:8pt }
+.sv-badge-m11d    { background:#FFF2CC;color:#7F6000;padding:2px 7px;border-radius:10px;font-size:7.5pt;font-weight:bold;margin-left:5px }
+.sv-badge-m11o    { background:#EBF3FF;color:#1F3864;padding:2px 7px;border-radius:10px;font-size:7.5pt;font-weight:bold;margin-left:5px }
 .sv-stat-box { display:inline-block;padding:8px 16px;border-radius:6px;font-size:9pt;font-weight:bold;margin:4px }
 .sv-progress { background:#eee;border-radius:4px;height:8px;margin:4px 0 }
 .sv-progress-bar { height:8px;border-radius:4px;background:#70AD47;transition:width .3s }
@@ -772,6 +774,11 @@ function svLigneTireur(t, terr, arme, cat) {
     : '<span class="sv-badge-attente">⏳ En attente</span>';
 
   const appele = t.appele ? '<span class="sv-badge-appele">Appelé</span>' : '';
+  const m11 = t.alerte_m11 === 'double'
+    ? '<span class="sv-badge-m11d" title="Double qualification M11 + M13 — choix obligatoire">⚠ M11+M13</span>'
+    : t.alerte_m11 === 'm13only'
+    ? '<span class="sv-badge-m11o" title="M11 autorisé (qualifié M13 uniquement)">Ⓜ M11→M13</span>'
+    : '';
   const isRem  = t.statut === 'remplacant';
   const bg     = isRem ? '#FFF9F0' : (conf === 'non' ? '#FFF0F0' : conf === 'oui' ? '#F5FFF5' : '');
 
@@ -789,7 +796,7 @@ function svLigneTireur(t, terr, arme, cat) {
 
   return `<tr style="background:${bg}">
     <td style="text-align:center">${isRem ? 'R'+t.rang : 'M '+t.rang}</td>
-    <td><b>${t.nom}</b></td>
+    <td><b>${t.nom}</b>${m11}</td>
     <td>${t.prenom}</td>
     <td style="font-size:8pt">${t.club}</td>
     <td style="font-size:8pt">${isRem ? 'Remplaçant '+appele : 'Sélectionné'}</td>

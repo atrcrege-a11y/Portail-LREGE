@@ -332,3 +332,27 @@ class TestSelection:
         }
         r = enrichir_alertes_m11(sel_m13, [])
         assert r["tireurs"][0]["alerte_m11"] is None
+
+
+class TestSuiviAlerteM11:
+    """Le suivi doit conserver alerte_m11 pour l'afficher en M13."""
+
+    def test_initialiser_suivi_conserve_alerte_m11(self):
+        import suivi
+        ARME, CAT, TERR = "TestArme", "M13", "Lorraine"
+        tireurs_h = [
+            {"nom": "MARTIN", "prenom": "Jean", "club": "C1",
+             "statut": "selectionne", "alerte_m11": "double"},
+            {"nom": "DUPONT", "prenom": "Paul", "club": "C2",
+             "statut": "selectionne", "alerte_m11": "m13only"},
+            {"nom": "AINE", "prenom": "X", "club": "C3",
+             "statut": "selectionne", "alerte_m11": None},
+        ]
+        try:
+            suivi.initialiser_suivi(ARME, CAT, TERR, tireurs_h, [])
+            s = suivi.get_suivi(ARME, CAT)
+            alertes = {t["nom"]: t["alerte_m11"]
+                       for t in s["territoires"][TERR]["tireurs"]}
+            assert alertes == {"MARTIN": "double", "DUPONT": "m13only", "AINE": None}
+        finally:
+            suivi.supprimer_suivi(ARME, CAT)
