@@ -13,10 +13,15 @@ def _cle_tireur(t):
 def enrichir_alertes_m11(selection_m13, tireurs_m11):
     cles_m11 = {_cle_tireur(t) for t in tireurs_m11}
     for t in selection_m13["tireurs"]:
-        if not t.get("est_m11_dans_m13"):
+        # Présence dans le classement M11 = double qualification (vérité terrain),
+        # indépendamment de l'année de naissance lue dans le fichier M13.
+        if _cle_tireur(t) in cles_m11:
+            t["alerte_m11"] = "double"
+        elif t.get("est_m11_dans_m13"):
+            # M11 par l'âge mais classé en M13 uniquement.
+            t["alerte_m11"] = "m13only"
+        else:
             t["alerte_m11"] = None
-            continue
-        t["alerte_m11"] = "double" if _cle_tireur(t) in cles_m11 else "m13only"
     return selection_m13
 
 

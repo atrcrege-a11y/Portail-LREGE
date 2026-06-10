@@ -322,6 +322,20 @@ class TestSelection:
         r = enrichir_alertes_m11(sel_m13, tireurs_m11)
         assert r["tireurs"][0]["alerte_m11"] == "m13only"
 
+    def test_enrichir_double_meme_si_annee_non_detectee(self):
+        # FLESCH : présente dans le classement M11 mais est_m11_dans_m13=False
+        # (année non lue). La présence M11 doit suffire à marquer "double".
+        from selection import enrichir_alertes_m11
+        sel_m13 = {
+            "tireurs": [
+                {"nom": "FLESCH", "prenom": "Mathilde", "est_m11_dans_m13": False,
+                 "alerte_m11": None},
+            ]
+        }
+        tireurs_m11 = [{"nom": "FLESCH", "prenom": "Mathilde"}]
+        r = enrichir_alertes_m11(sel_m13, tireurs_m11)
+        assert r["tireurs"][0]["alerte_m11"] == "double"
+
     def test_enrichir_alertes_non_m11_reste_none(self):
         from selection import enrichir_alertes_m11
         sel_m13 = {
