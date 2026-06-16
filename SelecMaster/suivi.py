@@ -522,5 +522,39 @@ def get_stats(arme, categorie):
     return stats
 
 
+def rafraichir_alertes_m11(arme, categorie, noms_m11_par_genre, flag_m13_par_genre):
+    """
+    Recalcule alerte_m11 des tireurs d'un suivi DÉJÀ créé, à partir des données
+    déjà importées (cache), SANS réimport.
+      noms_m11_par_genre : {"H": set((NOM, PRENOM)), "D": set(...)} présents au classement M11
+      flag_m13_par_genre : {"H": {(NOM, PRENOM): bool}, "D": {...}} est_m11_dans_m13
+    Présence dans le classement M11 → "double" ; sinon M11 par l'âge → "m13only" ; sinon None.
+    Retourne {"ok": True, "modifications": n} ou {"erreur": "..."}.
+    """
+    cle = _cle(arme, categorie)
+    if cle not in _suivi:
+        return {"erreur": f"Aucun suivi pour {arme} {categorie}"}
+
+    modifs = 0
+    for territoire, td in _suivi[cle]["territoires"].items():
+        for t in td["tireurs"]:
+            g = t["genre"]
+            key = (t["nom"].strip().upper(), t["prenom"].strip().upper())
+            if key in noms_m11_par_genre.get(g, set()):
+                nouvelle = "double"
+            elif flag_m13_par_genre.get(g, {}).get(key, False):
+                nouvelle = "m13only"
+            else:
+                nouvelle = None
+            if t.get("alerte_m11") != nouvelle:
+                t["alerte_m11"] = nouvelle
+                modifs += 1
+
+    _suivi[cle]["updated_at"] = datetime.datetime.now()
+    _audit(cle, "RAFRAICHIR_M11", f"{modifs} alerte(s) M11 recalculée(s) depuis le cache")
+    _sauvegarder()
+    return {"ok": True, "modifications": modifs}
+
+
 # Chargement au démarrage
 _charger()

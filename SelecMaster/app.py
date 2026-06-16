@@ -266,6 +266,35 @@ def suivi_detail(arme, categorie):
     return jsonify(s2)
 
 
+@app.route("/api/suivi/<arme>/<categorie>/rafraichir_alertes", methods=["POST"])
+def suivi_rafraichir_alertes(arme, categorie):
+    """Recalcule alerte_m11 du suivi depuis le cache courant, sans réimport."""
+    arme = arme.replace("_", " ").replace("Epee", "Épée")
+    sel_m11 = {"H": _cache.get("H_M11"), "D": _cache.get("D_M11")}
+    sel_m13 = {"H": _cache.get(f"H_{categorie}"), "D": _cache.get(f"D_{categorie}")}
+
+    # Garde-fou : ne rien écraser si le cache ne correspond pas à l'arme du suivi
+    armes_cache = {s.get("arme") for s in list(sel_m11.values()) + list(sel_m13.values()) if s}
+    if not armes_cache:
+        return jsonify({"erreur": "Aucun classement en cache — réimportez les fichiers."}), 400
+    if arme not in armes_cache:
+        return jsonify({"erreur": f"Le cache contient {sorted(armes_cache)}, pas « {arme} ». "
+                                  f"Importez l'arme voulue avant de rafraîchir."}), 400
+
+    noms_m11 = {
+        g: {(t["nom"].strip().upper(), t["prenom"].strip().upper())
+            for t in (sel_m11[g]["tireurs"] if sel_m11[g] else [])}
+        for g in ("H", "D")
+    }
+    flag_m13 = {
+        g: {(t["nom"].strip().upper(), t["prenom"].strip().upper()): bool(t.get("est_m11_dans_m13"))
+            for t in (sel_m13[g]["tireurs"] if sel_m13[g] else [])}
+        for g in ("H", "D")
+    }
+    res = suivi_module.rafraichir_alertes_m11(arme, categorie, noms_m11, flag_m13)
+    return jsonify(res), (200 if res.get("ok") else 404)
+
+
 @app.route("/api/suivi/<arme>/<categorie>/confirmation", methods=["POST"])
 def suivi_confirmation(arme, categorie):
     arme = arme.replace("_", " ").replace("Epee", "Épée")

@@ -144,6 +144,22 @@ def supprimer(arme, categorie):
     return jsonify({"ok": True})
 
 
+@app.route("/api/suivi/<arme>/<categorie>/export_pdf")
+def suivi_export_pdf(arme, categorie):
+    arme = _decode_arme(arme)
+    try:
+        pdf = generer_pdf_suivi(arme, categorie)
+        import io as _io
+        buf = _io.BytesIO(pdf); buf.seek(0)
+        nom = f"Suivi_{arme}_{categorie}.pdf".replace(" ", "_")
+        return send_file(buf, as_attachment=True, download_name=nom,
+                         mimetype="application/pdf")
+    except ValueError as e:
+        return jsonify({"erreur": str(e)}), 404
+    except Exception as e:
+        return jsonify({"erreur": str(e), "detail": traceback.format_exc()}), 500
+
+
 # ── Helper ────────────────────────────────────────────────────────────────────
 
 def _decode_arme(arme):
@@ -196,6 +212,22 @@ def arbitres_statut(arme, arb_id):
     try:
         sv.maj_statut_arbitre(arme, arb_id, d.get("statut", ""), d.get("note", ""))
         return jsonify({"ok": True})
+    except (ValueError, KeyError) as e:
+        return jsonify({"erreur": str(e)}), 400
+
+
+@app.route("/api/arbitres/<arme>/<arb_id>/modifier", methods=["POST"])
+def arbitres_modifier(arme, arb_id):
+    arme = _decode_arme(arme)
+    d = request.get_json() or {}
+    try:
+        a = sv.modifier_arbitre(
+            arme, arb_id,
+            nom=d.get("nom"), prenom=d.get("prenom"), niveau=d.get("niveau"),
+            club=d.get("club"), territoire=d.get("territoire"), note=d.get("note")
+        )
+        return jsonify({"ok": True, "arbitre": {k: a[k] for k in
+            ("id", "nom", "prenom", "niveau", "club", "territoire", "note", "statut")}})
     except (ValueError, KeyError) as e:
         return jsonify({"erreur": str(e)}), 400
 
@@ -273,6 +305,148 @@ def recap():
                     })
         result[cle] = entry
     return jsonify(result)
+
+
+def generer_pdf_suivi(arme, categorie):
+    """PDF du suivi des confirmations pour une arme/catégorie."""
+    from reportlab.lib.pagesizes import A4
+    from reportlab.lib import colors
+    from reportlab.lib.units import cm
+    from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Paragraph, Spacer
+    from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
+    import io as _io, datetime as _dt
+
+    stats  = sv.get_stats(arme, categorie)
+    detail = sv.get_detail(arme, categorie)
+    if not stats or not detail:
+        raise ValueError(f"Aucun suivi pour {arme} {categorie}")
+
+    buf = _io.BytesIO()
+    doc = SimpleDocTemplate(buf, pagesize=A4, leftMargin=1.5*cm, rightMargin=1.5*cm,
+                            topMargin=1.5*cm, bottomMargin=1.5*cm)
+    styles = getSampleStyleSheet()
+    story  = []
+
+    C_OUI  = colors.HexColor("#E2EFDA"); C_NON = colors.HexColor("#FFCCCC")
+    C_ATT  = colors.HexColor("#FFF2CC"); C_HEAD = colors.HexColor("#1F3864")
+    COULEURS_ARME = {"Épée": colors.HexColor("#1E6B3A"),
+                     "Fleuret": colors.HexColor("#1B3F7A"),
+                     "Sabre": colors.HexColor("#7B0C0C")}
+    coul_arme = COULEURS_ARME.get(arme, C_HEAD)
+
+    titre_style = ParagraphStyle("titre", parent=styles["Title"], fontSize=16,
+                                 spaceAfter=4, textColor=C_HEAD)
+    sous_style  = ParagraphStyle("sous", parent=styles["Normal"], fontSize=9,
+                                 spaceAfter=10, textColor=colors.grey)
+    terr_style  = ParagraphStyle("terr", parent=styles["Normal"], fontSize=11,
+                                 textColor=colors.white, fontName="Helvetica-Bold")
+    cell        = ParagraphStyle("cell", parent=styles["Normal"], fontSize=8)
+
+    story.append(Paragraph("LREGE Grand Est — Master M11/M13", titre_style))
+    story.append(Paragraph(
+        f"Suivi des confirmations — {arme} {categorie} · "
+        f"Généré le {_dt.date.today().strftime('%d/%m/%Y')} · "
+        f"Dernière maj {stats['updated_at']}", sous_style))
+
+    t = stats["total"]
+    resume = [[Paragraph(
+        f"Sélectionnés : {t['sel']}  |  Oui : {t['oui']}  |  Non : {t['non']}  |  "
+        f"Attente : {t['attente']}  |  Remplaçants appelés : {t['rem_appeles']}",
+        ParagraphStyle("r", parent=styles["Normal"], fontSize=10, textColor=C_HEAD))]]
+    rt = Table(resume, colWidths=[17*cm])
+    rt.setStyle(TableStyle([("BACKGROUND", (0,0), (-1,-1), colors.HexColor("#DEEAF1")),
+                            ("BOX", (0,0), (-1,-1), 0.5, colors.HexColor("#2E75B6")),
+                            ("TOPPADDING", (0,0), (-1,-1), 6),
+                            ("BOTTOMPADDING", (0,0), (-1,-1), 6),
+                            ("LEFTPADDING", (0,0), (-1,-1), 8)]))
+    story.append(rt); story.append(Spacer(1, 0.3*cm))
+
+    C_ROW = {"oui": colors.HexColor("#F0FFF0"), "non": colors.HexColor("#FFF0F0"),
+             "attente": colors.HexColor("#FFFFF0")}
+    C_REM = colors.HexColor("#FAFAFA")
+    C_BADGE_BG = {"oui": colors.HexColor("#E2EFDA"), "non": colors.HexColor("#FFCCCC"),
+                  "attente": colors.HexColor("#FFF2CC")}
+    C_BADGE_TX = {"oui": colors.HexColor("#375623"), "non": colors.HexColor("#7B0C0C"),
+                  "attente": colors.HexColor("#7F6000")}
+    CONF_LABEL = {"oui": "Oui", "non": "Non", "attente": "En attente"}
+    SEP = colors.HexColor("#F0F4F9")
+    terr_title = ParagraphStyle("tt", parent=styles["Normal"], fontSize=10.5,
+                                textColor=C_HEAD, fontName="Helvetica-Bold",
+                                spaceBefore=10, spaceAfter=3)
+    genre_style = ParagraphStyle("g", parent=styles["Normal"], fontSize=9.5,
+                                 textColor=colors.HexColor("#2E75B6"),
+                                 fontName="Helvetica-Bold", spaceBefore=6, spaceAfter=2)
+    ORDRE = ["Lorraine", "Alsace", "Champagne-Ardenne"]
+    terrs = [x for x in ORDRE if x in detail["territoires"]] + \
+            [x for x in detail["territoires"] if x not in ORDRE]
+
+    for terr in terrs:
+        tireurs = detail["territoires"].get(terr) or []
+        if not tireurs:
+            continue
+        story.append(Paragraph(terr, terr_title))
+        for genre in ("H", "D"):
+            gl = "Hommes" if genre == "H" else "Dames"
+            sel  = sorted([t for t in tireurs if t["genre"] == genre and t["statut"] == "selectionne"],
+                          key=lambda t: t.get("rang", 0))
+            rems = sorted([t for t in tireurs if t["genre"] == genre and t["statut"] == "remplacant"],
+                          key=lambda t: t.get("rang", 0))
+            if not sel and not rems:
+                continue
+            story.append(Paragraph(gl, genre_style))
+            rows = [["Rang", "Nom", "Prénom", "Club", "Confirmation"]]
+            cmds = []
+            for tr in sel:
+                conf = tr["confirmation"]
+                rows.append([f"M {tr.get('rang','')}",
+                             Paragraph(f"<b>{tr.get('nom','')}</b>", cell),
+                             Paragraph(tr.get("prenom", ""), cell),
+                             Paragraph(tr.get("club", ""), cell),
+                             CONF_LABEL.get(conf, conf)])
+                r = len(rows) - 1
+                cmds += [("BACKGROUND", (0,r), (-1,r), C_ROW.get(conf, colors.white)),
+                         ("BACKGROUND", (4,r), (4,r), C_BADGE_BG.get(conf, colors.white)),
+                         ("TEXTCOLOR", (4,r), (4,r), C_BADGE_TX.get(conf, colors.black)),
+                         ("FONTNAME", (4,r), (4,r), "Helvetica-Bold")]
+            if rems:
+                rows.append(["Remplaçants", "", "", "", ""])
+                r = len(rows) - 1
+                cmds += [("SPAN", (0,r), (-1,r)),
+                         ("BACKGROUND", (0,r), (-1,r), SEP),
+                         ("FONTNAME", (0,r), (-1,r), "Helvetica-Oblique"),
+                         ("TEXTCOLOR", (0,r), (-1,r), colors.HexColor("#555555"))]
+                for tr in rems:
+                    conf = tr["confirmation"]
+                    club = tr.get("club", "")
+                    if tr.get("appele"):
+                        club += '  <font color="#1F3864"><b>[Appelé]</b></font>'
+                    rows.append([f"R{tr.get('rang','')}",
+                                 Paragraph(f"<b>{tr.get('nom','')}</b>", cell),
+                                 Paragraph(tr.get("prenom", ""), cell),
+                                 Paragraph(club, cell),
+                                 CONF_LABEL.get(conf, conf)])
+                    r = len(rows) - 1
+                    cmds += [("BACKGROUND", (0,r), (-1,r), C_REM),
+                             ("BACKGROUND", (4,r), (4,r), C_BADGE_BG.get(conf, colors.white)),
+                             ("TEXTCOLOR", (4,r), (4,r), C_BADGE_TX.get(conf, colors.black)),
+                             ("FONTNAME", (4,r), (4,r), "Helvetica-Bold")]
+            tbl = Table(rows, colWidths=[1.6*cm, 4*cm, 3.4*cm, 5*cm, 3*cm], repeatRows=1)
+            tbl.setStyle(TableStyle([
+                ("BACKGROUND", (0,0), (-1,0), C_HEAD),
+                ("TEXTCOLOR", (0,0), (-1,0), colors.white),
+                ("FONTNAME", (0,0), (-1,0), "Helvetica-Bold"),
+                ("FONTSIZE", (0,0), (-1,-1), 8.5),
+                ("GRID", (0,0), (-1,-1), 0.3, colors.HexColor("#CCCCCC")),
+                ("VALIGN", (0,0), (-1,-1), "MIDDLE"),
+                ("ALIGN", (0,0), (0,-1), "CENTER"),
+                ("ALIGN", (4,0), (4,-1), "CENTER"),
+                ("TOPPADDING", (0,0), (-1,-1), 3),
+                ("BOTTOMPADDING", (0,0), (-1,-1), 3),
+            ] + cmds))
+            story.append(tbl); story.append(Spacer(1, 0.2*cm))
+
+    doc.build(story)
+    return buf.getvalue()
 
 
 def generer_pdf_arbitres():

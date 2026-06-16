@@ -528,6 +528,9 @@ function cacherErreur() {
         <button class="btn btn-primary" onclick="svInitDepuisCache()" title="Initialise le suivi depuis les fichiers importés dans l'onglet Import">
           ↻ Init depuis import
         </button>
+        <button class="btn btn-primary" onclick="svRafraichirAlertes()" title="Recalcule les alertes M11 du suivi à partir des fichiers déjà importés, sans réimport">
+          🔄 Rafraîchir alertes M11
+        </button>
         <button class="btn btn-danger" onclick="svSupprimer()" style="flex:0">🗑</button>
       </div>
     </div>
@@ -950,6 +953,16 @@ async function svInitDepuisCache() {
     method:'POST', headers:{'Content-Type':'application/json'},
     body: JSON.stringify({arme, categorie:cat, territoire, territoire_organisateur: document.getElementById('sel-orga')?.value || ''})
   });
+  const d = await r.json();
+  if (d.erreur) { svErreur(d.erreur); return; }
+  svCharger();
+}
+
+async function svRafraichirAlertes() {
+  const arme = document.getElementById('sv-arme').value;
+  const cat  = document.getElementById('sv-cat').value;
+  if (!arme || !cat) { svErreur('Sélectionnez une arme et une catégorie'); return; }
+  const r = await fetch(`${API}/api/suivi/${encodeURIComponent(arme)}/${cat}/rafraichir_alertes`, {method:'POST'});
   const d = await r.json();
   if (d.erreur) { svErreur(d.erreur); return; }
   svCharger();

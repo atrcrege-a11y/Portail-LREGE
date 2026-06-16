@@ -370,3 +370,26 @@ class TestSuiviAlerteM11:
             assert alertes == {"MARTIN": "double", "DUPONT": "m13only", "AINE": None}
         finally:
             suivi.supprimer_suivi(ARME, CAT)
+
+    def test_rafraichir_alertes_m11_sans_reimport(self):
+        # Suivi déjà créé sans alerte ; rafraîchir depuis le cache la pose.
+        import suivi
+        ARME, CAT, TERR = "TestArme", "M13", "Alsace"
+        tireurs_d = [
+            {"nom": "FLESCH", "prenom": "Mathilde", "club": "C1",
+             "statut": "selectionne", "alerte_m11": None},
+            {"nom": "AINE", "prenom": "X", "club": "C2",
+             "statut": "selectionne", "alerte_m11": None},
+        ]
+        try:
+            suivi.initialiser_suivi(ARME, CAT, TERR, [], tireurs_d)
+            noms_m11 = {"D": {("FLESCH", "MATHILDE")}, "H": set()}
+            flag_m13 = {"D": {}, "H": {}}
+            res = suivi.rafraichir_alertes_m11(ARME, CAT, noms_m11, flag_m13)
+            s = suivi.get_suivi(ARME, CAT)
+            alertes = {t["nom"]: t["alerte_m11"]
+                       for t in s["territoires"][TERR]["tireurs"]}
+            assert alertes == {"FLESCH": "double", "AINE": None}
+            assert res["modifications"] == 1
+        finally:
+            suivi.supprimer_suivi(ARME, CAT)

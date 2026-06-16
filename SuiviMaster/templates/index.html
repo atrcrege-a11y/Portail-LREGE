@@ -243,7 +243,8 @@ select.conf-sel { font-size: 8pt; padding: 2px 4px; border: 1px solid #ccc; bord
           <option value="M13">M13</option>
         </select>
       </div>
-      <div style="display:flex;align-items:flex-end">
+      <div style="display:flex;align-items:flex-end;gap:8px">
+        <button class="btn btn-success btn-sm" onclick="exporterSuiviPDF()">📄 Exporter PDF</button>
         <button class="btn btn-danger btn-sm" onclick="supprimerSuivi()">🗑 Supprimer</button>
       </div>
     </div>
@@ -759,6 +760,7 @@ function renderArbListe(groupes) {
   const div = document.getElementById('arb-liste');
   const COULEURS = {Épée:'#1E6B3A', Fleuret:'#1B3F7A', Sabre:'#7B0C0C'};
   let html = '';
+  window.ARB_DATA = {};
 
   for (const arme of ['Épée','Fleuret','Sabre']) {
     const arbs = groupes[arme];
@@ -769,6 +771,7 @@ function renderArbListe(groupes) {
     html += '<table class="tbl"><thead><tr><th>Nom</th><th>Prénom</th><th>Niveau</th><th>Club</th><th>Territoire</th><th>Statut</th><th>Note</th><th>Actions</th></tr></thead><tbody>';
 
     for (const a of arbs) {
+      window.ARB_DATA[arme + '|' + a.id] = a;
       const bg = a.statut === 'retenu' ? '#E2EFDA' : a.statut === 'libere' ? '#FFCCCC' : '#FFF2CC';
       const badgeSt = a.statut === 'retenu'
         ? '<span class="badge b-oui">✓ Retenu</span>'
@@ -777,7 +780,7 @@ function renderArbListe(groupes) {
         : '<span class="badge b-attente">⏳ Proposé</span>';
 
       const armeEnc = encodeURIComponent(arme);
-      html += `<tr style="background:${bg}">
+      html += `<tr id="arbrow-${armeEnc}-${a.id}" style="background:${bg}">
         <td><b>${a.nom}</b></td>
         <td>${a.prenom}</td>
         <td style="font-size:8pt">${a.niveau || '—'}</td>
@@ -791,6 +794,7 @@ function renderArbListe(groupes) {
             <option value="retenu"   ${a.statut==='retenu'  ?'selected':''}>✓ Retenu</option>
             <option value="libere"   ${a.statut==='libere'  ?'selected':''}>✗ Libéré</option>
           </select>
+          <button class="btn btn-primary btn-sm" onclick="editerArbitre('${armeEnc}','${a.id}')">✏️</button>
           <button class="btn btn-danger btn-sm" style="margin-left:4px" onclick="supprimerArb('${armeEnc}','${a.id}')">🗑</button>
         </td>
       </tr>`;
@@ -842,6 +846,47 @@ async function supprimerArb(arme, id) {
   chargerArbitres();
 }
 
+function editerArbitre(armeEnc, id) {
+  const arme = decodeURIComponent(armeEnc);
+  const a = (window.ARB_DATA || {})[arme + '|' + id];
+  const row = document.getElementById(`arbrow-${armeEnc}-${id}`);
+  if (!a || !row) return;
+  const esc = s => (s == null ? '' : String(s)).replace(/"/g, '&quot;');
+  const st = 'width:100%;padding:3px 4px;border:1px solid #2E75B6;border-radius:3px;font-size:8pt;font-family:Verdana,sans-serif';
+  const NIV = ['Formation Régionale','Régionale','Formation Nationale','National','International'];
+  const TER = ['Alsace','Champagne-Ardenne','Lorraine'];
+  const opts = (vals, cur) => '<option value="">—</option>' +
+    vals.map(v => `<option ${v === cur ? 'selected' : ''}>${v}</option>`).join('');
+  row.innerHTML = `
+    <td><input id="edit-nom" value="${esc(a.nom)}" style="${st}"></td>
+    <td><input id="edit-prenom" value="${esc(a.prenom)}" style="${st}"></td>
+    <td><select id="edit-niveau" style="${st}">${opts(NIV, a.niveau)}</select></td>
+    <td><input id="edit-club" value="${esc(a.club)}" style="${st}"></td>
+    <td><select id="edit-territoire" style="${st}">${opts(TER, a.territoire)}</select></td>
+    <td style="font-size:8pt;color:#888">${a.statut}</td>
+    <td><input id="edit-note" value="${esc(a.note)}" style="${st}"></td>
+    <td style="white-space:nowrap">
+      <button class="btn btn-primary btn-sm" onclick="enregistrerArbitre('${armeEnc}','${id}')">💾</button>
+      <button class="btn btn-sm" style="margin-left:4px" onclick="chargerArbitres()">✖</button>
+    </td>`;
+}
+
+async function enregistrerArbitre(armeEnc, id) {
+  const row = document.getElementById(`arbrow-${armeEnc}-${id}`);
+  if (!row) return;
+  const v = sel => { const e = row.querySelector(sel); return e ? e.value : ''; };
+  const body = {
+    nom: v('#edit-nom'), prenom: v('#edit-prenom'), niveau: v('#edit-niveau'),
+    club: v('#edit-club'), territoire: v('#edit-territoire'), note: v('#edit-note')
+  };
+  const r = await fetch(`${API}/api/arbitres/${armeEnc}/${id}/modifier`, {
+    method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(body)
+  });
+  const d = await r.json();
+  if (d.erreur) { alert('⚠ ' + d.erreur); return; }
+  chargerArbitres();
+}
+
 async function importerArbitresExcel() {
   const arme  = document.getElementById('arb-imp-arme').value;
   const terr  = document.getElementById('arb-imp-territoire').value;
@@ -864,6 +909,16 @@ async function importerArbitresExcel() {
 
 function exporterPDF() {
   window.open(`${API}/api/arbitres/export_pdf`, '_blank');
+}
+
+function exporterSuiviPDF() {
+  const arme = document.getElementById('sv-arme').value;
+  const cat  = document.getElementById('sv-cat').value;
+  if (!arme || !cat) { alert('Sélectionnez une arme et une catégorie'); return; }
+  if (document.getElementById('sv-contenu').style.display === 'none') {
+    alert('Aucun suivi chargé pour cette arme / catégorie'); return;
+  }
+  window.open(`${API}/api/suivi/${encodeURIComponent(arme)}/${cat}/export_pdf`, '_blank');
 }
 
 // Charger arbitres quand on arrive sur l'onglet

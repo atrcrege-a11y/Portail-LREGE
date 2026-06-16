@@ -661,6 +661,32 @@ def supprimer_arbitre(arme, arb_id):
     _sauvegarder_arb()
 
 
+def modifier_arbitre(arme, arb_id, nom=None, prenom=None, niveau=None,
+                     club=None, territoire=None, note=None):
+    """
+    Modifie les champs d'un arbitre existant SANS suppression/réajout.
+    Seuls les champs passés (non None) sont mis à jour. Le statut n'est pas touché.
+    """
+    _valider_arme(arme)
+    if niveau is not None and niveau and niveau not in NIVEAUX_ARB_VALS:
+        raise ValueError(f"Niveau invalide : {niveau}")
+    for a in _arbitres.get(arme, []):
+        if a["id"] == arb_id:
+            if nom is not None:
+                if not nom.strip():
+                    raise ValueError("Le nom est obligatoire")
+                a["nom"] = nom.strip()
+            if prenom is not None:     a["prenom"] = prenom.strip()
+            if niveau is not None:     a["niveau"] = niveau
+            if club is not None:       a["club"] = club.strip()
+            if territoire is not None: a["territoire"] = territoire
+            if note is not None:       a["note"] = note
+            a["updated_at"] = datetime.datetime.now()
+            _sauvegarder_arb()
+            return a
+    raise KeyError(f"Arbitre {arb_id} introuvable pour {arme}")
+
+
 def importer_arbitres_excel(arme, territoire, contenu_bytes):
     """
     Importe les arbitres depuis un Excel SelecMaster retourné.
