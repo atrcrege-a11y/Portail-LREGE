@@ -515,9 +515,8 @@ def generer_pdf_arbitres():
         story.append(arme_tbl)
         story.append(Spacer(1, 0.2*cm))
 
-        # En-tête colonnes
-        headers = ["Nom", "Prénom", "Niveau", "Club", "Territoire", "Statut"]
-        col_w   = [3.5*cm, 3*cm, 3.5*cm, 3*cm, 2.5*cm, 2*cm]
+        STATUT_LABEL = {"retenu": "Retenu", "libere": "Libéré", "propose": "Proposé"}
+        cell_p = ParagraphStyle("cellarb", parent=styles["Normal"], fontSize=8, leading=9)
 
         for statut_label, statut_cle, bg in [
             ("✓ RETENUS",  "retenu",  C_RETENU),
@@ -530,12 +529,31 @@ def generer_pdf_arbitres():
 
             story.append(Paragraph(f"{statut_label} ({len(groupe)})", section_style))
 
-            rows = [headers] + [
-                [a["nom"], a["prenom"], a["niveau"] or "—",
-                 a["club"] or "—", a["territoire"] or "—",
-                 a["note"] or ""]
-                for a in groupe
-            ]
+            # Colonne Note affichée seulement si au moins un arbitre a une note
+            avec_note = any((a.get("note") or "").strip() for a in groupe)
+            st_txt = STATUT_LABEL.get(statut_cle, statut_cle)
+
+            if avec_note:
+                headers = ["Nom", "Prénom", "Niveau", "Club", "Territoire", "Statut", "Note"]
+                col_w   = [2.8*cm, 2.3*cm, 2.9*cm, 2.6*cm, 2.5*cm, 1.8*cm, 2.1*cm]
+            else:
+                headers = ["Nom", "Prénom", "Niveau", "Club", "Territoire", "Statut"]
+                col_w   = [3.2*cm, 2.6*cm, 3.3*cm, 3.0*cm, 2.9*cm, 2.0*cm]
+
+            rows = [headers]
+            for a in groupe:
+                ligne = [
+                    Paragraph(f"<b>{a['nom']}</b>", cell_p),
+                    Paragraph(a["prenom"] or "", cell_p),
+                    Paragraph(a["niveau"] or "—", cell_p),
+                    Paragraph(a["club"] or "—", cell_p),
+                    Paragraph(a["territoire"] or "—", cell_p),
+                    st_txt,
+                ]
+                if avec_note:
+                    ligne.append(Paragraph(a.get("note") or "", cell_p))
+                rows.append(ligne)
+
             tbl = Table(rows, colWidths=col_w, repeatRows=1)
             tbl.setStyle(TableStyle([
                 ("BACKGROUND",    (0, 0), (-1, 0), colors.HexColor("#DEEAF1")),
@@ -544,6 +562,7 @@ def generer_pdf_arbitres():
                 ("FONTSIZE",      (0, 0), (-1, -1), 8),
                 ("BACKGROUND",    (0, 1), (-1, -1), bg),
                 ("GRID",          (0, 0), (-1, -1), 0.5, colors.HexColor("#CCCCCC")),
+                ("VALIGN",        (0, 0), (-1, -1), "MIDDLE"),
                 ("TOPPADDING",    (0, 0), (-1, -1), 3),
                 ("BOTTOMPADDING", (0, 0), (-1, -1), 3),
                 ("LEFTPADDING",   (0, 0), (-1, -1), 5),
