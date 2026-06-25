@@ -132,6 +132,17 @@ select.conf-sel { font-size: 8pt; padding: 2px 4px; border: 1px solid #ccc; bord
 <!-- ══ IMPORT ══ -->
 <div id="page-import" class="page">
   <div class="card">
+    <h2>🌐 Charger depuis la plateforme (en ligne)</h2>
+    <p style="font-size:8.5pt;color:#555;margin-bottom:12px">Récupère les confirmations saisies en ligne par les clubs (individuel). Laisser vide pour utiliser la configuration serveur.</p>
+    <div class="form-row">
+      <div><label>URL plateforme (optionnel)</label><input type="text" id="pf-url" placeholder="https://atrcrege.pythonanywhere.com"></div>
+      <div><label>Token (optionnel)</label><input type="password" id="pf-token" placeholder="ADMIN_TOKEN"></div>
+    </div>
+    <div class="actions"><button class="btn btn-success" onclick="chargerPlateforme()">🌐 Charger</button></div>
+    <div id="pf-msg"></div>
+  </div>
+
+  <div class="card">
     <h2>📥 Import Excel SelecGE — Individuel</h2>
     <p style="font-size:8.5pt;color:#555;margin-bottom:12px">Importez un Excel individuel (feuilles Hommes/Dames). Les deux genres sont détectés automatiquement.</p>
     <div class="form-row">
@@ -317,6 +328,21 @@ async function importerFichier(inputId, url, msgId) {
     }
     chargerAccueil();
   }
+}
+
+async function chargerPlateforme() {
+  const el=document.getElementById('pf-msg');
+  const url=document.getElementById('pf-url').value.trim();
+  const token=document.getElementById('pf-token').value.trim();
+  el.className=''; el.textContent='⏳ Chargement…';
+  try {
+    const r=await fetch(API+'/api/import/plateforme',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({url,token})});
+    const d=await r.json();
+    if (d.erreur) { el.className='msg-err'; el.textContent='⚠ '+d.erreur; return; }
+    el.className='msg-ok';
+    el.textContent=`✓ ${d.nb_competitions} compétition(s), ${d.nb_tireurs} tireur(s) — ${(d.cles||[]).join(' / ')}`;
+    chargerAccueil();
+  } catch(e){ el.className='msg-err'; el.textContent='⚠ '+e.message; }
 }
 
 const importerIndiv        = () => importerFichier('imp-indiv-f',  '/api/import/indiv',         'imp-indiv-msg');

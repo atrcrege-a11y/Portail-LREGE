@@ -198,3 +198,36 @@ class TestInitialiser:
         cles = suivi.initialiser_equipes(xlsx)
         assert len(cles) >= 1
         assert any("equipe" in c for c in cles)
+
+
+# ── Pont plateforme (mapper pur) ───────────────────────────────────────────────
+import suivi as _sv
+
+
+def _comp_pf(fmt="individuel"):
+    return {
+        "nom": "FÊTE DES JEUNES", "categorie": "V1", "arme": "epee",
+        "format": fmt, "genre": "HD", "date": "2026-06-13", "lieu": "Paris",
+        "clubs": [{"club": "CE Châlons", "attendus": [
+            {"nom": "JANER", "prenom": "Léo", "section": "QUOTA FÉDÉRAL",
+             "rang": 1, "saisi": True, "present": True},
+            {"nom": "WILLEM", "prenom": "Jules", "section": "TIREURS REMPLACANTS",
+             "rang": 5, "saisi": False, "present": None},
+        ]}],
+    }
+
+
+def test_mapper_plateforme_indiv():
+    e = _sv.mapper_plateforme([_comp_pf()])
+    cle = "indiv|Épée|Vétérans|HD"
+    assert cle in e
+    ent = e[cle]
+    assert ent["type"] == "indiv" and ent["genre"] == "HD"
+    t = {x["nom"]: x for x in ent["tireurs"]}
+    assert t["JANER"]["confirmation"] == "oui" and t["JANER"]["statut"] == "qualifie"
+    assert t["WILLEM"]["confirmation"] == "attente" and t["WILLEM"]["statut"] == "remplacant"
+    assert t["JANER"]["club"] == "CE Châlons"
+
+
+def test_mapper_plateforme_ignore_equipes():
+    assert _sv.mapper_plateforme([_comp_pf(fmt="equipe")]) == {}

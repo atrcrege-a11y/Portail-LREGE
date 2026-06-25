@@ -158,6 +158,22 @@ def supprimer(type_, params):
     return jsonify({"ok": True})
 
 
+@app.route("/api/import/plateforme", methods=["POST"])
+def import_plateforme():
+    """Charge le suivi INDIVIDUEL depuis la plateforme de confirmation en ligne."""
+    body = request.get_json(silent=True) or {}
+    try:
+        res = sv.importer_depuis_plateforme(
+            base_url=body.get("url") or None,
+            token=body.get("token") or None,
+        )
+        return jsonify(res)
+    except ValueError as e:
+        return jsonify({"erreur": str(e)}), 400
+    except Exception as e:
+        return jsonify({"erreur": str(e), "detail": traceback.format_exc()}), 500
+
+
 # ── Helper ────────────────────────────────────────────────────────────────────
 
 def _parse_params(params):

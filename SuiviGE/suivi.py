@@ -634,3 +634,112 @@ def supprimer(arme, categorie, genre, type_="indiv"):
 
 
 _charger()
+
+
+# ── Pont plateforme de confirmation (option A : genre combiné 'HD') ─────────────
+# La plateforme en ligne fusionne Hommes+Dames en une compétition genre='HD'.
+# SuiviGE range donc ces données sous une clé '...|HD' (distinct des imports Excel
+# par genre). Périmètre : INDIVIDUEL. Les équipes (granularité différente) = TODO.
+
+_ARME_PF = {"epee": "Épée", "fleuret": "Fleuret", "sabre": "Sabre",
+            "e": "Épée", "f": "Fleuret", "s": "Sabre"}
+
+
+def _arme_plateforme(a):
+    return _ARME_PF.get((a or "").strip().lower(), a)
+
+
+def _cat_plateforme(cat):
+    u = (cat or "").strip().upper()
+    if u in ("V1", "V2", "V3", "V4", "VETERANS", "VÉTÉRANS"):
+        return "Vétérans"
+    if u in ("SENIOR", "SENIORS"):
+        return "Seniors"
+    return (cat or "").strip()
+
+
+def _confirmation_pf(att):
+    """Statut SuiviGE depuis un attendu plateforme (saisi/present)."""
+    if not att.get("saisi"):
+        return "attente"
+    return "oui" if att.get("present") else "non"
+
+
+def mapper_plateforme(competitions):
+    """JSON /api/suivi → dict {cle: entry} pour les compétitions INDIVIDUELLES.
+
+    Pure (pas de réseau, pas d'écriture _db). Genre forcé à 'HD' (option A).
+    """
+    entries = {}
+    for c in competitions or []:
+        if c.get("format") != "individuel":
+            continue  # équipes = hors périmètre v1
+        arme = _arme_plateforme(c.get("arme"))
+        cat = _cat_plateforme(c.get("categorie"))
+        if not arme or not cat:
+            continue
+        cle = _cle("indiv", arme, cat, "HD")
+        tireurs = []
+        for k in c.get("clubs", []):
+            club = k.get("club", "")
+            for at in k.get("attendus", []):
+                section = (at.get("section") or "")
+                statut = "remplacant" if "REMPLA" in section.upper() else "qualifie"
+                rang = at.get("rang")
+                tireurs.append({
+                    "rang":            str(rang) if rang is not None else "",
+                    "nom":             at.get("nom", ""),
+                    "prenom":          at.get("prenom", ""),
+                    "club":            club,
+                    "statut":          statut,
+                    "confirmation":    _confirmation_pf(at),
+                    "confirmation_at": None,
+                    "note":            "",
+                })
+        entries[cle] = {
+            "type": "indiv", "arme": arme, "categorie": cat, "genre": "HD",
+            "competition": c.get("nom", ""),
+            "date_lieu": f"{c.get('date','')} {c.get('lieu','')}".strip(),
+            "tireurs": tireurs, "arbitres": [],
+        }
+    return entries
+
+
+def importer_depuis_plateforme(base_url=None, token=None, timeout=20):
+    """Récupère /api/suivi/<token> et remplit le suivi INDIVIDUEL (genre HD).
+
+    base_url/token : sinon env PLATEFORME_URL / PLATEFORME_TOKEN.
+    Retourne un résumé {ok, cles, nb_competitions, nb_tireurs} ou lève ValueError.
+    """
+    import json as _json
+    import urllib.request as _u
+    import urllib.error as _ue
+
+    base_url = (base_url or os.environ.get("PLATEFORME_URL", "")).rstrip("/")
+    token = token or os.environ.get("PLATEFORME_TOKEN", "")
+    if not base_url or not token:
+        raise ValueError("PLATEFORME_URL ou PLATEFORME_TOKEN non configuré")
+
+    url = f"{base_url}/api/suivi/{token}"
+    try:
+        with _u.urlopen(url, timeout=timeout) as resp:
+            data = _json.loads(resp.read().decode("utf-8"))
+    except _ue.HTTPError as e:
+        raise ValueError(f"Plateforme HTTP {e.code}")
+    except _ue.URLError as e:
+        raise ValueError(f"Connexion impossible : {e.reason}")
+
+    entries = mapper_plateforme(data.get("competitions", []))
+    nb_tireurs = 0
+    for cle, entry in entries.items():
+        existant = _db.get(cle, {})
+        entry["created_at"] = existant.get("created_at", datetime.datetime.now())
+        entry["updated_at"] = datetime.datetime.now()
+        entry["audit"] = existant.get("audit", [])
+        _db[cle] = entry
+        _audit(cle, "IMPORT PLATEFORME",
+               f"{entry['arme']} {entry['categorie']} HD — {len(entry['tireurs'])} tireurs")
+        nb_tireurs += len(entry["tireurs"])
+    _sauvegarder()
+    return {"ok": True, "cles": list(entries.keys()),
+            "nb_competitions": len(entries), "nb_tireurs": nb_tireurs}
