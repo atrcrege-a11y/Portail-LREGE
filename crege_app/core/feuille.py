@@ -253,3 +253,15 @@ def ligne_tireur(ws, ligne, tireur, bg, col_fin="F",
             style_cellule(ws, f"F{ligne}", note, font_size=9, italic=bool(note),
                           font_color="666666" if note else "000000",
                           border=BORDURE_FINE, bg_color=bg, wrap=True)
+
+
+# ── Marqueur de version du format Excel ──────────────────────────────────────
+# Écrit dans les propriétés du classeur (keywords). Contrôlé par SuiviGE à la
+# lecture : absent = accepté (fichiers antérieurs), différent = erreur.
+EXCEL_FORMAT_VERSION = "SELECGE_XLSX_V1"
+
+
+def marquer_version(wb):
+    """Appose le marqueur de version de format sur un classeur openpyxl."""
+    wb.properties.keywords = EXCEL_FORMAT_VERSION
+    return wb

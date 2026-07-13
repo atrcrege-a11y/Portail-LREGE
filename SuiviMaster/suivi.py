@@ -15,7 +15,7 @@ EFFECTIF_MAX = 16
 # ── Constantes format Excel SelecMaster ───────────────────────────────────────
 # Ces constantes doivent correspondre exactement aux labels générés par
 # SelecMaster/generateur.py. Si le format Excel change, modifier ici uniquement.
-EXCEL_FORMAT_VERSION   = "SELECMASTER_V1"   # marqueur dans cellule cachée (à venir)
+EXCEL_FORMAT_VERSION   = "SELECMASTER_V1"   # propriété keywords du classeur (écrite par SelecMaster/generateur.py)
 EXCEL_PREFIX_RANG      = "M "               # préfixe des lignes tireurs : "M 1", "M 2"
 EXCEL_RANG_MAX_LEN     = 5                  # longueur max du préfixe + numéro
 EXCEL_LABEL_SELECTIONNES    = "SÉLECTIONNÉS"
@@ -119,6 +119,18 @@ def _cle_tireur(t):
     return (t["nom"].strip().upper(), t["prenom"].strip().upper(), t["genre"])
 
 
+def _verifier_version_format(wb):
+    """Contrôle le marqueur de version (propriété keywords du classeur).
+    Absent → accepté (fichiers antérieurs au marquage).
+    Présent mais différent → ExcelParseError explicite."""
+    marque = (wb.properties.keywords or "").strip()
+    if marque and marque != EXCEL_FORMAT_VERSION:
+        raise ExcelParseError(
+            f"Version de format inattendue : {marque}",
+            hint=f"Ce fichier a été généré avec un format {marque}, "
+                 f"SuiviMaster attend {EXCEL_FORMAT_VERSION}. Mettre à jour l'outil.")
+
+
 # ── Lecture Excel SelecMaster ─────────────────────────────────────────────────
 def lire_excel_selecmaster(contenu_bytes, territoire, territoire_organisateur):
     """
@@ -127,6 +139,7 @@ def lire_excel_selecmaster(contenu_bytes, territoire, territoire_organisateur):
     Retourne : {"arme", "categorie", "tireurs": [...]}
     """
     wb = load_workbook(io.BytesIO(contenu_bytes), data_only=True)
+    _verifier_version_format(wb)
     tireurs = []
     arme = categorie = None
 
@@ -285,6 +298,7 @@ def importer_excel_retour(arme, categorie, territoire, contenu_bytes):
         raise KeyError(f"Suivi {arme} {categorie} / {territoire} non initialisé")
 
     wb = load_workbook(io.BytesIO(contenu_bytes), data_only=True)
+    _verifier_version_format(wb)
     tireurs_idx = {_cle_tireur(t): t for t in _db[cle]["territoires"][territoire]}
     modifs = {"confirmations": [], "erreurs": []}
 
@@ -563,12 +577,33 @@ _ARB_FILE        = os.path.join(BASE_DIR, ".arbitres_master.pkl")
 _arbitres = {}  # clé : arme → liste d'arbitres
 
 
+ARB_VERSION = 2    # Incrémenté à chaque changement de structure _arbitres
+
+
 def _sauvegarder_arb():
     try:
+        _arbitres["__version__"] = ARB_VERSION
         with open(_ARB_FILE, "wb") as f:
             pickle.dump(_arbitres, f)
     except Exception as e:
         print(f"[ARB] Erreur sauvegarde : {e}")
+
+
+def _migrer_arb(brut):
+    """v1 (sans __version__) -> v2 : garantir les champs de chaque arbitre."""
+    version = brut.get("__version__", 1) if isinstance(brut, dict) else 1
+    if version == ARB_VERSION:
+        return brut
+    print(f"[ARB] Migration base v{version} -> v{ARB_VERSION}")
+    migre = {k: v for k, v in brut.items() if k != "__version__"}
+    for arme, arbs in migre.items():
+        if not isinstance(arbs, list):
+            continue
+        for a in arbs:
+            a.setdefault("note", "")
+            a.setdefault("statut", "propose")
+    migre["__version__"] = ARB_VERSION
+    return migre
 
 
 def _charger_arb():
@@ -576,10 +611,15 @@ def _charger_arb():
     try:
         if os.path.isfile(_ARB_FILE):
             with open(_ARB_FILE, "rb") as f:
-                _arbitres = pickle.load(f)
+                brut = pickle.load(f)
+            _arbitres = _migrer_arb(brut)
+            if brut.get("__version__", 1) != ARB_VERSION:
+                _sauvegarder_arb()
+        else:
+            _arbitres = {"__version__": ARB_VERSION}
     except Exception as e:
         print(f"[ARB] Erreur chargement : {e}")
-        _arbitres = {}
+        _arbitres = {"__version__": ARB_VERSION}
 
 
 def _arb_id():
@@ -745,7 +785,7 @@ def get_arbitres(arme=None):
     if arme:
         _valider_arme(arme)
         return _arbitres.get(arme, [])
-    return _arbitres
+    return {k: v for k, v in _arbitres.items() if k != "__version__"}
 
 
 def get_stats_arbitres():
@@ -771,7 +811,7 @@ def get_arbitres_serialisable(arme=None):
                 "updated_at": a["updated_at"].strftime("%d/%m/%Y %H:%M")}
     if arme:
         return [_ser(a) for a in _arbitres.get(arme, [])]
-    return {k: [_ser(a) for a in v] for k, v in _arbitres.items()}
+    return {k: [_ser(a) for a in v] for k, v in _arbitres.items() if k != "__version__"}
 
 
 def supprimer_tous_arbitres(arme):

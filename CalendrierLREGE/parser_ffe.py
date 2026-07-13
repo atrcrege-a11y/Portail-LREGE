@@ -25,6 +25,14 @@ COLONNES_ATTENDUES    = [COL_DATE_DEBUT, COL_DATE_FIN, COL_INTITULE, COL_LIEU,
 
 JSON_VERSION = 1   # Incrémenter si le schéma d'un événement change
 
+
+class ParseError(ValueError):
+    """Erreur de parsing du fichier FFE — message utilisateur + hint technique.
+    Attendue par app.py (/api/import) qui renvoie {'error': message, 'hint': hint}."""
+    def __init__(self, message, hint=""):
+        super().__init__(message)
+        self.hint = hint
+
 ARME_DECODE = {
     'EPEM':('épée','H'),'EPEF':('épée','D'),'EPEMF':('épée','H+D'),
     'FLEM':('fleuret','H'),'FLEF':('fleuret','D'),'FLEMF':('fleuret','H+D'),
@@ -66,7 +74,15 @@ def parse_arme(code):
     return ARME_DECODE.get(code, (code.lower() or 'multi', ''))
 
 def parse_xlsx(filepath):
-    df = pd.read_excel(filepath)
+    try:
+        df = pd.read_excel(filepath)
+    except Exception as e:
+        raise ParseError("Fichier Excel illisible", hint=str(e))
+    manquantes = [c for c in COLONNES_OBLIGATOIRES if c not in df.columns]
+    if manquantes:
+        raise ParseError(
+            f"Colonnes obligatoires absentes : {', '.join(manquantes)}",
+            hint=f"Colonnes trouvées : {', '.join(str(c) for c in df.columns[:10])}")
     dedup = {}
     for _, row in df.iterrows():
         d0 = parse_date(row.get(COL_DATE_DEBUT))

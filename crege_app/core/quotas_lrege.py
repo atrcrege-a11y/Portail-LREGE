@@ -93,11 +93,12 @@ def get_quota_indiv(cat_id: str, arme_id: str, genre: str) -> int | None:
 
 
 def get_quota_equipes(cat_id: str, arme_id: str, genre: str) -> int:
-    """Quota équipes N3 Grand Est. 0 si open ou non défini."""
-    # V4 : même quota que V3
-    key = cat_id
-    if cat_id == "V4":
-        key = "V3"
+    """Quota équipes N3 Grand Est. 0 si open ou non défini.
+
+    ⚠️ Règle métier : V3 et V4 forment la catégorie unique « Grands Vétérans ».
+    V4 est donc volontairement mappé sur la clé V3 de QUOTAS_EQUIPES.
+    """
+    key = "V3" if cat_id == "V4" else cat_id
     return QUOTAS_EQUIPES.get((key, arme_id, genre), 0)
 
 

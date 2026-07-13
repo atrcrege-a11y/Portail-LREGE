@@ -5,7 +5,7 @@ Dispatch selon le format (jeunes, seniors, equipes_m15).
 from openpyxl import Workbook
 from openpyxl.utils import get_column_letter
 
-from ..core.feuille import init_feuille
+from ..core.feuille import marquer_version, init_feuille
 from ..core.styles import (
     style_cellule, fusionner_style, BORDURE_FINE,
     COULEUR_N1, COULEUR_N2, COULEUR_ALERTE,
@@ -38,7 +38,7 @@ def generer_multi_genres(data_h, data_d):
     Génère un classeur 2 feuilles (Hommes + Dames).
     data_d peut être None pour un classeur 1 feuille.
     """
-    wb = Workbook()
+    wb = marquer_version(Workbook())
 
     ws_h = wb.active
     ws_h.title = "Hommes"
@@ -55,7 +55,7 @@ def generer_equipes_m15(data_h, data_d):
     """
     Génère un classeur équipes M15 : 2 feuilles (Hommes + Dames).
     """
-    wb = Workbook()
+    wb = marquer_version(Workbook())
 
     ws_h = wb.active
     ws_h.title = "Hommes"

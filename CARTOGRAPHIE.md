@@ -437,3 +437,24 @@ Nom des fichiers Excel générés : `LREGE_GE_{cat}_{comp}_{arme}_{genre}_{YYYYM
 ---
 
 *Fin de cartographie. Mettre à jour ce document lors de tout changement architectural.*
+
+---
+
+## 16. CORRECTIONS DU 2026-07-10 (lots A+B)
+
+| Correction | État |
+|------------|------|
+| .gitignore complété + désindexation .venv/build/pickles (3782 fichiers) | ✅ effectif au prochain commit |
+| V4→V3 équipes : règle « Grands Vétérans » documentée (2 copies) | ✅ |
+| TABLE_LREGE >11 : extrapolation round(n/3) verrouillée par tests (12-15) | ✅ |
+| Date CDF hardcodée : remplacée par cfg["date"] dynamique (racine alignée sur SelecGE) | ✅ |
+| calendrier.json : écriture atomique (tmp + os.replace) | ✅ |
+| Marqueur version Excel : SELECGE_XLSX_V1 / SELECMASTER_V1 (propriété keywords), contrôle tolérant à la lecture | ✅ |
+| .arbitres_master.pkl versionné (ARB_VERSION 2 + migration) | ✅ |
+| Année M11 SelecMaster dérivée de la saison (plus de MAJ annuelle) | ✅ |
+| Tests CalendrierLREGE créés (23) + bug bloquant ParseError corrigé | ✅ |
+| verifier_duplication.py : contrôle racine vs SelecGE/ | ✅ (16 fichiers divergents détectés — chantier C11) |
+
+**⚠️ État de la duplication (§3)** : la copie racine est OBSOLÈTE (Seniors ED 6 vs 4,
+M23 équipes, quotas vétérans D…). **SelecGE/ fait foi** (REGLES.md). `SelecGE/` est un
+sous-module git séparé. Resynchronisation racine ← SelecGE = chantier dédié (lot C).

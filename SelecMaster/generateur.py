@@ -4,6 +4,8 @@ Calqué exactement sur SelecGE (couleurs, tailles, hauteurs, largeurs mesurées)
 """
 import io, datetime
 from openpyxl import Workbook
+
+EXCEL_FORMAT_VERSION = "SELECMASTER_V1"   # doit correspondre à SuiviMaster/suivi.py
 from openpyxl.styles import Font, PatternFill, Alignment, Border, Side
 from openpyxl.utils import get_column_letter
 from openpyxl.worksheet.datavalidation import DataValidation
@@ -335,6 +337,8 @@ def generer_excel(selection_h, selection_d,
         date_confirmation = date_retour
 
     wb = Workbook()
+    # Marqueur de version du format — contrôlé par SuiviMaster à la lecture
+    wb.properties.keywords = EXCEL_FORMAT_VERSION
     wb.remove(wb.active)
 
     for genre_label, sel, autre in [

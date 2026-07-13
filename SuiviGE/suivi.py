@@ -25,6 +25,19 @@ EXCEL_ARMES_MAP = {
     "SABRE": "Sabre",
 }
 EXCEL_CATS = ["M13", "M15", "M17", "M20", "M23", "SENIORS", "VÉTÉRANS", "VETERANS"]
+EXCEL_FORMAT_VERSION = "SELECGE_XLSX_V1"   # doit correspondre à crege_app/core/feuille.py
+
+
+def _verifier_version_format(wb):
+    """Contrôle le marqueur de version (propriété keywords du classeur).
+    Absent → accepté (fichiers antérieurs au marquage).
+    Présent mais différent → ExcelParseError explicite."""
+    marque = (wb.properties.keywords or "").strip()
+    if marque and marque != EXCEL_FORMAT_VERSION:
+        raise ExcelParseError(
+            f"Version de format inattendue : {marque}",
+            hint=f"Ce fichier a été généré avec un format {marque}, "
+                 f"SuiviGE attend {EXCEL_FORMAT_VERSION}. Mettre à jour l'outil.")
 
 
 class ExcelParseError(ValueError):
@@ -130,6 +143,7 @@ def lire_excel_indiv(contenu_bytes):
     Retourne liste de dicts par feuille.
     """
     wb  = load_workbook(io.BytesIO(contenu_bytes), data_only=True)
+    _verifier_version_format(wb)
     resultats = []
 
     for sheet_name in wb.sheetnames:
@@ -207,6 +221,7 @@ def lire_excel_equipes(contenu_bytes):
     Retourne liste de dicts par feuille.
     """
     wb  = load_workbook(io.BytesIO(contenu_bytes), data_only=True)
+    _verifier_version_format(wb)
     resultats = []
 
     for sheet_name in wb.sheetnames:

@@ -68,11 +68,13 @@ class EtapeFFE:
             tireurs.append(_tireur(r, f"CL NAT {rang_nat}"))
             ctx["noms_exclus"].add(k)
         pal = ctx["pal"]
+        date_comp = ctx["cfg"].get("date", "")
+        date_txt  = f" — Compétition le {date_comp}" if date_comp else ""
         couleur = pal["n1"] if self.niveau == "N1" else pal["n2"]
         label = f"TIREURS QUALIFIÉS — {self.niveau} (LISTE NATIONALE FFE)"
         textes = [
             f"Tireurs Grand Est qualifiés en {self.niveau} sur la liste nationale FFE",
-            "⚠️  Sélection effectuée maintenant — Compétition les 19-20 décembre 2026",
+            f"⚠️  Sélection effectuée maintenant{date_txt}",
         ]
         return {"label": label, "couleur": couleur, "textes": textes,
                 "tireurs": tireurs, "avec_participation": True}
@@ -181,10 +183,12 @@ class EtapeOpenCircuit:
         cat_id = cfg.get("cat_id", "")
         is_sabre_senior = cat_id == "Seniors"
         pal = ctx["pal"]
+        date_comp = cfg.get("date", "")
+        date_txt  = f" — Compétition le {date_comp}" if date_comp else ""
         textes = [
             "Les 36 premiers du classement national FFE (Wild Cards intégrées)" if is_sabre_senior
             else "Les qualifiés GE sur la liste nationale FFE (N1 + WC intégrées)",
-            "⚠️  Sélection effectuée maintenant — Compétition les 19-20 décembre 2026",
+            f"⚠️  Sélection effectuée maintenant{date_txt}",
         ]
         return {"label": "TIREURS QUALIFIÉS — N1 (LISTE NATIONALE FFE)",
                 "couleur": pal["n1"], "textes": textes,

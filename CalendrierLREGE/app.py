@@ -24,8 +24,13 @@ def load_events():
     return events
 
 def save_events(events):
+    """Écriture atomique : fichier temporaire puis os.replace (évite un
+    calendrier.json corrompu si le processus est interrompu en cours d'écriture)."""
     os.makedirs(os.path.dirname(DATA_FILE), exist_ok=True)
-    with open(DATA_FILE, 'w', encoding='utf-8') as f: json.dump(events, f, ensure_ascii=False, indent=2)
+    tmp_file = DATA_FILE + '.tmp'
+    with open(tmp_file, 'w', encoding='utf-8') as f:
+        json.dump(events, f, ensure_ascii=False, indent=2)
+    os.replace(tmp_file, DATA_FILE)
 
 def apply_filters(events, args):
     niveau    = args.get('niveau')

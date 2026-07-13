@@ -13,7 +13,7 @@ from ..core.styles import (
     COULEUR_ENTETE_COL, COULEUR_LIGNE_PAIRE, COULEUR_BLANC,
     COULEUR_ALERTE, get_palette,
 )
-from ..core.feuille import init_feuille
+from ..core.feuille import marquer_version, init_feuille
 
 
 NB_COLS = 5
@@ -388,7 +388,7 @@ def _remplir_feuille_equipes_seniors(ws, data, genre):
 
 def generer_equipes_seniors(data: dict) -> Workbook:
     """Génère un classeur Excel 2 feuilles (Hommes + Dames) pour équipes M17→Vétérans."""
-    wb = Workbook()
+    wb = marquer_version(Workbook())
     wb.remove(wb.active)
 
     ws_h = wb.create_sheet("Hommes")

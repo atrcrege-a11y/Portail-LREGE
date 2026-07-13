@@ -5,6 +5,20 @@ import re
 from bs4 import BeautifulSoup
 
 
+def saison_debut(aujourdhui=None):
+    """Année de début de la saison en cours (bascule au 1er septembre)."""
+    import datetime as _dt
+    t = aujourdhui or _dt.date.today()
+    return t.year if t.month >= 9 else t.year - 1
+
+
+def annee_min_m11(aujourdhui=None):
+    """Année de naissance minimale M11 : saison 2025-2026 → nés >= 2015.
+    Dérivée automatiquement (début de saison - 10) — plus de mise à jour annuelle."""
+    return saison_debut(aujourdhui) - 10
+
+
+
 TERRITOIRES = {
     "alsace": "Alsace",
     "lorraine": "Lorraine",
@@ -389,9 +403,10 @@ def parser_html(contenu_bytes):
         est_m11_dans_m13 = False
         if categorie == "M13" and annee_naissance:
             try:
-                # M11 = nés en 2015 ou 2016 pour saison 2025-2026
+                # M11 = nés à partir de (début de saison - 10) — ex. saison
+                # 2025-2026 → nés >= 2015. Calculé automatiquement.
                 annee = int(annee_naissance)
-                if annee >= 2015:
+                if annee >= annee_min_m11():
                     est_m11_dans_m13 = True
             except ValueError:
                 pass

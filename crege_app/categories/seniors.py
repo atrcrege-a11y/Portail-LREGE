@@ -63,13 +63,15 @@ def _construire_seniors(df_national, df_regional, config: dict, df_ffe=None) -> 
                     "note":   "",
                 })
                 noms_qualifies.add(k)
+            date_comp = config.get("date", "")
+            date_txt  = f" — Compétition le {date_comp}" if date_comp else ""
             couleur = pal["n1"] if niv == "N1" else pal["n2"]
             sections.append({
                 "label":   f"TIREURS QUALIFIÉS — {niv} (LISTE NATIONALE FFE)",
                 "couleur": couleur,
                 "textes":  [
                     f"Tireurs Grand Est qualifiés en {niv} sur la liste nationale FFE",
-                    "⚠️  Sélection effectuée maintenant — Compétition les 19-20 décembre 2026",
+                    f"⚠️  Sélection effectuée maintenant{date_txt}",
                 ],
                 "tireurs": tireurs,
                 "avec_participation": True,
@@ -99,12 +101,14 @@ def _construire_seniors(df_national, df_regional, config: dict, df_ffe=None) -> 
             else:
                 nb_wc = 0
 
+        date_comp = config.get("date", "")
+        date_txt  = f" — Compétition le {date_comp}" if date_comp else ""
         if is_sabre:
             label_n1  = "TIREURS QUALIFIÉS — N1 (LISTE NATIONALE FFE)"
             textes_n1 = config.get("textes_n1", [
                 "Les 36 premiers du classement national FFE (Wild Cards intégrées)",
                 "Les absents non remplacés : le suivant au classement national est sélectionné",
-                "⚠️  Sélection effectuée maintenant — Compétition les 19-20 décembre 2026",
+                f"⚠️  Sélection effectuée maintenant{date_txt}",
             ])
         else:
             label_n1  = "TIREURS QUALIFIÉS — N1 (LISTE NATIONALE FFE)"
@@ -112,7 +116,7 @@ def _construire_seniors(df_national, df_regional, config: dict, df_ffe=None) -> 
                 f"Les {quota_n1} premiers du classement national",
                 f"+ jusqu'à {nb_wc} Wild Card{'s' if nb_wc > 1 else ''} attribuée{'s' if nb_wc > 1 else ''} par la DTN",
                 "Les absents non remplacés par WC : le suivant au classement national est sélectionné",
-                "⚠️  Sélection effectuée maintenant — Compétition les 19-20 décembre 2026",
+                f"⚠️  Sélection effectuée maintenant{date_txt}",
             ])
         if tireurs_n1:
             sections.append({

@@ -27,3 +27,10 @@ desktop.ini
 .vscode/
 .idea/
 *.swp
+
+# ── Complément 2026-07-10 ─────────────────────────────────
+**/.suivi_*.pkl
+**/.pytest_cache/
+**/pytest-cache-files-*/
+**/.fuse_hidden*
+publier_maj_log.txt

@@ -231,3 +231,36 @@ def test_mapper_plateforme_indiv():
 
 def test_mapper_plateforme_ignore_equipes():
     assert _sv.mapper_plateforme([_comp_pf(fmt="equipe")]) == {}
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Marqueur de version du format Excel (B6)
+# ─────────────────────────────────────────────────────────────────────────────
+
+def test_version_format_absente_acceptee():
+    """Fichier sans marqueur (antérieur au marquage) : accepté."""
+    from tests import fixtures
+    cles = _sv.initialiser_indiv(fixtures.excel_indiv())
+    assert cles
+
+
+def test_version_format_differente_rejetee():
+    """Fichier avec un marqueur différent : ExcelParseError explicite."""
+    import io, openpyxl, pytest
+    from tests import fixtures
+    contenu = fixtures.excel_indiv()
+    wb = openpyxl.load_workbook(io.BytesIO(contenu))
+    wb.properties.keywords = "AUTRE_FORMAT_V9"
+    buf = io.BytesIO(); wb.save(buf)
+    with pytest.raises(_sv.ExcelParseError):
+        _sv.initialiser_indiv(buf.getvalue())
+
+
+def test_version_format_correcte_acceptee():
+    import io, openpyxl
+    from tests import fixtures
+    contenu = fixtures.excel_indiv()
+    wb = openpyxl.load_workbook(io.BytesIO(contenu))
+    wb.properties.keywords = _sv.EXCEL_FORMAT_VERSION
+    buf = io.BytesIO(); wb.save(buf)
+    assert _sv.initialiser_indiv(buf.getvalue())

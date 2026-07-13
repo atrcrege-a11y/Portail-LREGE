@@ -253,3 +253,64 @@ class TestInitialiserDepuisExcel:
         import suivi
         with pytest.raises(suivi.ExcelParseError):
             suivi.initialiser_depuis_excel(excel_invalide(), "Lorraine", "Lorraine")
+
+
+# =============================================================================
+# Marqueur de version du format Excel (B6)
+# =============================================================================
+
+class TestVersionFormat:
+
+    def _remarquer(self, contenu, marque):
+        import openpyxl
+        wb = openpyxl.load_workbook(io.BytesIO(contenu))
+        wb.properties.keywords = marque
+        buf = io.BytesIO(); wb.save(buf)
+        return buf.getvalue()
+
+    def test_version_absente_acceptee(self):
+        from suivi import lire_excel_selecmaster
+        xlsx = excel_selecmaster(selectionnes_h=[{"nom": "A", "prenom": "B", "club": "C"}],
+                                 remplacants_h=[], selectionnes_d=[], remplacants_d=[])
+        assert lire_excel_selecmaster(xlsx, "Alsace", "Alsace")
+
+    def test_version_differente_rejetee(self):
+        from suivi import lire_excel_selecmaster, ExcelParseError
+        xlsx = excel_selecmaster(selectionnes_h=[{"nom": "A", "prenom": "B", "club": "C"}],
+                                 remplacants_h=[], selectionnes_d=[], remplacants_d=[])
+        with pytest.raises(ExcelParseError):
+            lire_excel_selecmaster(self._remarquer(xlsx, "AUTRE_V9"), "Alsace", "Alsace")
+
+    def test_version_correcte_acceptee(self):
+        from suivi import lire_excel_selecmaster, EXCEL_FORMAT_VERSION
+        xlsx = excel_selecmaster(selectionnes_h=[{"nom": "A", "prenom": "B", "club": "C"}],
+                                 remplacants_h=[], selectionnes_d=[], remplacants_d=[])
+        assert lire_excel_selecmaster(self._remarquer(xlsx, EXCEL_FORMAT_VERSION), "Alsace", "Alsace")
+
+
+# =============================================================================
+# Versionnage pickle arbitres (B7)
+# =============================================================================
+
+class TestVersionArbitres:
+
+    def test_migration_v1_sans_version(self, tmp_path, monkeypatch):
+        """Un pickle v1 (sans __version__) est migré sans perte."""
+        import suivi
+        f = tmp_path / ".arbitres_master.pkl"
+        v1 = {"Épée": [{"id": "abc", "nom": "N", "prenom": "P", "niveau": "Régionale",
+                        "club": "C", "territoire": "Alsace", "statut": "retenu"}]}
+        with open(f, "wb") as fh:
+            pickle.dump(v1, fh)
+        monkeypatch.setattr(suivi, "_ARB_FILE", str(f))
+        suivi._charger_arb()
+        assert suivi._arbitres.get("__version__") == suivi.ARB_VERSION
+        assert suivi._arbitres["Épée"][0]["nom"] == "N"
+        assert suivi._arbitres["Épée"][0]["note"] == ""  # champ complété
+
+    def test_version_exclue_des_lectures(self, tmp_path, monkeypatch):
+        import suivi
+        monkeypatch.setattr(suivi, "_ARB_FILE", str(tmp_path / "a.pkl"))
+        suivi._arbitres = {"__version__": suivi.ARB_VERSION, "Épée": []}
+        assert "__version__" not in suivi.get_arbitres()
+        assert "__version__" not in suivi.get_arbitres_serialisable()
