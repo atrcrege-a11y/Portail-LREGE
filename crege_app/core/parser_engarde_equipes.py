@@ -50,8 +50,8 @@ def _info_header(ligne2: str) -> dict:
 
 def _parse_fff_par_equipes(texte: str) -> dict:
     """
-    FFF par_equipes : chaque ligne = un tireur avec son équipe.
-    On regroupe les tireurs par équipe et on reconstitue le classement.
+    FFF par_equipes : chaque ligne = un tireur avec son equipe.
+    On regroupe les tireurs par equipe et on reconstitue le classement.
     Retourne {equipes: [{rang, nom_equipe, club, tireurs:[]}], ...}
     """
     lignes  = texte.splitlines()
@@ -59,20 +59,19 @@ def _parse_fff_par_equipes(texte: str) -> dict:
         return {'format': 'fff_equipes', 'equipes': [], 'erreur': 'Fichier trop court'}
 
     header  = _info_header(lignes[1])
-    equipes_map = {}   # rang_eq → {nom_equipe, club, tireurs}
+    equipes_map = {}   # rang_eq -> {nom_equipe, club, tireurs}
 
     for l in lignes[2:]:
         l = l.strip()
         if not l:
             continue
-        # Format : NOM,PRENOM,DDN,GENRE,NAT,,NOM_EQUIPE;...;LICENCE,REGION,CLUB,...;RANG_EQ,
         parties = l.split(';')
         if len(parties) < 4:
             continue
 
-        partie_tireur = parties[0]  # NOM,PRENOM,DDN,GENRE,NAT,,NOM_EQUIPE
-        partie_club   = parties[2]  # LICENCE,REGION,CLUB_COMPLET,...
-        partie_rang   = parties[3]  # RANG_EQ,...
+        partie_tireur = parties[0]
+        partie_club   = parties[2]
+        partie_rang   = parties[3]
 
         cols_t = partie_tireur.split(',')
         nom_eq = cols_t[6].strip() if len(cols_t) > 6 else ''
@@ -94,7 +93,6 @@ def _parse_fff_par_equipes(texte: str) -> dict:
                 'nom_equipe': nom_eq,
                 'club':       club_complet or region,
             }
-        pass  # composition non stockée (peut changer)
 
     equipes = [equipes_map[r] for r in sorted(equipes_map.keys())]
     return {
@@ -105,11 +103,11 @@ def _parse_fff_par_equipes(texte: str) -> dict:
     }
 
 
-# ── Parser FFF individuel équipes (classement final) ──────────────────
+# ── Parser FFF individuel equipes (classement final) ──────────────────
 
 def _parse_fff_classement_equipes(texte: str) -> dict:
     """
-    FFF individuel où chaque ligne = une équipe avec son rang final.
+    FFF individuel ou chaque ligne = une equipe avec son rang final.
     Format : NOM_EQUIPE,,,GENRE,NAT,;...;,REGION,CLUB,SCORE,...;RANG,t
     """
     lignes = texte.splitlines()
@@ -127,7 +125,7 @@ def _parse_fff_classement_equipes(texte: str) -> dict:
         if len(parties) < 4:
             continue
 
-        nom_eq  = parties[0].split(',')[0].strip()
+        nom_eq   = parties[0].split(',')[0].strip()
         rang_str = parties[3].split(',')[0].strip()
 
         cols_c  = parties[2].split(',')
@@ -143,7 +141,6 @@ def _parse_fff_classement_equipes(texte: str) -> dict:
             'club':       club or region,
         })
 
-    # Trier par rang
     equipes.sort(key=lambda e: int(e['rang']))
     return {
         'format':   'fff_classement',
@@ -154,7 +151,7 @@ def _parse_fff_classement_equipes(texte: str) -> dict:
 
 
 def parse_fff_equipes(chemin: str) -> dict:
-    """Point d'entrée FFF : détecte le sous-format et parse."""
+    """Point d\'entree FFF : detecte le sous-format et parse."""
     with open(chemin, 'rb') as f:
         raw = f.read()
     texte = _decode(raw)
@@ -167,9 +164,6 @@ def parse_fff_equipes(chemin: str) -> dict:
     if 'par_equipes' in l1:
         return _parse_fff_par_equipes(texte)
     else:
-        # Individuel : vérifier si les lignes ressemblent à des équipes
-        # (pas de date de naissance = équipes, pas de tireurs individuels)
-        # Heuristique : la 3ème ligne a un nom sans virgule séparant prénom
         return _parse_fff_classement_equipes(texte)
 
 
@@ -177,7 +171,7 @@ def parse_fff_equipes(chemin: str) -> dict:
 
 def parse_xml_equipes(chemin: str) -> dict:
     """
-    Parse un fichier XML Engarde par équipes.
+    Parse un fichier XML Engarde par equipes.
     Structure attendue :
       <BaseCompetition>
         <Equipe ID="1" Nom="CEVN" NomClub="CEVN" ClassementFinal="1">
@@ -192,18 +186,16 @@ def parse_xml_equipes(chemin: str) -> dict:
     except ET.ParseError as e:
         return {'format': 'xml', 'erreur': f'XML invalide : {e}', 'equipes': []}
 
-    # Header depuis Parametres
     params = root.find('.//Parametres')
     arme_map = {'f': 'Fleuret', 'e': 'Épée', 's': 'Sabre',
                 'F': 'Fleuret', 'E': 'Épée', 'S': 'Sabre'}
-    # Infos depuis l'attribut racine CompetitionParEquipes
     arme_code = root.get('Arme', '')
     header = {
         'arme':  arme_map.get(arme_code, arme_code),
         'genre': root.get('Sexe', ''),
         'cat':   root.get('Categorie', ''),
         'nom':   root.get('TitreLong', root.get('TitreCourt', '')),
-        'date':  root.get('Date', '').replace('.', '/'),   # "15.02.2026" → "15/02/2026"
+        'date':  root.get('Date', '').replace('.', '/'),
         'lieu':  root.get('Lieu', ''),
     }
     if params is not None:
@@ -212,7 +204,6 @@ def parse_xml_equipes(chemin: str) -> dict:
         if not header['cat']:   header['cat']   = params.get('Categorie', '')
         if not header['nom']:   header['nom']   = params.get('TitreCompetition', '')
 
-    # Équipes
     equipes_raw = []
     for eq in root.findall('.//Equipe'):
         rang_final = eq.get('Classement', eq.get('ClassementFinal', ''))
@@ -235,17 +226,16 @@ def parse_xml_equipes(chemin: str) -> dict:
     }
 
 
-# ── Point d'entrée universel ──────────────────────────────────────────
+# ── Point d\'entree universel ──────────────────────────────────────────
 
 def parser_engarde_equipes(chemin: str) -> dict:
-    """Parse FFF ou XML automatiquement selon l'extension."""
+    """Parse FFF ou XML automatiquement selon l\'extension."""
     ext = chemin.lower().rsplit('.', 1)[-1]
     if ext in ('fff', ):
         return parse_fff_equipes(chemin)
     elif ext in ('xml', ):
         return parse_xml_equipes(chemin)
     else:
-        # Essai heuristique sur le contenu
         with open(chemin, 'rb') as f:
             debut = f.read(100)
         if b'<' in debut and b'>' in debut:

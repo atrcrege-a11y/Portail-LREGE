@@ -32,8 +32,14 @@ def est_francais(row) -> bool:
 
 
 def filtrer_df(df, nationalite_francaise: bool):
-    """Filtre un DataFrame selon la nationalité si demandé."""
+    """Filtre un DataFrame selon la nationalité si demandé.
+
+    Gère le cas d'un DataFrame vide : pandas retourne une Series float64 au lieu
+    de bool via apply() sur un DF vide, ce qui écrase les colonnes lors du masquage.
+    """
     if not nationalite_francaise:
+        return df
+    if df is None or df.empty:
         return df
     return df[df.apply(est_francais, axis=1)].copy()
 

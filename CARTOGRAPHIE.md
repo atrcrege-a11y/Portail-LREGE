@@ -453,8 +453,9 @@ Nom des fichiers Excel générés : `LREGE_GE_{cat}_{comp}_{arme}_{genre}_{YYYYM
 | .arbitres_master.pkl versionné (ARB_VERSION 2 + migration) | ✅ |
 | Année M11 SelecMaster dérivée de la saison (plus de MAJ annuelle) | ✅ |
 | Tests CalendrierLREGE créés (23) + bug bloquant ParseError corrigé | ✅ |
-| verifier_duplication.py : contrôle racine vs SelecGE/ | ✅ (16 fichiers divergents détectés — chantier C11) |
+| verifier_duplication.py : contrôle racine vs SelecGE/ | ✅ (16 divergents détectés — chantier C11) |
+| **C11 (2026-07-13)** : resync racine ← SelecGE (23 fichiers + audit.py aligné), 0 divergence, 247 tests ✅ | ✅ |
 
-**⚠️ État de la duplication (§3)** : la copie racine est OBSOLÈTE (Seniors ED 6 vs 4,
+**État de la duplication (§3)** : resynchronisée le 2026-07-13 (C11). Historique : la copie racine était OBSOLÈTE (Seniors ED 6 vs 4,
 M23 équipes, quotas vétérans D…). **SelecGE/ fait foi** (REGLES.md). `SelecGE/` est un
 sous-module git séparé. Resynchronisation racine ← SelecGE = chantier dédié (lot C).

@@ -2,9 +2,65 @@
 audit.py — Script de référence pour valider les générations SelecGE.
 À exécuter avant ET après toute modification.
 Résultats doivent être identiques.
+
+Étape 0 : scan intégrité (null bytes) — bloquant
+Étape 1 : chargement des fichiers de classements
+Étape 2 : tests de génération
 """
 import sys, os
 sys.path.insert(0, os.path.dirname(__file__))
+
+# ─────────────────────────────────────────────────────────────
+# ÉTAPE 0 — Scan intégrité : null bytes
+# Doit passer avant tout import de module projet.
+# Des null bytes = fichier tronqué par une écriture bash partielle.
+# ─────────────────────────────────────────────────────────────
+def _scan_null_bytes(base: str) -> list:
+    """Retourne la liste des fichiers .py corrompus (null bytes détectés)."""
+    corrompus = []
+    for root, dirs, files in os.walk(base):
+        dirs[:] = [d for d in dirs if d not in ("__pycache__", ".git", ".venv", "venv", "node_modules")]
+        for f in files:
+            if not f.endswith(".py"):
+                continue
+            path = os.path.join(root, f)
+            try:
+                raw = open(path, "rb").read()
+                nb_nulls = raw.count(b"\x00")
+                if nb_nulls > 0:
+                    last = len(raw)
+                    while last > 0 and raw[last - 1] == 0:
+                        last -= 1
+                    corrompus.append({
+                        "path":     path,
+                        "rel":      os.path.relpath(path, base),
+                        "total":    len(raw),
+                        "utile":    last,
+                        "nb_nulls": nb_nulls,
+                    })
+            except OSError:
+                pass
+    return corrompus
+
+_BASE = os.path.dirname(os.path.abspath(__file__))
+print("Étape 0 — Scan intégrité (null bytes)...")
+_corrompus = _scan_null_bytes(_BASE)
+if _corrompus:
+    print(f"\n🔴 CORRUPTION DÉTECTÉE — {len(_corrompus)} fichier(s) avec null bytes :\n")
+    for c in _corrompus:
+        print(f"  ❌ {c['rel']}")
+        print(f"     {c['nb_nulls']} null bytes | taille totale {c['total']} o | taille utile {c['utile']} o")
+    print("\nCorrection : lancer le nettoyage ci-dessous pour chaque fichier :")
+    print("  python3 -c \"")
+    print("  import os; path='CHEMIN'; raw=open(path,'rb').read()")
+    print("  last=len(raw)")
+    print("  while last>0 and raw[last-1]==0: last-=1")
+    print("  open(path,'wb').write(raw[:last])")
+    print("  print(f'Nettoyé : {len(raw)} -> {last} bytes')\"")
+    print("\n⛔  Audit interrompu — corriger les fichiers avant de continuer.")
+    sys.exit(2)
+else:
+    print("  ✅ Aucun fichier corrompu (0 null bytes)\n")
 
 from importer_classements_pdf import lire_classement_ffe_pdf
 from importer_classements_ffe import lire_classement_ffe
@@ -205,13 +261,24 @@ def run_tests():
         ("LISTE NATIONALE FFE", 5, "5 GES N1"),
     ])
 
+    # ── Seniors EH : N1(4) + N2(4) + N3(2) liste FFE ───────────────
+    from crege_app.categories.selection import construire_selection as _cs
+    pdf_eh = lire_classement_ffe_pdf(U+"LQ25-26_FRANCE_ind_-_EH_SEN.pdf")
+    cfg_eh,_ = build_cfg({"cat_id":"Seniors","arme_id":"E"},"H")
+    data_eh = _cs("Seniors","E","H",cfg_eh,df_ffe=pdf_eh)
+    check("Seniors EH", data_eh["sections"], [
+        ("N1 (LISTE", 4, "BIABIANY/IMBERT/LE BERRE/LEGUBE"),
+        ("N2 (LISTE", 4, "BRETON/LUCANI/AMBROSINI/LE BARS"),
+        ("N3 (LISTE", 2, "NAEGELEN/ROBERT"),
+    ])
+
     # ── Seniors ED : N1(7) + N2(3) + quota N3(1nat+3rég=4) ─────
-    cfg_ed_s,_ = build_cfg({"cat_id":"Seniors","arme_id":"E","quota_n2_reg_d":3},"D")
-    data_ed_s = _construire_seniors(nat_ed_sen, reg_ed_sen, cfg_ed_s, df_ffe=pdf_ed_sen)
+    cfg_ed_s,_ = build_cfg({"cat_id":"Seniors","arme_id":"E","quota_n2_reg_d":4},"D")
+    data_ed_s = _cs("Seniors","E","D",cfg_ed_s,df_nat=nat_ed_sen,df_reg=reg_ed_sen,df_ffe=pdf_ed_sen)
     check("Seniors ED", data_ed_s["sections"], [
         ("N1 (LISTE", 7, "7 GES N1"),
         ("N2 (LISTE", 3, "3 GES N2"),
-        ("QUOTA LREGE N3", 4, "1nat+3rég"),
+        ("QUOTA LREGE", 6, "2nat+4rég"),
         ("REMPLAÇANT", 10, ""),
     ])
 

@@ -11,7 +11,7 @@ from openpyxl.styles import PatternFill
 from ..core.styles import (
     style_cellule, fusionner_style, BORDURE_FINE,
     COULEUR_ENTETE_COL, COULEUR_LIGNE_PAIRE, COULEUR_BLANC,
-    COULEUR_ALERTE, get_palette,
+    COULEUR_ALERTE, get_palette, make_border,
 )
 from ..core.feuille import marquer_version, init_feuille
 
@@ -103,12 +103,14 @@ def _ligne_equipe(ws, ligne, rang, nom_equipe, club, note="", bg=None):
     return ligne + 1
 
 
-def _section_n1n2(ws, ligne, equipes, pal, col_fin, cat_id="", taille_equipe=4, nb_n1n2=8):
+def _section_n1n2(ws, ligne, equipes, pal, col_fin, cat_id="", taille_equipe=4, nb_n1n2=8, equipes_n2=None):
     """Section N1/N2 : équipes qualifiées de la ½ finale FFE."""
     ws.row_dimensions[ligne].height = 20
     groupe = f" ({_label_groupe_vet(cat_id)})" if cat_id in ("V1","V2","V3","V4") else ""
+    # FD/SD : une seule liste N1 (pas de N2 distincte) → label "N1" uniquement
+    label_n1n2 = "N1/N2" if nb_n1n2 == 16 else "N1"
     fusionner_style(ws, f"A{ligne}", f"{col_fin}{ligne}",
-                    f"  ÉQUIPES GRAND EST QUALIFIÉES N1/N2{groupe} — ½ FINALE NATIONALE FFE",
+                    f"  ÉQUIPES GRAND EST QUALIFIÉES {label_n1n2}{groupe} — ½ FINALE NATIONALE FFE",
                     bold=True, font_size=11, bg_color=pal["n1"], align_h="left")
     ligne += 1
 
@@ -128,19 +130,28 @@ def _section_n1n2(ws, ligne, equipes, pal, col_fin, cat_id="", taille_equipe=4, 
         ligne = _entete_colonnes(ws, ligne, pal)
         ws.row_dimensions[ligne].height = 15
         ws.merge_cells(f"A{ligne}:{col_fin}{ligne}")
-        style_cellule(ws, f"A{ligne}", "  Aucune équipe Grand Est qualifiée en N1/N2",
+        style_cellule(ws, f"A{ligne}", f"  Aucune équipe Grand Est qualifiée en {label_n1n2}",
                       italic=True, font_size=9, font_color="6B7280", bg_color=COULEUR_BLANC)
         return ligne + 2
 
-    # EH/FH Senior (nb_n1n2=16) : scinder en titre (1-8) et maintien (9-16)
+    # EH/FH Senior (nb_n1n2=16) : scinder en titre (N1) et maintien (N2)
     if nb_n1n2 == 16:
-        titre    = [e for e in equipes if int(e.get("rang", 99)) <= 8]
-        maintien = [e for e in equipes if int(e.get("rang", 99)) >  8]
+        # Si equipes_n2 fourni séparément : N1 et N2 sont deux listes distinctes
+        if equipes_n2 is not None:
+            groupes = [
+                ("— Nationale 1", equipes),
+                ("— Nationale 2", equipes_n2),
+            ]
+        else:
+            # Sinon scinder par rang (EH/FH : titre rangs 1-8, maintien rangs 9-16)
+            titre    = [e for e in equipes if int(e.get("rang", 99)) <= 8]
+            maintien = [e for e in equipes if int(e.get("rang", 99)) >  8]
+            groupes  = [
+                ("— Pour le titre (rangs 1 à 8)", titre),
+                ("— Pour le maintien (rangs 9 à 16)", maintien),
+            ]
 
-        for groupe_label, groupe_equipes in [
-            ("— Pour le titre (rangs 1 à 8)", titre),
-            ("— Pour le maintien (rangs 9 à 16)", maintien),
-        ]:
+        for groupe_label, groupe_equipes in groupes:
             if not groupe_equipes:
                 continue
             # Sous-header
@@ -342,7 +353,8 @@ def _remplir_feuille_equipes_seniors(ws, data, genre):
     """Remplit une feuille équipes (H ou D) pour M17→Vétérans."""
     g      = genre.lower()
     cat_id = data["meta"].get("cat_id", "Seniors")
-    pal    = get_palette(cat_id)
+    arme_id_pal = data["meta"].get("arme_id", "E")
+    pal    = get_palette(cat_id, arme_id_pal)
     col_fin = get_column_letter(NB_COLS)
 
     # En-tête
@@ -364,14 +376,16 @@ def _remplir_feuille_equipes_seniors(ws, data, genre):
 
     # Seniors EH et FH : 16 équipes N1+N2 (1-8 titre, 9-16 maintien)
     # Tous les autres : 8 équipes
-    nb_n1n2 = 16 if (cat_id == "Seniors" and arme_id in ("E","F") and genre == "H") else 8
-    arme_id = data["meta"].get("arme_id", "E")
+    arme_id = arme_id_pal
+    equipes_n2 = data.get(f"equipes_n2_{genre}", None) or None  # clé avec genre majuscule (H/D)
+    # H : toujours 16 ; D : 16 uniquement si GES présents en N2 (equipes_n2 fourni)
+    nb_n1n2 = 16 if (cat_id == "Seniors" and arme_id in ("E","F","S") and (genre == "H" or equipes_n2)) else 8
 
-    ligne = _section_n1n2(ws, ligne, eq_n1n2, pal, col_fin, cat_id, taille_equipe, nb_n1n2)
+    ligne = _section_n1n2(ws, ligne, eq_n1n2, pal, col_fin, cat_id, taille_equipe, nb_n1n2, equipes_n2)
     ligne = _section_n3_ffe(ws, ligne, eq_n3_ffe, pal, col_fin, taille_equipe)
-    # SD Seniors : N1 sur liste FFE, N2 open (pas de N3)
-    # → label "N2" pour la section open
-    label_n3 = "N2" if (cat_id == "Seniors" and arme_id == "S" and genre == "D") else "N3"
+    # FD/SD Dames : N1 sur liste FFE, N2 open (pas de N3)
+    is_dames_n1only = cat_id == "Seniors" and genre == "D" and arme_id in ("F","S")
+    label_n3 = "N2" if is_dames_n1only else "N3"
 
     ligne = _section_n3(ws, ligne, eq_n3, quota_n3, mode_n3, pal, col_fin, cat_id, taille_equipe, nb_open_n3, label_n3)
     if mode_n3 == "quota":

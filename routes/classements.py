@@ -199,3 +199,67 @@ def api_upload_pdf_equipes():
     except Exception as e:
         traceback.print_exc()
         return jsonify({'error': str(e)}), 500
+
+
+@bp.route('/api/upload_pdf_equipes_pages', methods=['POST'])
+def api_upload_pdf_equipes_pages():
+    """Parse un PDF équipes multi-pages (vétérans) et retourne les résultats par page."""
+    from crege_app.core.parser_pdf_equipes import parser_pdf_equipes_pages
+    if 'fichier' not in request.files:
+        return jsonify({'error': 'Aucun fichier envoyé'}), 400
+    f = request.files['fichier']
+    try:
+        valider_fichier(f.filename, f.content_length or 0, EXTENSIONS_EQUIPES)
+        with tempfile.NamedTemporaryFile(suffix='.pdf', delete=False) as tmp:
+            f.save(tmp.name)
+            tmp_path = tmp.name
+        pages = parser_pdf_equipes_pages(tmp_path)
+        os.unlink(tmp_path)
+        return jsonify({'ok': True, 'pages': pages, 'nb_pages': len(pages)})
+    except ValidationError as e:
+        return jsonify(erreur_json(e)), 400
+    except Exception as e:
+        traceback.print_exc()
+        return jsonify({'error': str(e)}), 500
+
+
+@bp.route('/api/upload_pdf_indiv_veterans', methods=['POST'])
+def api_upload_pdf_indiv_veterans():
+    """Parse un PDF individuel vétérans multi-pages et retourne les GES par catégorie."""
+    from crege_app.core.parser_pdf_equipes import parser_pdf_indiv_veterans
+    from crege_app.core.utils import COL_NOM, COL_PRENOM, COL_CLUB, COL_RANG
+    if 'fichier' not in request.files:
+        return jsonify({'error': 'Aucun fichier envoyé'}), 400
+    f = request.files['fichier']
+    try:
+        valider_fichier(f.filename, f.content_length or 0, EXTENSIONS_PDF)
+        with tempfile.NamedTemporaryFile(suffix='.pdf', delete=False) as tmp:
+            f.save(tmp.name)
+            tmp_path = tmp.name
+        pages = parser_pdf_indiv_veterans(tmp_path)
+        os.unlink(tmp_path)
+
+        result = {}
+        for cat_id, p in pages.items():
+            ge = p["tireurs_ge"]
+            ge_list = []
+            for _, r in ge.iterrows():
+                ge_list.append({
+                    "rang":   int(r.get(COL_RANG, 0)),
+                    "nom":    str(r.get(COL_NOM, "")),
+                    "prenom": str(r.get(COL_PRENOM, r.get("Prenom",""))),
+                    "club":   str(r.get(COL_CLUB, r.get("Nom club",""))),
+                })
+            result[cat_id] = {
+                "ge": ge_list,
+                "nb_ge": len(ge_list),
+                "nb_total": p["nb_total"],
+                "cat_label": p["cat_label"],
+            }
+
+        return jsonify({"ok": True, "categories": result})
+    except ValidationError as e:
+        return jsonify(erreur_json(e)), 400
+    except Exception as e:
+        traceback.print_exc()
+        return jsonify({'error': str(e)}), 500

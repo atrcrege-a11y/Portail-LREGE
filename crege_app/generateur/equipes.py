@@ -3,7 +3,7 @@ generateur/equipes.py — Rendu des feuilles équipes M15.
 """
 from openpyxl.utils import get_column_letter
 from ..core.styles import (
-    style_cellule, fusionner_style, BORDURE_FINE,
+    style_cellule, fusionner_style, BORDURE_FINE, get_palette, make_border,
     COULEUR_GE1, COULEUR_GE2, COULEUR_GE3, COULEUR_REMPL_EQ,
     COULEUR_ENTETE_COL, COULEUR_LIGNE_PAIRE, COULEUR_BLANC, COULEUR_ALERTE,
 )
@@ -16,7 +16,9 @@ def remplir_feuille_equipes(ws, data):
     col_fin = get_column_letter(nb_cols)
     ligne   = init_feuille(ws, data["meta"], nb_cols)
 
-    couleurs_eq = [COULEUR_GE1, COULEUR_GE2, COULEUR_GE3]
+    arme_id = data.get("meta", {}).get("arme_id", "E")
+    pal     = get_palette("M15", arme_id)
+    couleurs_eq = [pal["n1"], pal["n2"], pal["n3"]]
     labels = {
         1: "Rang / Classement", 2: "Nom", 3: "Prénom",
         4: "Club", 5: "Participation\nOui / Non", 6: "Taille de veste"
@@ -57,7 +59,7 @@ def remplir_feuille_equipes(ws, data):
 
         # Tireurs
         for i, t in enumerate(tireurs):
-            bg = COULEUR_LIGNE_PAIRE if i % 2 == 0 else COULEUR_BLANC
+            bg = pal["ligne_paire"] if i % 2 == 0 else COULEUR_BLANC
             ws.row_dimensions[ligne].height = 22
             club = t.get("club", "")
             if len(club) > 32:
@@ -117,7 +119,7 @@ def remplir_feuille_equipes(ws, data):
         ligne += 1
 
         for i, t in enumerate(remplacants):
-            bg = COULEUR_LIGNE_PAIRE if i % 2 == 0 else COULEUR_BLANC
+            bg = pal["ligne_paire"] if i % 2 == 0 else COULEUR_BLANC
             ws.row_dimensions[ligne].height = 17
             club = t.get("club", "")
             for j, (val, align, bold, sz, wrap) in enumerate([

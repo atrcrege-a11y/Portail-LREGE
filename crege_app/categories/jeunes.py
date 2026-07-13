@@ -36,7 +36,7 @@ def _construire_jeunes(df_national, df_regional, config: dict) -> dict:
     n1_seuil    = 32 if cat_id in ("M17", "M20", "M23") else quota_fed
     use_fed     = quota_fed > 0  # True si section N1 active
     use_nat     = quota_cn > 0
-    pal       = get_palette(cat_id)
+    pal       = get_palette(cat_id, config.get("arme_id", "E"))
 
     import pandas as pd
     _COLS = [COL_RANG, COL_NOM, COL_PRENOM, COL_CLUB, COL_REGION]
@@ -169,6 +169,8 @@ def _construire_jeunes(df_national, df_regional, config: dict) -> dict:
     # Texte N1 : toujours "Les 32 premiers" pour M17/M20, sinon quota_fed
     n1_display = n1_seuil if cat_id in ("M17", "M20", "M23") else qf_display
     textes_fed_default = [
+        f"Les {n1_display} premiers du classement national hors DOM/TOM"
+        if cat_id == "M15" else
         f"Les {n1_display} premiers tireurs sélectionnables en équipe de France "
         f"du classement national",
     ]
@@ -272,7 +274,7 @@ def _construire_jeunes_open_circuit(df_n1, df_n2, df_nat, config: dict) -> dict:
     df_nat : DataFrame classement national (pour les rangs) — peut être None
     """
     cat_id = config.get("cat_id", "")
-    pal    = get_palette(cat_id)
+    pal    = get_palette(cat_id, config.get("arme_id", "E"))
 
     # Index classement national : (NOM_NORM, PRENOM_NORM) → rang
     import unicodedata, re as _re
@@ -381,7 +383,7 @@ def _construire_jeunes_ffe_n1n2_n3quota(df_n1, df_n2, df_nat, df_reg, config: di
     filtre_fr = config.get("nationalite_francaise", True)
     if df_reg is not None: df_reg = filtrer_df(df_reg, filtre_fr)
     cat_id = config.get("cat_id", "")
-    pal    = get_palette(cat_id)
+    pal    = get_palette(cat_id, config.get("arme_id", "E"))
     import unicodedata, re as _re
     def _norm(s):
         s = unicodedata.normalize("NFKD", str(s).upper()).encode("ascii", "ignore").decode()
@@ -519,7 +521,7 @@ def _construire_jeunes_n1_ffe_n2_quota(df_n1, df_nat, df_reg, config: dict) -> d
     filtre_fr = config.get("nationalite_francaise", True)
     if df_reg is not None: df_reg = filtrer_df(df_reg, filtre_fr)
     cat_id = config.get("cat_id", "")
-    pal    = get_palette(cat_id)
+    pal    = get_palette(cat_id, config.get("arme_id", "E"))
     import unicodedata as _ud3, re as _re3
     def _norm(s):
         s = _ud3.normalize("NFKD", str(s).upper()).encode("ascii", "ignore").decode()

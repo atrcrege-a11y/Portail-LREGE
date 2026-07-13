@@ -86,18 +86,15 @@ def sl_upload():
         return jsonify({'error': str(e), 'detail': traceback.format_exc()}), 500
 
 
-@bp.route('/api/sl/generer', methods=['POST'])
-def sl_generer():
-    params            = request.get_json(force=True)
-    mode              = params.get('mode', 'multi')
-    selections_params = params.get('selections', [])
+def _construire_selections(selections_params):
+    """Construit les sélections SL depuis les params UI.
 
-    if not selections_params:
-        return jsonify({'error': 'Aucune sélection spécifiée'}), 400
-
-    try:
-        selections = []
-        for sel in selections_params:
+    SOURCE UNIQUE partagée par /api/sl/generer (Excel) et
+    /api/sl/envoyer_plateforme. Retourne (selections, None) ou
+    (None, (json, code)) en cas d'erreur.
+    """
+    selections = []
+    for sel in selections_params:
             disc_id = sel.get('disc_id', '')
             niveau  = sel.get('niveau_id', 'cdf')
             cle_nat = sel.get('cle_national')
@@ -109,9 +106,9 @@ def sl_generer():
                      if sel.get('cle_demifin') and cache.sl_has(sel.get('cle_demifin', '')) else None
 
             if cle_nat and df_nat is None:
-                return jsonify({'error': f"Cache expiré pour {disc_id} (national). Ré-importez le fichier."}), 400
+                return None, (jsonify({'error': f"Cache expiré pour {disc_id} (national). Ré-importez le fichier."}), 400)
             if cle_reg and df_reg is None:
-                return jsonify({'error': f"Cache expiré pour {disc_id} (régional). Ré-importez le fichier."}), 400
+                return None, (jsonify({'error': f"Cache expiré pour {disc_id} (régional). Ré-importez le fichier."}), 400)
 
             parseur = sl_get_discipline(disc_id).get('parseur', '')
 
@@ -158,6 +155,22 @@ def sl_generer():
             nom_feuille = disc.get('label_court', disc_id)[:31]
             selections.append({'nom_feuille': nom_feuille, 'data': data,
                                 'niveau_id': niveau, 'disc_id': disc_id})
+    return selections, None
+
+
+@bp.route('/api/sl/generer', methods=['POST'])
+def sl_generer():
+    params            = request.get_json(force=True)
+    mode              = params.get('mode', 'multi')
+    selections_params = params.get('selections', [])
+
+    if not selections_params:
+        return jsonify({'error': 'Aucune sélection spécifiée'}), 400
+
+    try:
+        selections, erreur = _construire_selections(selections_params)
+        if erreur:
+            return erreur
 
         date_str = datetime.datetime.now().strftime('%Y%m%d')
         sel_en   = [s for s in selections if s.get('niveau_id') == 'epreuve_nationale']
@@ -183,6 +196,52 @@ def sl_generer():
 
         return jsonify({'status': 'ok', 'fichiers': fichiers,
                         'feuilles': [s['nom_feuille'] for s in selections]})
+
+    except Exception as e:
+        return jsonify({'error': str(e), 'detail': traceback.format_exc()}), 500
+
+
+@bp.route('/api/sl/envoyer_plateforme', methods=['POST'])
+def sl_envoyer_plateforme():
+    """Envoie les sélections SABRE LASER vers la plateforme.
+
+    Mêmes params que /api/sl/generer (source unique _construire_selections).
+    Chaque sélection = 1 compétition DISTINCTE sur la plateforme
+    (CS Seniors, CS M17, ET Seniors, Chorégraphie). arme='sabre laser',
+    genre='' (mixte). Validation regles.py avant chaque envoi.
+    """
+    from services.payloads import (construire_payload_sabre_laser,
+                                   valider_payload, ValidationPayloadError)
+    from services.payloads.sabre_laser import regle_sl
+    from services.export_plateforme import envoyer_payload
+
+    params            = request.get_json(force=True)
+    selections_params = params.get('selections', [])
+    if not selections_params:
+        return jsonify({'error': 'Aucune sélection spécifiée'}), 400
+
+    try:
+        selections, erreur = _construire_selections(selections_params)
+        if erreur:
+            return erreur
+
+        resultats = []
+        for s in selections:
+            payload = construire_payload_sabre_laser(params, s['data'], s['disc_id'])
+            try:
+                valider_payload(payload, regle_sl(s['disc_id']))
+            except ValidationPayloadError as e:
+                return jsonify({'error': f"Payload rejeté ({s['nom_feuille']}) : {e}",
+                                'envoyes': resultats}), 400
+            ok, status, body = envoyer_payload(payload)
+            if not ok:
+                return jsonify({'error': f"Envoi plateforme échoué ({s['nom_feuille']})",
+                                'status': status, 'detail': body,
+                                'envoyes': resultats}), 502
+            resultats.append({'competition': payload['competition']['nom'],
+                              'nb_qualifies': len(payload['qualifies'])})
+
+        return jsonify({'status': 'ok', 'envoyes': resultats})
 
     except Exception as e:
         return jsonify({'error': str(e), 'detail': traceback.format_exc()}), 500

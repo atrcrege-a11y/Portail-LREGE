@@ -21,7 +21,7 @@ def _construire_seniors(df_national, df_regional, config: dict, df_ffe=None) -> 
     niveau_lrege = config.get("niveau_lrege", "N3")
     is_sabre     = arme_id == "S" and cat_id == "Seniors"
     nb_wc        = config.get("nb_wildcards", 4) if (cat_id == "Seniors" and not is_sabre) else 0
-    pal          = get_palette(cat_id)
+    pal          = get_palette(cat_id, arme_id)
 
     import pandas as pd, unicodedata, re as _re
     _COLS = [COL_RANG, COL_NOM, COL_PRENOM, COL_CLUB, COL_REGION]
@@ -80,8 +80,8 @@ def _construire_seniors(df_national, df_regional, config: dict, df_ffe=None) -> 
     # ── Mode classement national direct : Sabre, Épée, Vétérans ─────
     else:
         ge_n1 = df_nat[df_nat[COL_REGION].apply(est_grand_est)]
-        if not is_sabre and quota_n1 > 0:
-            ge_n1 = ge_n1[ge_n1[COL_RANG] <= quota_n1]
+        if not is_sabre:
+            ge_n1 = ge_n1.head(quota_n1)
         tireurs_n1 = [
             {"rang": f"CL NAT {r[COL_RANG]}", "nom": r[COL_NOM],
              "prenom": r[COL_PRENOM], "club": r[COL_CLUB], "note": ""}
@@ -125,24 +125,79 @@ def _construire_seniors(df_national, df_regional, config: dict, df_ffe=None) -> 
                 "avec_participation": True,
             })
 
-    # ── Quota LREGE (N2 ou N3 selon arme) ───────────────────────────
-    if quota_n2 > 0:
-        df_reg_filtre = df_reg[
-            ~df_reg.apply(lambda r: (_norm(r[COL_NOM]), _norm(r.get(COL_PRENOM, ""))) in noms_qualifies, axis=1)
-        ].head(quota_n2)
-        tireurs_n2 = [
-            {"rang": f"CL GE {r[COL_RANG]}", "nom": r[COL_NOM],
-             "prenom": r[COL_PRENOM], "club": r[COL_CLUB], "note": ""}
-            for _, r in df_reg_filtre.iterrows()
-        ]
-        if tireurs_n2:
+    # ── Quota LREGE (N2 ou N3 selon arme) — split ⅓ nat + ⅔ rég ────
+    quota_cn = config.get("quota_crege_nat", 0)
+    quota_cr = config.get("quota_crege_reg", quota_n2)
+    noms_lrege = set()
+
+    if quota_cn > 0 or quota_cr > 0:
+        sous_sections = []
+
+        # Places classement national (hors déjà qualifiés FFE)
+        tireurs_cn = []
+        if quota_cn > 0 and not df_nat.empty:
+            ge_nat = df_nat[
+                df_nat[COL_REGION].apply(est_grand_est) &
+                ~df_nat.apply(lambda r: (_norm(r[COL_NOM]), _norm(r.get(COL_PRENOM, ""))) in noms_qualifies, axis=1)
+            ]
+            for _, r in ge_nat.head(quota_cn).iterrows():
+                k = (_norm(r[COL_NOM]), _norm(r.get(COL_PRENOM, "")))
+                tireurs_cn.append({"rang": f"CL NAT {r[COL_RANG]}", "nom": r[COL_NOM],
+                                    "prenom": r[COL_PRENOM], "club": r[COL_CLUB], "note": ""})
+                noms_lrege.add(k)
+        if tireurs_cn:
+            sous_sections.append({
+                "label": f"Sur classement national (LREGE) : {quota_cn} place{'s' if quota_cn > 1 else ''}",
+                "couleur": pal["n2"], "textes": [], "tireurs": tireurs_cn,
+            })
+
+        # Places classement régional (hors déjà qualifiés FFE + national)
+        noms_exclus_reg = noms_qualifies | noms_lrege
+        tireurs_cr = []
+        if quota_cr > 0 and not df_reg.empty:
+            df_reg_filtre = df_reg[
+                ~df_reg.apply(lambda r: (_norm(r[COL_NOM]), _norm(r.get(COL_PRENOM, ""))) in noms_exclus_reg, axis=1)
+            ].head(quota_cr)
+            for _, r in df_reg_filtre.iterrows():
+                k = (_norm(r[COL_NOM]), _norm(r.get(COL_PRENOM, "")))
+                tireurs_cr.append({"rang": f"CL GE {r[COL_RANG]}", "nom": r[COL_NOM],
+                                   "prenom": r[COL_PRENOM], "club": r[COL_CLUB], "note": ""})
+                noms_lrege.add(k)
+        if tireurs_cr:
+            sous_sections.append({
+                "label": f"Sur classement régional (LREGE) : {quota_cr} place{'s' if quota_cr > 1 else ''}",
+                "couleur": pal["n2"], "textes": [], "tireurs": tireurs_cr,
+            })
+
+        if sous_sections:
             sections.append({
-                "label":   f"TIREURS QUALIFIÉS — QUOTA LREGE {niveau_lrege}",
-                "couleur": pal["n2"],
-                "textes":  config.get("textes_n2", []),
-                "tireurs": tireurs_n2,
+                "label":        f"TIREURS QUALIFIÉS — QUOTA LREGE {niveau_lrege}",
+                "couleur":      pal["n2"],
+                "textes":       [f"Quota LREGE Grand Est — {quota_cn} place{'s' if quota_cn>1 else ''} classement national + {quota_cr} place{'s' if quota_cr>1 else ''} classement régional"],
+                "tireurs":      [],
+                "sous_sections": sous_sections,
                 "avec_participation": True,
             })
+
+    # ── Remplaçants : suivants du classement régional hors qualifiés ─
+    noms_exclus_rempl = noms_qualifies | noms_lrege
+    nb_rempl = config.get("nb_remplacants", 10)
+    df_rempl = df_reg[
+        ~df_reg.apply(lambda r: (_norm(r[COL_NOM]), _norm(r.get(COL_PRENOM, ""))) in noms_exclus_rempl, axis=1)
+    ].head(nb_rempl)
+    tireurs_rempl = [
+        {"rang": f"CL GE {r[COL_RANG]}", "nom": r[COL_NOM],
+         "prenom": r[COL_PRENOM], "club": r[COL_CLUB], "note": ""}
+        for _, r in df_rempl.iterrows()
+    ]
+    if tireurs_rempl:
+        sections.append({
+            "label":   "TIREURS REMPLAÇANTS",
+            "couleur": pal.get("remplacants", "D9E1F2"),
+            "textes":  ["En cas de désistement d'un qualifié : le premier remplaçant est sélectionné"],
+            "tireurs": tireurs_rempl,
+            "avec_participation": False,
+        })
 
     return {
         "format": "seniors",
@@ -186,8 +241,10 @@ def _make_seniors_class(cat_id, label, competitions, nationalite_fr=True):
     return _Cat
 
 
-Seniors = _make_seniors_class("Seniors", "Seniors",           ["Championnat de France"], True)
-V1      = _make_seniors_class("V1",      "Vétérans V1",       ["Championnat de France"], False)
-V2      = _make_seniors_class("V2",      "Vétérans V2",       ["Championnat de France"], False)
-V3      = _make_seniors_class("V3",      "Grands Vétérans V3", ["Championnat de France"], False)
-V4      = _make_seniors_class("V4",      "Grands Vétérans V4", ["Championnat de France"], False)
+# Nationalité française obligatoire pour toutes les catégories ci-dessous
+# (confirmé règlement FFE — Seniors + Vétérans V1/V2/V3/V4)
+Seniors = _make_seniors_class("Seniors", "Seniors",            ["Championnat de France"], True)
+V1      = _make_seniors_class("V1",      "Vétérans V1",        ["Championnat de France"], True)
+V2      = _make_seniors_class("V2",      "Vétérans V2",        ["Championnat de France"], True)
+V3      = _make_seniors_class("V3",      "Grands Vétérans V3", ["Championnat de France"], True)
+V4      = _make_seniors_class("V4",      "Grands Vétérans V4", ["Championnat de France"], True)

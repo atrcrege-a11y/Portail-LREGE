@@ -112,6 +112,29 @@ MATRICE_REGLEMENTAIRE = {
     # Épée Dames  : open avec condition 2 circuits nationaux
     # Fleuret & Sabre : open (critérium)
 
+    # ─── M15 — Fête des Jeunes ────────────────────────────────────────
+    # Toutes armes : quota fédéral = 40 premiers classement national
+    # Quota LREGE : variable (calculé depuis les 8es de finale), saisi dans l'UI
+    # Pas de filtre nationalité
+    ("M15", "E", "H"): dict(n1_default=40, n2_mode=N2_QUOTA_LREGE,
+        n2_texte="Quota LREGE Grand Est (1/3 FFE + 2/3 classement régional GE)",
+        condition=""),
+    ("M15", "E", "D"): dict(n1_default=40, n2_mode=N2_QUOTA_LREGE,
+        n2_texte="Quota LREGE Grand Est (1/3 FFE + 2/3 classement régional GE)",
+        condition=""),
+    ("M15", "F", "H"): dict(n1_default=40, n2_mode=N2_QUOTA_LREGE,
+        n2_texte="Quota LREGE Grand Est (1/3 FFE + 2/3 classement régional GE)",
+        condition=""),
+    ("M15", "F", "D"): dict(n1_default=40, n2_mode=N2_QUOTA_LREGE,
+        n2_texte="Quota LREGE Grand Est (1/3 FFE + 2/3 classement régional GE)",
+        condition=""),
+    ("M15", "S", "H"): dict(n1_default=40, n2_mode=N2_QUOTA_LREGE,
+        n2_texte="Quota LREGE Grand Est (1/3 FFE + 2/3 classement régional GE)",
+        condition=""),
+    ("M15", "S", "D"): dict(n1_default=40, n2_mode=N2_QUOTA_LREGE,
+        n2_texte="Quota LREGE Grand Est (1/3 FFE + 2/3 classement régional GE)",
+        condition=""),
+
     # ─── M13 — Challenge de France ────────────────────────────────────
     # Épée et Fleuret : quotas régionaux, 100% classement régional (pas de split FFE)
     # Sabre : open

@@ -1,16 +1,16 @@
 """
-categories/selection.py — Moteur générique de sélection CDF/FDJ.
+categories/selection.py -- Moteur generique de selection CDF/FDJ.
 
-Principe : chaque combinaison (cat, arme, genre) est décrite par une
-liste d'étapes ordonnées. La fonction construire_selection() exécute
-ces étapes en séquence, en maintenant un ensemble noms_exclus pour
-éviter les doublons inter-étapes.
+Principe : chaque combinaison (cat, arme, genre) est decrite par une
+liste d'etapes ordonnees. La fonction construire_selection() execute
+ces etapes en sequence, en maintenant un ensemble noms_exclus pour
+eviter les doublons inter-etapes.
 
-Étapes disponibles :
-  EtapeFFE(niveau)     — GES présents dans df_ffe au niveau donné (N1/N2/N3)
-  EtapeQuotaLREGE()   — split ⅓/⅔ nat+rég depuis df_nat et df_reg
-  EtapeRegOnly()       — 100% classement régional (M13)
-  EtapeRemplacants()  — suivants du classement régional hors qualifiés
+Etapes disponibles :
+  EtapeFFE(niveau)    -- GES presents dans df_ffe au niveau donne (N1/N2/N3)
+  EtapeQuotaLREGE()   -- split 1/3 + 2/3 nat+reg depuis df_nat et df_reg
+  EtapeRegOnly()      -- 100% classement regional (M13)
+  EtapeRemplacants()  -- suivants du classement regional hors qualifies
 """
 
 import unicodedata, re as _re
@@ -18,7 +18,7 @@ import pandas as pd
 from ..core.utils import filtrer_df, est_grand_est, COL_RANG, COL_NOM, COL_PRENOM, COL_CLUB, COL_REGION
 from ..core.styles import get_palette
 
-# ── Utilitaires ──────────────────────────────────────────────────────────────
+# -- Utilitaires -------------------------------------------------------
 
 _COLS_EMPTY = [COL_RANG, COL_NOM, COL_PRENOM, COL_CLUB, COL_REGION]
 
@@ -41,10 +41,10 @@ def _tireur(r, rang_str):
 def _empty_df():
     return pd.DataFrame(columns=_COLS_EMPTY)
 
-# ── Classes d'étapes ─────────────────────────────────────────────────────────
+# -- Classes d'etapes --------------------------------------------------
 
 class EtapeFFE:
-    """GES présents dans df_ffe pour un niveau donné (N1, N2 ou N3)."""
+    """GES presents dans df_ffe pour un niveau donne (N1, N2 ou N3)."""
     def __init__(self, niveau):
         self.niveau = niveau
 
@@ -59,7 +59,6 @@ class EtapeFFE:
         ge = df_niv[df_niv[COL_REGION].apply(est_grand_est)]
         if ge.empty:
             return None
-        # Récupérer rang depuis le classement national Excel si disponible
         nat_idx = ctx.get("nat_idx", {})
         tireurs = []
         for _, r in ge.iterrows():
@@ -67,36 +66,37 @@ class EtapeFFE:
             rang_nat = nat_idx.get(k, int(r.get(COL_RANG, 0)))
             tireurs.append(_tireur(r, f"CL NAT {rang_nat}"))
             ctx["noms_exclus"].add(k)
-        pal = ctx["pal"]
-        date_comp = ctx["cfg"].get("date", "")
-        date_txt  = f" — Compétition le {date_comp}" if date_comp else ""
+        cfg       = ctx["cfg"]
+        pal       = ctx["pal"]
+        date_comp = cfg.get("date", "")
+        date_txt  = f" -- Competition le {date_comp}" if date_comp else ""
         couleur = pal["n1"] if self.niveau == "N1" else pal["n2"]
-        label = f"TIREURS QUALIFIÉS — {self.niveau} (LISTE NATIONALE FFE)"
+        label = f"TIREURS QUALIFIES -- {self.niveau} (LISTE NATIONALE FFE)"
         textes = [
-            f"Tireurs Grand Est qualifiés en {self.niveau} sur la liste nationale FFE",
-            f"⚠️  Sélection effectuée maintenant{date_txt}",
+            f"Tireurs Grand Est qualifies en {self.niveau} sur la liste nationale FFE",
+            f"Attention : Selection effectuee maintenant{date_txt}",
         ]
         return {"label": label, "couleur": couleur, "textes": textes,
                 "tireurs": tireurs, "avec_participation": True}
 
 
 class EtapeQuotaLREGE:
-    """Quota LREGE avec split ⅓ nat + ⅔ rég. Label = niveau_lrege du config."""
+    """Quota LREGE avec split 1/3 nat + 2/3 reg. Label = niveau_lrege du config."""
     def build(self, ctx):
         cfg      = ctx["cfg"]
-        df_nat   = ctx.get("df_nat", _empty_df())
-        df_reg   = ctx.get("df_reg", _empty_df())
+        df_nat   = ctx.get("df_nat")
+        df_reg   = ctx.get("df_reg")
         exclus   = ctx["noms_exclus"]
         quota_cn = cfg.get("quota_crege_nat", 0)
         quota_cr = cfg.get("quota_crege_reg", 0)
+        total    = quota_cn + quota_cr
         niveau   = cfg.get("niveau_lrege", "")
         pal      = ctx["pal"]
-        if quota_cn == 0 and quota_cr == 0:
+        if total == 0:
             return None
 
         sous = []
 
-        # ⅓ classement national
         if quota_cn > 0 and df_nat is not None and not df_nat.empty:
             ge_nat = df_nat[
                 df_nat[COL_REGION].apply(est_grand_est) &
@@ -107,10 +107,11 @@ class EtapeQuotaLREGE:
                 tirs.append(_tireur(r, f"CL NAT {r[COL_RANG]}"))
                 exclus.add(_key(r))
             if tirs:
-                sous.append({"label": f"Sur classement national (LREGE) : {quota_cn} place{'s' if quota_cn>1 else ''}",
-                             "couleur": pal["n2"], "textes": [], "tireurs": tirs})
+                sous.append({
+                    "label":   f"Sur classement national ({quota_cn} place{'s' if quota_cn>1 else ''})",
+                    "couleur": pal["n2"], "textes": [], "tireurs": tirs,
+                })
 
-        # ⅔ classement régional
         if quota_cr > 0 and df_reg is not None and not df_reg.empty:
             ge_reg = df_reg[
                 ~df_reg.apply(lambda r: _key(r) in exclus, axis=1)
@@ -120,21 +121,25 @@ class EtapeQuotaLREGE:
                 tirs.append(_tireur(r, f"CL GE {r[COL_RANG]}"))
                 exclus.add(_key(r))
             if tirs:
-                sous.append({"label": f"Sur classement régional (LREGE) : {quota_cr} place{'s' if quota_cr>1 else ''}",
-                             "couleur": pal["n2"], "textes": [], "tireurs": tirs})
+                sous.append({
+                    "label":   f"Sur classement regional ({quota_cr} place{'s' if quota_cr>1 else ''})",
+                    "couleur": pal["n2"], "textes": [], "tireurs": tirs,
+                })
 
         if not sous:
             return None
-        total = quota_cn + quota_cr
-        label = f"TIREURS QUALIFIÉS — QUOTA LREGE{(' — ' + niveau) if niveau else ''}"
-        texte = f"Quota LREGE Grand Est{(' — ' + niveau) if niveau else ''} : {total} place{'s' if total>1 else ''}"
+
+        label = f"TIREURS QUALIFIES -- QUOTA LREGE{(' -- ' + niveau) if niveau else ''}"
+        texte = (f"Quota LREGE Grand Est{(' -- ' + niveau) if niveau else ''} : "
+                 f"{total} place{'s' if total>1 else ''} "
+                 f"({quota_cn} classement national + {quota_cr} classement regional)")
         return {"label": label, "couleur": pal["n2"],
                 "textes": [texte], "tireurs": [],
                 "sous_sections": sous, "avec_participation": True}
 
 
 class EtapeRegOnly:
-    """100% classement régional — quota total dans quota_crege_reg (M13)."""
+    """100% classement regional -- quota total dans quota_crege_reg (M13)."""
     def build(self, ctx):
         cfg    = ctx["cfg"]
         df_reg = ctx.get("df_reg", _empty_df())
@@ -150,11 +155,11 @@ class EtapeRegOnly:
             exclus.add(_key(r))
         if not tirs:
             return None
-        sous = [{"label": f"Sur classement régional (LREGE) : {quota} place{'s' if quota>1 else ''}",
+        sous = [{"label": f"Sur classement regional (LREGE) : {quota} place{'s' if quota>1 else ''}",
                  "couleur": pal["n2"], "textes": [], "tireurs": tirs}]
-        return {"label": "TIREURS QUALIFIÉS — QUOTA LREGE",
+        return {"label": "TIREURS QUALIFIES -- QUOTA LREGE",
                 "couleur": pal["n2"],
-                "textes": [f"Quota LREGE Grand Est : {quota} places — classement régional uniquement"],
+                "textes": [f"Quota LREGE Grand Est : {quota} places -- classement regional uniquement"],
                 "tireurs": [], "sous_sections": sous, "avec_participation": True}
 
 
@@ -164,7 +169,6 @@ class EtapeOpenCircuit:
         df_ffe = ctx.get("df_ffe")
         if df_ffe is None or df_ffe.empty:
             return None
-        # Prendre N1 uniquement (les 36 qualifiés)
         if "Niveau" in df_ffe.columns:
             df_n1 = df_ffe[df_ffe["Niveau"] == "N1"].copy()
         else:
@@ -179,24 +183,24 @@ class EtapeOpenCircuit:
             rang_nat = nat_idx.get(k, int(r.get(COL_RANG, 0)))
             tireurs.append(_tireur(r, f"CL NAT {rang_nat}"))
             ctx["noms_exclus"].add(k)
-        cfg = ctx["cfg"]
-        cat_id = cfg.get("cat_id", "")
+        cfg             = ctx["cfg"]
+        cat_id          = cfg.get("cat_id", "")
         is_sabre_senior = cat_id == "Seniors"
-        pal = ctx["pal"]
-        date_comp = cfg.get("date", "")
-        date_txt  = f" — Compétition le {date_comp}" if date_comp else ""
+        pal             = ctx["pal"]
+        date_comp       = cfg.get("date", "")
+        date_txt        = f" -- Competition le {date_comp}" if date_comp else ""
         textes = [
-            "Les 36 premiers du classement national FFE (Wild Cards intégrées)" if is_sabre_senior
-            else "Les qualifiés GE sur la liste nationale FFE (N1 + WC intégrées)",
-            f"⚠️  Sélection effectuée maintenant{date_txt}",
+            "Les 36 premiers du classement national FFE (Wild Cards integrees)" if is_sabre_senior
+            else "Les qualifies GE sur la liste nationale FFE (N1 + WC integrees)",
+            f"Attention : Selection effectuee maintenant{date_txt}",
         ]
-        return {"label": "TIREURS QUALIFIÉS — N1 (LISTE NATIONALE FFE)",
+        return {"label": "TIREURS QUALIFIES -- N1 (LISTE NATIONALE FFE)",
                 "couleur": pal["n1"], "textes": textes,
                 "tireurs": tireurs, "avec_participation": True}
 
 
 class EtapeRemplacants:
-    """Suivants du classement régional hors tous les qualifiés."""
+    """Suivants du classement regional hors tous les qualifies."""
     def build(self, ctx):
         cfg    = ctx["cfg"]
         df_reg = ctx.get("df_reg", _empty_df())
@@ -210,30 +214,32 @@ class EtapeRemplacants:
         tirs = [t for t in tirs if t["nom"].strip()]
         if not tirs:
             return None
-        return {"label": "TIREURS REMPLAÇANTS",
+        return {"label": "TIREURS REMPLACANTS",
                 "couleur": pal.get("remplacants", "D9E1F2"),
-                "textes": ["En cas de désistement d'un qualifié : le premier remplaçant est sélectionné"],
+                "textes": ["En cas de desistement d'un qualifie : le premier remplacant est selectionne"],
                 "tireurs": tirs, "avec_participation": False}
 
 
-# ── Matrice des étapes par (cat, arme, genre) ─────────────────────────────────
+# -- Matrice des etapes par (cat, arme, genre) -------------------------
+# REFERENCE : cette table EST la regle de selection.
+# Pour toute modification reglementaire, c'est ici qu'il faut intervenir.
 
-_E = EtapeFFE
-_Q = EtapeQuotaLREGE
-_R = EtapeRegOnly
-_OC = EtapeOpenCircuit
+_E     = EtapeFFE
+_Q     = EtapeQuotaLREGE
+_R     = EtapeRegOnly
+_OC    = EtapeOpenCircuit
 _Rempl = EtapeRemplacants
 
 ETAPES = {
-    # M13 — 100% régional (pas de filtre nationalité)
+    # M13 -- 100% regional (pas de filtre nationalite)
     ("M13","E","H"): [_R(), _Rempl()],
     ("M13","E","D"): [_R(), _Rempl()],
     ("M13","F","H"): [_R(), _Rempl()],
     ("M13","F","D"): [_R(), _Rempl()],
-    ("M13","S","H"): [],  # open — pas de liste
+    ("M13","S","H"): [],
     ("M13","S","D"): [],
 
-    # M15 — quota fédéral 40 + quota LREGE
+    # M15 -- quota federal 40 + quota LREGE (variable, saisi dans l'UI)
     ("M15","E","H"): [_E("N1"), _Q(), _Rempl()],
     ("M15","E","D"): [_E("N1"), _Q(), _Rempl()],
     ("M15","F","H"): [_E("N1"), _Q(), _Rempl()],
@@ -241,19 +247,19 @@ ETAPES = {
     ("M15","S","H"): [_E("N1"), _Q(), _Rempl()],
     ("M15","S","D"): [_E("N1"), _Q(), _Rempl()],
 
-    # M17/M20 Épée/Fleuret H — N1+N2 PDF + N3 quota
+    # M17/M20 Epee/Fleuret H -- N1+N2 PDF FFE + N3 quota LREGE
     ("M17","E","H"): [_E("N1"), _E("N2"), _Q(), _Rempl()],
     ("M17","F","H"): [_E("N1"), _E("N2"), _Q(), _Rempl()],
     ("M20","E","H"): [_E("N1"), _E("N2"), _Q(), _Rempl()],
     ("M20","F","H"): [_E("N1"), _E("N2"), _Q(), _Rempl()],
 
-    # M17/M20 Épée/Fleuret D — N1 PDF + N2 quota
+    # M17/M20 Epee/Fleuret D -- N1 PDF FFE + N2 quota LREGE
     ("M17","E","D"): [_E("N1"), _Q(), _Rempl()],
     ("M17","F","D"): [_E("N1"), _Q(), _Rempl()],
     ("M20","E","D"): [_E("N1"), _Q(), _Rempl()],
     ("M20","F","D"): [_E("N1"), _Q(), _Rempl()],
 
-    # M17/M20/M23 Sabre — open circuit (N1 liste FFE)
+    # M17/M20/M23 Sabre -- open circuit (liste FFE PDF, pas de quota)
     ("M17","S","H"): [_OC(), _Rempl()],
     ("M17","S","D"): [_OC(), _Rempl()],
     ("M20","S","H"): [_OC(), _Rempl()],
@@ -261,48 +267,63 @@ ETAPES = {
     ("M23","S","H"): [_OC(), _Rempl()],
     ("M23","S","D"): [_OC(), _Rempl()],
 
-    # M23 Épée/Fleuret — quota LREGE (pas de liste FFE N1 distincte)
+    # M23 Epee/Fleuret -- quota LREGE (pas de liste FFE PDF distincte)
     ("M23","E","H"): [_Q(), _Rempl()],
     ("M23","E","D"): [_Q(), _Rempl()],
     ("M23","F","H"): [_Q(), _Rempl()],
     ("M23","F","D"): [_Q(), _Rempl()],
 
-    # Seniors Épée/Fleuret — N1+N2 (et N3 pour FH) liste FFE + quota LREGE
+    # Seniors Epee -- N1+N2 liste FFE + quota LREGE N3
     ("Seniors","E","H"): [_E("N1"), _E("N2"), _Q(), _Rempl()],
     ("Seniors","E","D"): [_E("N1"), _E("N2"), _Q(), _Rempl()],
+
+    # Seniors Fleuret -- N1+N2+N3 liste FFE (FH) / N1+N2 (FD) + quota LREGE
     ("Seniors","F","H"): [_E("N1"), _E("N2"), _E("N3"), _Q(), _Rempl()],
     ("Seniors","F","D"): [_E("N1"), _E("N2"), _Q(), _Rempl()],
 
-    # Seniors Sabre — open circuit (liste FFE N1 = 36 avec WC)
+    # Seniors Sabre -- open circuit (liste FFE N1 = 36 avec WC)
     ("Seniors","S","H"): [_OC(), _Rempl()],
     ("Seniors","S","D"): [_OC(), _Rempl()],
+
+    # Veterans V1/V2/V3/V4 -- quota LREGE 1/3 national + 2/3 regional
+    # Nationalite francaise obligatoire (confirme REGLES.md regle #7)
+    ("V1","E","H"): [_Q(), _Rempl()], ("V1","E","D"): [_Q(), _Rempl()],
+    ("V1","F","H"): [_Q(), _Rempl()], ("V1","F","D"): [_Q(), _Rempl()],
+    ("V1","S","H"): [_Q(), _Rempl()], ("V1","S","D"): [_Q(), _Rempl()],
+    ("V2","E","H"): [_Q(), _Rempl()], ("V2","E","D"): [_Q(), _Rempl()],
+    ("V2","F","H"): [_Q(), _Rempl()], ("V2","F","D"): [_Q(), _Rempl()],
+    ("V2","S","H"): [_Q(), _Rempl()], ("V2","S","D"): [_Q(), _Rempl()],
+    ("V3","E","H"): [_Q(), _Rempl()], ("V3","E","D"): [_Q(), _Rempl()],
+    ("V3","F","H"): [_Q(), _Rempl()], ("V3","F","D"): [_Q(), _Rempl()],
+    ("V3","S","H"): [_Q(), _Rempl()], ("V3","S","D"): [_Q(), _Rempl()],
+    ("V4","E","H"): [_Q(), _Rempl()], ("V4","E","D"): [_Q(), _Rempl()],
+    ("V4","F","H"): [_Q(), _Rempl()], ("V4","F","D"): [_Q(), _Rempl()],
+    ("V4","S","H"): [_Q(), _Rempl()], ("V4","S","D"): [_Q(), _Rempl()],
 }
 
 
-# ── Fonction principale ───────────────────────────────────────────────────────
+# -- Fonction principale -----------------------------------------------
 
 def construire_selection(cat_id, arme_id, genre, cfg,
                          df_nat=None, df_reg=None, df_ffe=None) -> dict:
     """
-    Point d'entrée unique pour toutes les sélections individuelles.
+    Point d'entree unique pour toutes les selections individuelles.
 
-    Paramètres :
+    Parametres :
         cat_id  : "M13"|"M15"|"M17"|"M20"|"M23"|"Seniors"|"V1"...
         arme_id : "E"|"F"|"S"
         genre   : "H"|"D"
         cfg     : dict de configuration (depuis build_cfg)
         df_nat  : DataFrame classement national Excel (optionnel)
-        df_reg  : DataFrame classement régional GE (optionnel)
-        df_ffe  : DataFrame liste qualifiés FFE PDF (optionnel, avec col Niveau)
+        df_reg  : DataFrame classement regional GE (optionnel)
+        df_ffe  : DataFrame liste qualifies FFE PDF (optionnel, avec col Niveau)
     """
     filtre_fr = cfg.get("nationalite_francaise", True)
-    pal       = get_palette(cat_id)
+    pal       = get_palette(cat_id, arme_id)
 
-    # Filtrer nationalité
     df_nat = filtrer_df(df_nat, filtre_fr) if df_nat is not None else _empty_df()
     df_reg = filtrer_df(df_reg, filtre_fr) if df_reg is not None else _empty_df()
 
-    # Index rang national depuis Excel (pour labelliser les GES FFE)
     nat_idx = {}
     if df_nat is not None and not df_nat.empty:
         for _, r in df_nat.iterrows():
@@ -310,7 +331,6 @@ def construire_selection(cat_id, arme_id, genre, cfg,
             if k[0]:
                 nat_idx[k] = int(r.get(COL_RANG, 0))
 
-    # Contexte partagé entre les étapes
     ctx = {
         "cfg":         cfg,
         "df_nat":      df_nat,
@@ -321,7 +341,6 @@ def construire_selection(cat_id, arme_id, genre, cfg,
         "pal":         pal,
     }
 
-    # Récupérer les étapes pour cette combinaison
     etapes = ETAPES.get((cat_id, arme_id, genre), [_Q(), _Rempl()])
 
     sections = []
@@ -331,7 +350,7 @@ def construire_selection(cat_id, arme_id, genre, cfg,
             sections.append(section)
 
     return {
-        "format":   "jeunes" if cat_id not in ("Seniors","V1","V2","V3","V4") else "seniors",
+        "format":   "jeunes" if cat_id not in ("Seniors","V1","V2","V3","V4","Veterans") else "seniors",
         "meta":     _make_meta(cfg),
         "sections": sections,
         "equipes":  [],
