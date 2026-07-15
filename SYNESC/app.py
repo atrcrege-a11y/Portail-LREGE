@@ -15,15 +15,15 @@ from flask import Flask, render_template, request, jsonify, send_file, session
 
 from core.config import APP_NAME, APP_VERSION, APP_RELEASE_DATE, CHANGELOG
 from core.parser import parse_xml, ParseError
-from core import sessions_store
+from core import sessions_store, store_persist
 from competitions import get_competition, COMPETITIONS_META
 
 app = Flask(__name__)
 app.secret_key = "lrege-synesc-secret-2025"
 app.config["MAX_CONTENT_LENGTH"] = 32 * 1024 * 1024
 
-# ── Store en mémoire par session
-_store = {}
+# ── Store en mémoire par session (persisté sur disque, voir core/store_persist.py)
+_store = store_persist.charger()
 
 def get_store():
     sid = session.get("sid")
@@ -144,6 +144,7 @@ def upload():
         else:
             errors.append(f"{f.filename} — format non supporté.")
 
+    store_persist.sauvegarder(_store)
     return jsonify({"added": added, "errors": errors, "total": len(store)})
 
 
@@ -159,12 +160,14 @@ def remove_file():
     store = get_store()
     before = len(store)
     store[:] = [s for s in store if s[0].get("uid") != uid]
+    store_persist.sauvegarder(_store)
     return jsonify({"removed": before - len(store), "total": len(store)})
 
 
 @app.route("/api/clear", methods=["POST"])
 def clear_files():
     get_store().clear()
+    store_persist.sauvegarder(_store)
     return jsonify({"total": 0})
 
 
@@ -261,6 +264,7 @@ def api_sessions_charger():
             import uuid as _uuid
             meta["uid"] = str(_uuid.uuid4())
         store.append((meta, tireurs, arbitres))
+    store_persist.sauvegarder(_store)
 
     added = [_meta_to_dict(m, t, a) for m, t, a in store]
     return jsonify({
