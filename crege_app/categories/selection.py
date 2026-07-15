@@ -164,16 +164,25 @@ class EtapeRegOnly:
 
 
 class EtapeOpenCircuit:
-    """Open circuit (Sabre M17/M20/M23, Seniors Sabre) : GES de df_ffe toute N1."""
+    """Open circuit (Sabre M17/M20/M23, Seniors Sabre) : GES de df_ffe pour un niveau.
+
+    Une instance par niveau (N1, N2) -- le fichier de reference (palettes mai 2026)
+    montre une section N2 distincte quand le PDF FFE en contient (M20/Seniors sabre).
+    """
+    def __init__(self, niveau="N1"):
+        self.niveau = niveau
+
     def build(self, ctx):
         df_ffe = ctx.get("df_ffe")
         if df_ffe is None or df_ffe.empty:
             return None
         if "Niveau" in df_ffe.columns:
-            df_n1 = df_ffe[df_ffe["Niveau"] == "N1"].copy()
+            df_niv = df_ffe[df_ffe["Niveau"] == self.niveau].copy()
+        elif self.niveau == "N1":
+            df_niv = df_ffe.copy()
         else:
-            df_n1 = df_ffe.copy()
-        ge = df_n1[df_n1[COL_REGION].apply(est_grand_est)]
+            return None
+        ge = df_niv[df_niv[COL_REGION].apply(est_grand_est)]
         if ge.empty:
             return None
         nat_idx = ctx.get("nat_idx", {})
@@ -183,19 +192,30 @@ class EtapeOpenCircuit:
             rang_nat = nat_idx.get(k, int(r.get(COL_RANG, 0)))
             tireurs.append(_tireur(r, f"CL NAT {rang_nat}"))
             ctx["noms_exclus"].add(k)
+        def _sort_key(t):
+            try:
+                return int(str(t["rang"]).split()[-1])
+            except Exception:
+                return 9999
+        tireurs.sort(key=_sort_key)
         cfg             = ctx["cfg"]
         cat_id          = cfg.get("cat_id", "")
         is_sabre_senior = cat_id == "Seniors"
         pal             = ctx["pal"]
         date_comp       = cfg.get("date", "")
         date_txt        = f" -- Competition le {date_comp}" if date_comp else ""
-        textes = [
-            "Les 36 premiers du classement national FFE (Wild Cards integrees)" if is_sabre_senior
-            else "Les qualifies GE sur la liste nationale FFE (N1 + WC integrees)",
-            f"Attention : Selection effectuee maintenant{date_txt}",
-        ]
-        return {"label": "TIREURS QUALIFIES -- N1 (LISTE NATIONALE FFE)",
-                "couleur": pal["n1"], "textes": textes,
+        if self.niveau == "N2":
+            couleur = pal["n2"]
+            textes  = ["Competition open -- sous condition d'avoir participe a au moins une epreuve nationale"]
+        else:
+            couleur = pal["n1"]
+            textes  = [
+                "Les 36 premiers du classement national FFE (Wild Cards integrees)" if is_sabre_senior
+                else "Les qualifies GE sur la liste nationale FFE (N1 + WC integrees)",
+                f"Attention : Selection effectuee maintenant{date_txt}",
+            ]
+        return {"label": f"TIREURS QUALIFIES -- {self.niveau} (LISTE NATIONALE FFE)",
+                "couleur": couleur, "textes": textes,
                 "tireurs": tireurs, "avec_participation": True}
 
 
@@ -260,12 +280,12 @@ ETAPES = {
     ("M20","F","D"): [_E("N1"), _Q(), _Rempl()],
 
     # M17/M20/M23 Sabre -- open circuit (liste FFE PDF, pas de quota)
-    ("M17","S","H"): [_OC(), _Rempl()],
-    ("M17","S","D"): [_OC(), _Rempl()],
-    ("M20","S","H"): [_OC(), _Rempl()],
-    ("M20","S","D"): [_OC(), _Rempl()],
-    ("M23","S","H"): [_OC(), _Rempl()],
-    ("M23","S","D"): [_OC(), _Rempl()],
+    ("M17","S","H"): [_OC("N1"), _OC("N2"), _Rempl()],
+    ("M17","S","D"): [_OC("N1"), _OC("N2"), _Rempl()],
+    ("M20","S","H"): [_OC("N1"), _OC("N2"), _Rempl()],
+    ("M20","S","D"): [_OC("N1"), _OC("N2"), _Rempl()],
+    ("M23","S","H"): [_OC("N1"), _OC("N2"), _Rempl()],
+    ("M23","S","D"): [_OC("N1"), _OC("N2"), _Rempl()],
 
     # M23 Epee/Fleuret -- quota LREGE (pas de liste FFE PDF distincte)
     ("M23","E","H"): [_Q(), _Rempl()],
@@ -273,17 +293,17 @@ ETAPES = {
     ("M23","F","H"): [_Q(), _Rempl()],
     ("M23","F","D"): [_Q(), _Rempl()],
 
-    # Seniors Epee -- N1+N2 liste FFE + quota LREGE N3
-    ("Seniors","E","H"): [_E("N1"), _E("N2"), _Q(), _Rempl()],
-    ("Seniors","E","D"): [_E("N1"), _E("N2"), _Q(), _Rempl()],
+    # Seniors Epee -- N1+N2+N3 liste FFE + quota LREGE N3
+    ("Seniors","E","H"): [_E("N1"), _E("N2"), _E("N3"), _Q(), _Rempl()],
+    ("Seniors","E","D"): [_E("N1"), _E("N2"), _E("N3"), _Q(), _Rempl()],
 
     # Seniors Fleuret -- N1+N2+N3 liste FFE (FH) / N1+N2 (FD) + quota LREGE
     ("Seniors","F","H"): [_E("N1"), _E("N2"), _E("N3"), _Q(), _Rempl()],
     ("Seniors","F","D"): [_E("N1"), _E("N2"), _Q(), _Rempl()],
 
     # Seniors Sabre -- open circuit (liste FFE N1 = 36 avec WC)
-    ("Seniors","S","H"): [_OC(), _Rempl()],
-    ("Seniors","S","D"): [_OC(), _Rempl()],
+    ("Seniors","S","H"): [_OC("N1"), _OC("N2"), _Rempl()],
+    ("Seniors","S","D"): [_OC("N1"), _OC("N2"), _Rempl()],
 
     # Veterans V1/V2/V3/V4 -- quota LREGE 1/3 national + 2/3 regional
     # Nationalite francaise obligatoire (confirme REGLES.md regle #7)
