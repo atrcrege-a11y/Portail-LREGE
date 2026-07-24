@@ -32,6 +32,28 @@ def save_events(events):
         json.dump(events, f, ensure_ascii=False, indent=2)
     os.replace(tmp_file, DATA_FILE)
 
+def season_of(date_str):
+    """Saison sportive d'une date AAAA-MM-JJ. Sept→Août : mois>=9 → année, sinon année-1.
+    Retourne l'année de début de saison (2025 = saison 2025-2026), ou None si date invalide."""
+    if not date_str or len(date_str) < 7:
+        return None
+    try:
+        y, m = int(date_str[:4]), int(date_str[5:7])
+    except ValueError:
+        return None
+    return y if m >= 9 else y - 1
+
+def season_bounds(saison):
+    """Bornes AAAA-MM-JJ (incluses) d'une saison : (1er sept saison, 31 août saison+1)."""
+    return f"{saison}-09-01", f"{saison + 1}-08-31"
+
+def season_label(saison):
+    return f"{saison}-{saison + 1}"
+
+def current_season(today=None):
+    today = today or datetime.now()
+    return today.year if today.month >= 9 else today.year - 1
+
 def apply_filters(events, args):
     niveau    = args.get('niveau')
     arme      = args.get('arme')
@@ -80,6 +102,91 @@ def stats():
         'manuel': sum(1 for e in events if e.get('manuel')),
         'derniere_maj': datetime.now().strftime('%d/%m/%Y %H:%M'),
     })
+
+def _backup_data():
+    """Copie horodatée de calendrier.json avant toute opération destructive.
+    Retourne le nom du fichier de sauvegarde, ou None si aucune donnée."""
+    if not os.path.exists(DATA_FILE):
+        return None
+    backup_dir = os.path.join(os.path.dirname(DATA_FILE), 'backups')
+    os.makedirs(backup_dir, exist_ok=True)
+    name = 'calendrier_' + datetime.now().strftime('%Y%m%d_%H%M%S') + '.json'
+    with open(DATA_FILE, encoding='utf-8') as src:
+        content = src.read()
+    with open(os.path.join(backup_dir, name), 'w', encoding='utf-8') as dst:
+        dst.write(content)
+    return name
+
+@app.route('/api/seasons')
+def seasons():
+    """Saisons présentes dans les données (avec compteurs) + saison écoulée par défaut."""
+    events = load_events()
+    agg = {}
+    for e in events:
+        s = season_of(e.get('date_debut'))
+        if s is None:
+            continue
+        d = agg.setdefault(s, {'saison': s, 'label': season_label(s), 'total': 0, 'manuel': 0})
+        d['total'] += 1
+        if e.get('manuel'):
+            d['manuel'] += 1
+    liste = [agg[k] for k in sorted(agg)]
+    cur = current_season()
+    return jsonify({
+        'seasons': liste,
+        'saison_courante': cur,
+        'saison_ecoulee': cur - 1,   # saison précédant la saison en cours
+    })
+
+@app.route('/api/purge', methods=['POST'])
+def purge_season():
+    """Purge les événements d'une saison (1er sept → 31 août).
+    Body JSON : saison (int, année de début, obligatoire), dry_run (bool),
+    keep_manuel (bool, défaut True). Sauvegarde horodatée avant purge réelle."""
+    data = request.json or {}
+    saison = data.get('saison')
+    try:
+        saison = int(saison)
+    except (TypeError, ValueError):
+        return jsonify({'error': "Champ 'saison' obligatoire (année de début, ex. 2025)"}), 400
+
+    dry_run = bool(data.get('dry_run', False))
+    keep_manuel = bool(data.get('keep_manuel', True))
+    d_from, d_to = season_bounds(saison)
+
+    events = load_events()
+
+    def in_season(e):
+        d = e.get('date_debut') or ''
+        if not (d_from <= d <= d_to):
+            return False
+        if keep_manuel and e.get('manuel'):
+            return False
+        return True
+
+    to_purge = [e for e in events if in_season(e)]
+    kept = [e for e in events if not in_season(e)]
+    manuels_conserves = sum(
+        1 for e in events
+        if keep_manuel and e.get('manuel') and d_from <= (e.get('date_debut') or '') <= d_to
+    )
+
+    resp = {
+        'saison': saison, 'label': season_label(saison),
+        'date_from': d_from, 'date_to': d_to,
+        'purged': len(to_purge), 'remaining': len(kept),
+        'manuels_conserves': manuels_conserves, 'keep_manuel': keep_manuel,
+        'dry_run': dry_run,
+    }
+    if dry_run:
+        resp['success'] = True
+        return jsonify(resp)
+
+    backup = _backup_data()
+    save_events(kept)
+    resp['success'] = True
+    resp['backup'] = backup
+    return jsonify(resp)
 
 @app.route('/api/import', methods=['POST'])
 def import_xlsx():

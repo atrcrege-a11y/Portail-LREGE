@@ -132,6 +132,72 @@ class TestEcritureAtomique:
 
 
 # ─────────────────────────────────────────────────────────────────────────────
+# Saisons + Purge
+# ─────────────────────────────────────────────────────────────────────────────
+
+class TestSaisons:
+
+    def test_season_of_bornes(self):
+        assert appmod.season_of("2025-09-01") == 2025   # 1er jour saison
+        assert appmod.season_of("2026-08-31") == 2025   # dernier jour saison
+        assert appmod.season_of("2026-09-01") == 2026   # saison suivante
+        assert appmod.season_of("2025-08-31") == 2024   # saison précédente
+
+    def test_season_of_invalide(self):
+        assert appmod.season_of("") is None
+        assert appmod.season_of(None) is None
+
+    def test_season_bounds(self):
+        assert appmod.season_bounds(2025) == ("2025-09-01", "2026-08-31")
+
+
+class TestPurge:
+
+    def _seed(self, client):
+        # saison 2024-2025 (à purger) : 1 FFE + 1 manuel
+        client.post("/api/events", json=_event_min(date_debut="2024-10-05", intitule="Vieux FFE"))
+        client.post("/api/events", json=_event_min(date_debut="2025-03-10", intitule="Vieux manuel"))
+        # saison 2025-2026 (à conserver)
+        client.post("/api/events", json=_event_min(date_debut="2025-11-15", intitule="Nouveau"))
+        # tout est manuel via POST -> on force la source FFE sur le 1er pour tester keep_manuel
+        events = appmod.load_events()
+        for e in events:
+            if e["intitule"] == "Vieux FFE":
+                e["manuel"] = False
+        appmod.save_events(events)
+
+    def test_purge_saison_requise(self, client):
+        assert client.post("/api/purge", json={}).status_code == 400
+
+    def test_dry_run_ne_modifie_pas(self, client):
+        self._seed(client)
+        r = client.post("/api/purge", json={"saison": 2024, "dry_run": True}).get_json()
+        assert r["purged"] == 1              # seul le FFE (manuel conservé par défaut)
+        assert r["manuels_conserves"] == 1
+        assert len(client.get("/api/events").get_json()) == 3   # rien supprimé
+
+    def test_purge_keep_manuel(self, client):
+        self._seed(client)
+        r = client.post("/api/purge", json={"saison": 2024}).get_json()
+        assert r["success"] and r["purged"] == 1
+        restants = client.get("/api/events").get_json()
+        intitules = {e["intitule"] for e in restants}
+        assert intitules == {"Vieux manuel", "Nouveau"}   # FFE purgé, manuel gardé
+
+    def test_purge_sans_keep_manuel(self, client):
+        self._seed(client)
+        r = client.post("/api/purge", json={"saison": 2024, "keep_manuel": False}).get_json()
+        assert r["purged"] == 2
+        assert {e["intitule"] for e in client.get("/api/events").get_json()} == {"Nouveau"}
+
+    def test_purge_cree_backup(self, client, tmp_path):
+        self._seed(client)
+        client.post("/api/purge", json={"saison": 2024})
+        backups = os.listdir(str(tmp_path / "backups"))
+        assert len(backups) == 1 and backups[0].endswith(".json")
+
+
+# ─────────────────────────────────────────────────────────────────────────────
 # Exports — smoke tests
 # ─────────────────────────────────────────────────────────────────────────────
 

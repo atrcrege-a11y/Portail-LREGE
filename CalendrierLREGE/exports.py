@@ -38,6 +38,12 @@ def build_ical(events):
         ev.add('description', desc)
         ev.add('location', e.get('lieu',''))
         ev.add('uid', e['id'] + '@lrege.fr')
+        # DTSTAMP + SEQUENCE : permettent à Google Agenda de mettre à jour
+        # l'événement par UID au ré-import au lieu de créer un doublon.
+        now = datetime.now()
+        ev.add('dtstamp', now)
+        ev.add('last-modified', now)
+        ev.add('sequence', 0)
         cal.add_component(ev)
     return cal.to_ical()
 

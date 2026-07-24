@@ -188,6 +188,7 @@ body{font-family:'Syne',sans-serif;background:var(--fond);color:var(--txt);displ
   <div class="header-stats" id="headerStats"><span class="hstat">Chargement…</span></div>
   <div class="header-actions">
     <button class="btn btn-secondary btn-sm" onclick="openImport()">⬆ Import FFE</button>
+    <button class="btn btn-danger btn-sm" onclick="openPurge()">🧹 Purger saison</button>
     <button class="btn btn-gold" onclick="openAdd()">+ Ajouter</button>
   </div>
 </div>
@@ -378,6 +379,25 @@ body{font-family:'Syne',sans-serif;background:var(--fond);color:var(--txt);displ
   </div>
   <div id="importResult"></div>
   <div class="mf"><button class="btn btn-secondary" onclick="closeImport()">Fermer</button></div>
+</div>
+</div>
+
+<!-- MODAL PURGE -->
+<div class="overlay" id="purgeOv" onclick="if(event.target===this)closePurge()">
+<div class="modal">
+  <h2>🧹 Purger une saison</h2>
+  <p style="font-size:.82rem;color:var(--txt2);margin-bottom:14px">Supprime les événements d'une saison sportive (1<sup>er</sup> sept → 31 août). Une sauvegarde horodatée est créée avant toute suppression.</p>
+  <label style="display:block;font-size:.8rem;font-weight:700;margin-bottom:4px">Saison à purger</label>
+  <select id="purgeSaison" style="width:100%;padding:8px;border-radius:7px;border:1.5px solid var(--gris2);font-family:inherit;margin-bottom:12px" onchange="previewPurge()"></select>
+  <label style="display:flex;align-items:center;gap:7px;font-size:.82rem;margin-bottom:14px;cursor:pointer">
+    <input type="checkbox" id="purgeKeepManuel" checked onchange="previewPurge()"> Conserver les événements saisis manuellement
+  </label>
+  <div id="purgePreview" style="font-size:.85rem;margin-bottom:12px"></div>
+  <div id="purgeResult"></div>
+  <div class="mf">
+    <button class="btn btn-secondary" onclick="closePurge()">Annuler</button>
+    <button class="btn btn-danger" id="purgeConfirmBtn" onclick="confirmPurge()">🧹 Purger</button>
+  </div>
 </div>
 </div>
 
@@ -663,6 +683,65 @@ async function doImport(input){
     } else el.innerHTML=`<span style="color:#C0392B">✗ ${res.error}</span>`;
   } catch{ el.innerHTML='<span style="color:#C0392B">✗ Erreur réseau</span>'; }
   input.value='';
+}
+
+// ── PURGE SAISON ────────────────────────────────────────────────────────────────
+async function openPurge(){
+  const sel=document.getElementById('purgeSaison');
+  document.getElementById('purgeResult').innerHTML='';
+  sel.innerHTML='<option>Chargement…</option>';
+  document.getElementById('purgeOv').classList.add('open');
+  const d=await fetch('/api/seasons').then(r=>r.json());
+  const present=new Set(d.seasons.map(s=>s.saison));
+  const cnt=Object.fromEntries(d.seasons.map(s=>[s.saison,s]));
+  // proposer la saison écoulée même si absente, + toutes celles présentes
+  const years=Array.from(new Set([d.saison_ecoulee,...d.seasons.map(s=>s.saison)])).sort();
+  sel.innerHTML=years.map(y=>{
+    const c=cnt[y];
+    const lbl=`${y}-${y+1}`+(c?` — ${c.total} évts (${c.manuel} manuels)`:' — aucun événement');
+    const se=y===d.saison_ecoulee?' (saison écoulée)':'';
+    return `<option value="${y}"${y===d.saison_ecoulee?' selected':''}>${lbl}${se}</option>`;
+  }).join('');
+  previewPurge();
+}
+function closePurge(){ document.getElementById('purgeOv').classList.remove('open'); }
+
+async function previewPurge(){
+  const saison=+document.getElementById('purgeSaison').value;
+  const keep=document.getElementById('purgeKeepManuel').checked;
+  const el=document.getElementById('purgePreview');
+  el.innerHTML='<span style="color:var(--txt2)">Calcul…</span>';
+  const btn=document.getElementById('purgeConfirmBtn');
+  try{
+    const res=await fetch('/api/purge',{method:'POST',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({saison,dry_run:true,keep_manuel:keep})}).then(r=>r.json());
+    if(res.error){ el.innerHTML=`<span style="color:#C0392B">✗ ${res.error}</span>`; return; }
+    const km=keep&&res.manuels_conserves?` <span style="color:var(--txt2)">(${res.manuels_conserves} manuels conservés)</span>`:'';
+    el.innerHTML=`<div style="padding:10px;background:#fdecea;border-radius:7px;border:1px solid #f5c6c2">`+
+      `Saison <strong>${res.label}</strong> (${res.date_from} → ${res.date_to})<br>`+
+      `<strong style="color:#C0392B">${res.purged}</strong> événement(s) seront supprimés${km}<br>`+
+      `<span style="color:var(--txt2)">${res.remaining} conservés au total.</span></div>`;
+    btn.disabled=res.purged===0;
+    btn.style.opacity=res.purged===0?.5:1;
+  }catch{ el.innerHTML='<span style="color:#C0392B">✗ Erreur réseau</span>'; }
+}
+
+async function confirmPurge(){
+  const saison=+document.getElementById('purgeSaison').value;
+  const keep=document.getElementById('purgeKeepManuel').checked;
+  if(!confirm(`Purger définitivement la saison ${saison}-${saison+1} ? Une sauvegarde sera créée.`)) return;
+  const el=document.getElementById('purgeResult');
+  el.innerHTML='<span style="color:var(--bleu2)">Purge en cours…</span>';
+  try{
+    const res=await fetch('/api/purge',{method:'POST',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({saison,dry_run:false,keep_manuel:keep})}).then(r=>r.json());
+    if(res.success){
+      el.innerHTML=`<span style="color:#27AE60">✓ ${res.purged} événement(s) purgés — sauvegarde : ${res.backup}</span>`;
+      await Promise.all([loadStats(),loadEvents()]);
+      previewPurge();
+      showToast(`Saison ${res.label} purgée (${res.purged} évts)`,'ok');
+    } else el.innerHTML=`<span style="color:#C0392B">✗ ${res.error}</span>`;
+  }catch{ el.innerHTML='<span style="color:#C0392B">✗ Erreur réseau</span>'; }
 }
 
 // ── EXPORTS ───────────────────────────────────────────────────────────────────
