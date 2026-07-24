@@ -4,8 +4,11 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(__file__)))
 
 import pytest
 
+import io
+
 import app as appmod
 import parser_ffe as pf
+import parser_pdf as pp
 
 
 # ─────────────────────────────────────────────────────────────────────────────
@@ -143,6 +146,53 @@ class TestEcritureAtomique:
         with open(str(tmp_path / "calendrier.json"), encoding="utf-8") as f:
             data = json.load(f)
         assert len(data) == 1
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# parser_pdf — décodage arme/sexe (texte pivoté) + import additif
+# ─────────────────────────────────────────────────────────────────────────────
+
+class TestParserPDF:
+
+    def test_decode_arme_sexe(self):
+        assert pp._decode_arme_sexe("semad teruelF") == ("fleuret", "D")
+        assert pp._decode_arme_sexe("semmoh eépE") == ("épée", "H")
+        assert pp._decode_arme_sexe("semmoh erbaS") == ("sabre", "H")
+
+    def test_decode_arme_sexe_non_arme(self):
+        assert pp._decode_arme_sexe("RA") == ("", "")
+        assert pp._decode_arme_sexe("Juillet 2027") == ("", "")
+        assert pp._decode_arme_sexe(None) == ("", "")
+
+
+class TestImportPDF:
+
+    def _pdf_upload(self, client, monkeypatch, fake_events):
+        monkeypatch.setattr(appmod, "parse_pdf_ffe", lambda path: fake_events)
+        data = {"file": (io.BytesIO(b"%PDF-1.4 fake"), "cal.pdf")}
+        return client.post("/api/import/pdf", data=data,
+                           content_type="multipart/form-data")
+
+    def test_import_pdf_additif(self, client, monkeypatch):
+        client.post("/api/events", json=_event_min(intitule="Manuel"))  # existant conservé
+        evs = [{"date_debut": "2026-10-10", "intitule": "Seniors Épée H — Etampes",
+                "arme": "épée", "sexe": "H"}]
+        r = self._pdf_upload(client, monkeypatch, evs).get_json()
+        assert r["success"] and r["added"] == 1
+        intitules = {e["intitule"] for e in client.get("/api/events").get_json()}
+        assert intitules == {"Manuel", "Seniors Épée H — Etampes"}
+
+    def test_import_pdf_dedup(self, client, monkeypatch):
+        evs = [{"date_debut": "2026-10-10", "intitule": "Seniors Épée H — Etampes"}]
+        self._pdf_upload(client, monkeypatch, evs)             # 1er import
+        r = self._pdf_upload(client, monkeypatch, evs).get_json()  # ré-import
+        assert r["added"] == 0 and r["skipped"] == 1          # pas de doublon
+        assert len(client.get("/api/events").get_json()) == 1
+
+    def test_import_pdf_mauvais_format(self, client):
+        data = {"file": (io.BytesIO(b"xx"), "cal.xlsx")}
+        r = client.post("/api/import/pdf", data=data, content_type="multipart/form-data")
+        assert r.status_code == 400
 
 
 # ─────────────────────────────────────────────────────────────────────────────

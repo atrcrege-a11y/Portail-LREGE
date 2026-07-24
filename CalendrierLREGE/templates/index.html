@@ -379,12 +379,19 @@ body{font-family:'Syne',sans-serif;background:var(--fond);color:var(--txt);displ
 <div class="overlay" id="importOv" onclick="if(event.target===this)closeImport()">
 <div class="modal">
   <h2>⬆ Import calendrier FFE</h2>
-  <p style="font-size:.82rem;color:var(--txt2);margin-bottom:14px">Fichier .xlsx exporté depuis l'extranet FFE. Les événements manuels sont conservés.</p>
+  <p style="font-size:.82rem;color:var(--txt2);margin-bottom:8px"><strong>Excel (.xlsx)</strong> — export extranet FFE. <em>Remplace</em> les événements FFE, conserve les manuels.</p>
   <div class="drop-zone" onclick="document.getElementById('importFile').click()">
-    📂 Cliquer pour sélectionner le fichier .xlsx
+    📂 Sélectionner le fichier .xlsx
     <input type="file" id="importFile" accept=".xlsx" style="display:none" onchange="doImport(this)">
   </div>
   <div id="importResult"></div>
+  <hr style="border:none;border-top:1px solid var(--gris2);margin:16px 0">
+  <p style="font-size:.82rem;color:var(--txt2);margin-bottom:8px"><strong>PDF grille nationale</strong> — compétitions nationales (Seniors, M20, M17, M13/M15, Vétérans) par arme. Import <em>additif</em> : ajoute sans écraser, sans doublon.</p>
+  <div class="drop-zone" onclick="document.getElementById('importPdfFile').click()">
+    📄 Sélectionner le fichier .pdf
+    <input type="file" id="importPdfFile" accept=".pdf" style="display:none" onchange="doImportPdf(this)">
+  </div>
+  <div id="importPdfResult"></div>
   <div class="mf"><button class="btn btn-secondary" onclick="closeImport()">Fermer</button></div>
 </div>
 </div>
@@ -759,6 +766,22 @@ async function doImport(input){
     const res=await r.json();
     if(res.success){
       el.innerHTML=`<span style="color:#27AE60">✓ ${res.ffe} événements FFE importés + ${res.manuels} manuels conservés (total: ${res.total})</span>`;
+      await Promise.all([loadStats(),loadSeasons()]);
+    } else el.innerHTML=`<span style="color:#C0392B">✗ ${res.error}</span>`;
+  } catch{ el.innerHTML='<span style="color:#C0392B">✗ Erreur réseau</span>'; }
+  input.value='';
+}
+
+async function doImportPdf(input){
+  const f=input.files[0]; if(!f) return;
+  const el=document.getElementById('importPdfResult');
+  el.innerHTML='<span style="color:var(--bleu2)">Analyse du PDF en cours…</span>';
+  const fd=new FormData(); fd.append('file',f);
+  try{
+    const r=await fetch('/api/import/pdf',{method:'POST',body:fd});
+    const res=await r.json();
+    if(res.success){
+      el.innerHTML=`<span style="color:#27AE60">✓ ${res.added} ajoutés, ${res.skipped} déjà présents (${res.parsed} lus, total: ${res.total})</span>`;
       await Promise.all([loadStats(),loadSeasons()]);
     } else el.innerHTML=`<span style="color:#C0392B">✗ ${res.error}</span>`;
   } catch{ el.innerHTML='<span style="color:#C0392B">✗ Erreur réseau</span>'; }

@@ -124,6 +124,26 @@ def _nettoyer_lieu(val: str) -> str:
     return re.sub(r'\s+', ' ', re.sub(r'\n', ' ', str(val))).strip()
 
 
+def _decode_arme_sexe(col0) -> tuple[str, str]:
+    """Décode l'arme/sexe depuis la colonne 0 (texte pivoté, mots à l'envers).
+    Ex : 'semad teruelF' → mots inversés 'dames Fleuret' → ('fleuret', 'D').
+    Retourne ('', '') si la cellule n'est pas un en-tête d'arme."""
+    if not col0:
+        return "", ""
+    mots = str(col0).replace("\n", " ").split()
+    txt = " ".join(w[::-1] for w in mots).lower()
+    if "fleuret" in txt:
+        arme = "fleuret"
+    elif "sabre" in txt:
+        arme = "sabre"
+    elif "épée" in txt or "epée" in txt or "epee" in txt:
+        arme = "épée"
+    else:
+        return "", ""
+    sexe = "H" if "hommes" in txt else ("D" if "dames" in txt else "")
+    return arme, sexe
+
+
 # ── Parser principal ──────────────────────────────────────────────────────────
 
 def parse_pdf_ffe(pdf_path: str) -> list[dict]:
@@ -131,7 +151,7 @@ def parse_pdf_ffe(pdf_path: str) -> list[dict]:
     Parse le PDF calendrier FFE et retourne une liste d'événements
     compatibles avec le schéma CalendrierLREGE.
     """
-    bruts = []  # [(date_debut, date_fin, categorie, lieu)]
+    bruts = []  # [(date_debut, date_fin, categorie, lieu, arme, sexe)]
 
     with pdfplumber.open(pdf_path) as pdf:
         for page_num, page in enumerate(pdf.pages):
@@ -161,6 +181,15 @@ def parse_pdf_ffe(pdf_path: str) -> list[dict]:
 
             # Parser tous les tableaux de la page
             for t in tables:
+                # Arme/sexe du bloc : cellule col 0 (texte pivoté) portant l'arme
+                arme, sexe = "", ""
+                for row in t:
+                    if row and row[0]:
+                        a, s = _decode_arme_sexe(row[0])
+                        if a:
+                            arme, sexe = a, s
+                            break
+
                 for row in t:
                     if not row or len(row) < 2 or row[1] is None:
                         continue
@@ -181,18 +210,21 @@ def parse_pdf_ffe(pdf_path: str) -> list[dict]:
                         if col_idx not in dates_map:
                             continue
                         d1, d2 = dates_map[col_idx]
-                        bruts.append((d1, d2, cat, lieu))
+                        bruts.append((d1, d2, cat, lieu, arme, sexe))
 
-    # Déduplication (même date + catégorie + lieu)
+    # Déduplication (même date + catégorie + arme + sexe + lieu)
+    # Le sexe fait partie de la clé : les épreuves H et D sont des événements distincts.
     dedup = {}
-    for d1, d2, cat, lieu in bruts:
-        key = (d1, cat, lieu.lower()[:30])
+    for d1, d2, cat, lieu, arme, sexe in bruts:
+        key = (d1, cat, arme, sexe, lieu.lower()[:30])
         if key not in dedup:
-            dedup[key] = (d1, d2, cat, lieu)
+            dedup[key] = (d1, d2, cat, lieu, arme, sexe)
 
     # Construction des événements finaux
     resultats = []
-    for d1, d2, cat, lieu in sorted(dedup.values(), key=lambda x: x[0]):
+    for d1, d2, cat, lieu, arme, sexe in sorted(dedup.values(), key=lambda x: (x[0], x[2])):
+        arme_lbl = (arme.capitalize() + (f" {sexe}" if sexe else "")).strip()
+        intitule = f"{cat} {arme_lbl} — {lieu}" if arme_lbl else f"{cat} — {lieu}"
         resultats.append({
             "id":               str(uuid.uuid4()),
             "source":           "pdf_ffe",
@@ -205,12 +237,12 @@ def parse_pdf_ffe(pdf_path: str) -> list[dict]:
             "niveau":           _detecter_niveau(lieu),
             "niveau_raw":       "National(e)",
             "numero":           "",
-            "intitule":         f"{cat} — {lieu}",
+            "intitule":         intitule,
             "lieu":             lieu,
             "perimetre":        "National(e)",
-            "armes":            [],   # non extractible depuis ce format PDF
-            "arme":             "",
-            "sexe":             "",
+            "armes":            [arme] if arme else [],
+            "arme":             arme,
+            "sexe":             sexe,
             "categories":       [cat],
             "type_epreuve":     "",
             "url":              "",

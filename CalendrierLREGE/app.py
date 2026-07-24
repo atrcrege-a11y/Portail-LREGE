@@ -2,6 +2,7 @@ from flask import Flask, render_template, request, jsonify, send_file
 import json, os, uuid, io
 from datetime import datetime
 from parser_ffe import parse_xlsx, ParseError, JSON_VERSION
+from parser_pdf import parse_pdf_ffe
 from exports import build_ical, build_excel, build_pdf
 
 app = Flask(__name__)
@@ -206,6 +207,44 @@ def import_xlsx():
         return jsonify({'success':True,'total':len(merged),'ffe':len(new_events),'manuels':len(manuels)})
     except ParseError as ex:
         return jsonify({'error': str(ex.args[0]), 'hint': ex.hint}),400
+    except Exception as ex:
+        return jsonify({'error':str(ex)}),500
+    finally:
+        try: _os.unlink(tmp.name)
+        except: pass
+
+@app.route('/api/import/pdf', methods=['POST'])
+def import_pdf():
+    """Import additif du calendrier national FFE (grille annuelle PDF).
+    Ajoute les compétitions nationales sans toucher aux événements existants ;
+    déduplication par (date_debut, intitulé). Sauvegarde avant écriture."""
+    if 'file' not in request.files: return jsonify({'error':'Aucun fichier'}),400
+    f = request.files['file']
+    if not f.filename.lower().endswith('.pdf'): return jsonify({'error':'Format .pdf attendu'}),400
+    import tempfile, os as _os
+    tmp = tempfile.NamedTemporaryFile(suffix='.pdf', delete=False)
+    tmp.close()
+    f.save(tmp.name)
+    try:
+        new_events = parse_pdf_ffe(tmp.name)
+        existing = load_events()
+        seen = {(e.get('date_debut',''), (e.get('intitule','') or '').lower()) for e in existing}
+        added = []
+        for e in new_events:
+            key = (e.get('date_debut',''), (e.get('intitule','') or '').lower())
+            if key in seen:
+                continue
+            seen.add(key)
+            added.append(e)
+        if not added:
+            return jsonify({'success':True,'added':0,'skipped':len(new_events),
+                            'total':len(existing),'parsed':len(new_events)})
+        backup = _backup_data()
+        merged = existing + added
+        merged.sort(key=lambda e: e.get('date_debut',''))
+        save_events(merged)
+        return jsonify({'success':True,'added':len(added),'skipped':len(new_events)-len(added),
+                        'total':len(merged),'parsed':len(new_events),'backup':backup})
     except Exception as ex:
         return jsonify({'error':str(ex)}),500
     finally:
