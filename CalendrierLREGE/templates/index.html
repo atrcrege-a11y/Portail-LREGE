@@ -186,6 +186,10 @@ body{font-family:'Syne',sans-serif;background:var(--fond);color:var(--txt);displ
 <div class="header">
   <h1>📅 Calendrier <span>LREGE</span></h1>
   <div class="header-stats" id="headerStats"><span class="hstat">Chargement…</span></div>
+  <div class="header-season" style="display:flex;align-items:center;gap:6px;flex-shrink:0">
+    <span style="font-family:'DM Mono',monospace;font-size:.7rem;color:#9DB8D9">SAISON</span>
+    <select id="seasonSelect" onchange="onSeasonChange(this)" style="padding:5px 9px;border-radius:6px;border:none;font-family:'Syne',sans-serif;font-weight:700;font-size:.78rem;cursor:pointer;background:#fff;color:var(--bleu)"></select>
+  </div>
   <div class="header-actions">
     <button class="btn btn-secondary btn-sm" onclick="openImport()">⬆ Import FFE</button>
     <button class="btn btn-danger btn-sm" onclick="openPurge()">🧹 Purger saison</button>
@@ -295,6 +299,7 @@ body{font-family:'Syne',sans-serif;background:var(--fond);color:var(--txt);displ
       <button class="btn btn-outline btn-sm" onclick="doExport('pdf')">📄 PDF</button>
       <button class="btn btn-outline btn-sm" onclick="doExport('excel')">📊 Excel</button>
       <button class="btn btn-outline btn-sm" onclick="doExport('ical')">📆 iCal</button>
+      <button class="btn btn-outline btn-sm" onclick="openGcal()">📅 Google Agenda</button>
       <span style="font-size:.7rem;color:var(--txt2);margin-left:4px">— filtres appliqués</span>
     </div>
   </div>
@@ -401,6 +406,25 @@ body{font-family:'Syne',sans-serif;background:var(--fond);color:var(--txt);displ
 </div>
 </div>
 
+<!-- MODAL GOOGLE AGENDA -->
+<div class="overlay" id="gcalOv" onclick="if(event.target===this)closeGcal()">
+<div class="modal">
+  <h2>📅 Ajouter à Google Agenda</h2>
+  <p style="font-size:.82rem;color:var(--txt2);margin-bottom:14px">Le calendrier s'importe dans Google Agenda via un fichier <strong>.ics</strong> (les filtres en cours sont appliqués). Chaque événement a un identifiant stable : ré-importer le fichier après un ajout <strong>met à jour</strong> les événements existants sans créer de doublons.</p>
+  <div style="text-align:center;margin-bottom:16px">
+    <button class="btn btn-primary" onclick="doExport('ical');document.getElementById('gcalStep1').style.color='#27AE60'">⬇ 1. Télécharger le fichier .ics</button>
+  </div>
+  <ol style="font-size:.85rem;line-height:1.7;padding-left:20px;color:var(--txt)">
+    <li id="gcalStep1">Télécharge le fichier <code>.ics</code> ci-dessus.</li>
+    <li>Ouvre <a href="https://calendar.google.com/calendar/r/settings/export" target="_blank" rel="noopener">Google Agenda → Paramètres</a>.</li>
+    <li>Menu de gauche : <strong>Importer et exporter</strong> → <strong>Importer</strong>.</li>
+    <li>Sélectionne le fichier <code>.ics</code>, choisis l'agenda de destination, puis <strong>Importer</strong>.</li>
+  </ol>
+  <p style="font-size:.78rem;color:var(--txt2);margin-top:12px">Astuce : crée un agenda dédié « LREGE » dans Google Agenda pour pouvoir l'afficher/masquer d'un clic et le réimporter proprement à chaque mise à jour.</p>
+  <div class="mf"><button class="btn btn-secondary" onclick="closeGcal()">Fermer</button></div>
+</div>
+</div>
+
 <div class="toast" id="toast"></div>
 
 <script>
@@ -412,9 +436,36 @@ const NIV_EMOJI={international:'🌍',national:'🇫🇷',zone:'🗺️',regiona
 
 let allEvents=[], filtered=[], view='liste', calY=new Date().getFullYear(), calM=new Date().getMonth();
 let filters={niveau:'tous',arme:'tous',type_evenement:'tous'};
+let curSeason=null;  // année de début de saison sélectionnée, null = toutes
+
+function seasonParams(){
+  if(curSeason==null) return {};
+  return {date_from:`${curSeason}-09-01`, date_to:`${curSeason+1}-08-31`};
+}
 
 // ── INIT ──────────────────────────────────────────────────────────────────────
-async function init(){ await Promise.all([loadStats(), loadEvents()]); }
+async function init(){ await Promise.all([loadStats(), loadSeasons()]); }
+
+// ── SAISONS ─────────────────────────────────────────────────────────────────────
+async function loadSeasons(){
+  const prev=curSeason;
+  const d=await fetch('/api/seasons').then(r=>r.json());
+  const present=d.seasons.map(s=>s.saison);
+  const sel=document.getElementById('seasonSelect');
+  const opts=['<option value="">Toutes les saisons</option>'];
+  d.seasons.forEach(s=>opts.push(`<option value="${s.saison}">Saison ${s.label} (${s.total})</option>`));
+  sel.innerHTML=opts.join('');
+  // Conserver la sélection si toujours valide, sinon dernière saison présente
+  if(prev!=null && present.includes(prev)) curSeason=prev;
+  else if(present.length) curSeason=present[present.length-1];
+  else curSeason=null;
+  sel.value=curSeason==null?'':String(curSeason);
+  loadEvents();
+}
+function onSeasonChange(el){
+  curSeason=el.value===''?null:+el.value;
+  loadEvents();
+}
 
 async function loadStats(){
   const s=await fetch('/api/stats').then(r=>r.json());
@@ -448,6 +499,11 @@ function buildParams(){
   if(document.getElementById('fGrandEst')?.checked) p.set('grand_est','1');
   const s=(document.getElementById('fSearch')?.value||'').trim();
   if(s) p.set('search',s);
+  // Saison sélectionnée (bornes sept→août)
+  const sp=seasonParams();
+  if(sp.date_from) p.set('date_from',sp.date_from);
+  if(sp.date_to) p.set('date_to',sp.date_to);
+  // Dates manuelles : priorité sur la saison
   const df=document.getElementById('fDateFrom')?.value;
   const dt=document.getElementById('fDateTo')?.value;
   if(df) p.set('date_from',df);
@@ -480,15 +536,20 @@ function resetFilters(){
   loadEvents();
 }
 
+const NIV_KEYS=['tous','international','national','zone','regional','departemental','club'];
+
 function updateCounts(){
-  // Totaux sidebar (on recharge en parallèle)
-  fetch('/api/events').then(r=>r.json()).then(all=>{
-    const niv={};
+  // Reset : évite les nombres résiduels sur les niveaux vidés (ex. après purge)
+  NIV_KEYS.forEach(k=>{ const el=document.getElementById(`cnt-niv-${k}`); if(el) el.textContent='0'; });
+  // Totaux sidebar, bornés à la saison sélectionnée
+  const sp=seasonParams();
+  const q=new URLSearchParams(sp).toString();
+  fetch('/api/events'+(q?'?'+q:'')).then(r=>r.json()).then(all=>{
+    const niv={tous:all.length};
     all.forEach(e=>{ const n=e.niveau||'autre'; niv[n]=(niv[n]||0)+1; });
-    niv.tous=all.length;
-    Object.entries(niv).forEach(([k,v])=>{
+    NIV_KEYS.forEach(k=>{
       const el=document.getElementById(`cnt-niv-${k}`);
-      if(el) el.textContent=v;
+      if(el) el.textContent=niv[k]||0;
     });
   });
 }
@@ -654,7 +715,7 @@ async function saveEvent(){
   const url=id?`/api/events/${id}`:'/api/events';
   const r=await fetch(url,{method:id?'PUT':'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(data)});
   const res=await r.json();
-  if(res.success){ closeModal(); showToast(id?'Modifié':'Ajouté','ok'); await Promise.all([loadStats(),loadEvents()]); }
+  if(res.success){ closeModal(); showToast(id?'Modifié':'Ajouté','ok'); await Promise.all([loadStats(),loadSeasons()]); }
   else showToast(res.error||'Erreur','err');
 }
 
@@ -662,7 +723,7 @@ async function delEvent(id){
   if(!confirm('Supprimer cet événement ?')) return;
   await fetch(`/api/events/${id}`,{method:'DELETE'});
   closeDP(); showToast('Supprimé','ok');
-  await Promise.all([loadStats(),loadEvents()]);
+  await Promise.all([loadStats(),loadSeasons()]);
 }
 
 // ── IMPORT ────────────────────────────────────────────────────────────────────
@@ -679,7 +740,7 @@ async function doImport(input){
     const res=await r.json();
     if(res.success){
       el.innerHTML=`<span style="color:#27AE60">✓ ${res.ffe} événements FFE importés + ${res.manuels} manuels conservés (total: ${res.total})</span>`;
-      await Promise.all([loadStats(),loadEvents()]);
+      await Promise.all([loadStats(),loadSeasons()]);
     } else el.innerHTML=`<span style="color:#C0392B">✗ ${res.error}</span>`;
   } catch{ el.innerHTML='<span style="color:#C0392B">✗ Erreur réseau</span>'; }
   input.value='';
@@ -737,7 +798,7 @@ async function confirmPurge(){
       body:JSON.stringify({saison,dry_run:false,keep_manuel:keep})}).then(r=>r.json());
     if(res.success){
       el.innerHTML=`<span style="color:#27AE60">✓ ${res.purged} événement(s) purgés — sauvegarde : ${res.backup}</span>`;
-      await Promise.all([loadStats(),loadEvents()]);
+      await Promise.all([loadStats(),loadSeasons()]);
       previewPurge();
       showToast(`Saison ${res.label} purgée (${res.purged} évts)`,'ok');
     } else el.innerHTML=`<span style="color:#C0392B">✗ ${res.error}</span>`;
@@ -752,6 +813,12 @@ function doExport(fmt){
   a.click();
   showToast(`Export ${fmt.toUpperCase()} en cours…`,'ok');
 }
+
+function openGcal(){
+  document.getElementById('gcalStep1').style.color='';
+  document.getElementById('gcalOv').classList.add('open');
+}
+function closeGcal(){ document.getElementById('gcalOv').classList.remove('open'); }
 
 // ── UTILS ─────────────────────────────────────────────────────────────────────
 function pd(s){ if(!s) return new Date(); const [y,m,d]=s.split('-'); return new Date(+y,+m-1,+d); }

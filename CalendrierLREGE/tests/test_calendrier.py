@@ -209,6 +209,15 @@ class TestExports:
         assert r.status_code == 200
         assert b"BEGIN:VCALENDAR" in r.data
 
+    def test_ical_uid_stable_et_dtstamp(self, client):
+        # UID basé sur l'id => stable au ré-export ; DTSTAMP/SEQUENCE présents
+        # pour que Google Agenda mette à jour par UID sans doublon.
+        eid = client.post("/api/events", json=_event_min()).get_json()["event"]["id"]
+        data = client.get("/api/export/ical").data
+        assert (eid + "@lrege.fr").encode() in data
+        assert b"DTSTAMP" in data
+        assert b"SEQUENCE" in data
+
     def test_export_excel(self, client):
         client.post("/api/events", json=_event_min())
         r = client.get("/api/export/excel")
