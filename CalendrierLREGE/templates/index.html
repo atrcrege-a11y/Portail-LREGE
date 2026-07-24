@@ -344,12 +344,14 @@ body{font-family:'Syne',sans-serif;background:var(--fond);color:var(--txt);displ
       </select>
     </div>
     <div class="fr">
-      <label>Arme</label>
-      <select id="eArme">
-        <option value="">Toutes / N/A</option><option value="épée">Épée</option>
-        <option value="fleuret">Fleuret</option><option value="sabre">Sabre</option>
-        <option value="sabre laser">Sabre laser</option><option value="artistique">Artistique</option>
-      </select>
+      <label>Armes (plusieurs possibles)</label>
+      <div id="eArmes" style="display:flex;flex-wrap:wrap;gap:6px 14px;padding:9px 11px;background:var(--gris);border-radius:8px">
+        <label style="display:flex;align-items:center;gap:5px;font-weight:400;cursor:pointer;margin:0"><input type="checkbox" value="épée"> Épée</label>
+        <label style="display:flex;align-items:center;gap:5px;font-weight:400;cursor:pointer;margin:0"><input type="checkbox" value="fleuret"> Fleuret</label>
+        <label style="display:flex;align-items:center;gap:5px;font-weight:400;cursor:pointer;margin:0"><input type="checkbox" value="sabre"> Sabre</label>
+        <label style="display:flex;align-items:center;gap:5px;font-weight:400;cursor:pointer;margin:0"><input type="checkbox" value="sabre laser"> Sabre laser</label>
+        <label style="display:flex;align-items:center;gap:5px;font-weight:400;cursor:pointer;margin:0"><input type="checkbox" value="artistique"> Artistique</label>
+      </div>
     </div>
   </div>
   <div class="f2">
@@ -604,7 +606,7 @@ function renderCard(e){
   const bType=isStage?`<span class="badge b-stage">${TYPE_LBL[tev]||tev}</span>`:'';
   const bGE=e.grand_est?`<span class="badge b-ge">GE</span>`:'';
   const bManu=e.manuel?`<span class="badge b-manuel">Manuel</span>`:'';
-  const bArme=e.arme?`<span class="badge b-arme">${e.arme}${e.sexe?' '+e.sexe:''}</span>`:'';
+  const _al=armesLabel(e); const bArme=_al?`<span class="badge b-arme">${_al}${e.sexe?' '+e.sexe:''}</span>`:'';
   const cats=(e.categories||[]).slice(0,3).map(c=>`<span class="badge b-cat">${c}</span>`).join('');
   const lieu=e.lieu?`<span class="card-lieu">📍 ${e.lieu}</span>`:'';
   const actions=e.manuel?`<button class="btn btn-secondary btn-sm" onclick="event.stopPropagation();editEvent('${e.id}')">✏</button><button class="btn btn-danger btn-sm" onclick="event.stopPropagation();delEvent('${e.id}')">🗑</button>`:'';
@@ -654,7 +656,7 @@ function showDP(id){
     ${row('Niveau',`<span class="badge b-${e.niveau||'autre'}">${NIV_LBL[e.niveau]||e.niveau||'—'}</span>`)}
     ${row('Type',TYPE_LBL[e.type_evenement]||e.type_evenement||'—')}
     ${row('Périmètre',e.perimetre)}
-    ${row('Arme / Sexe',[e.arme,e.sexe].filter(Boolean).join(' · '))}
+    ${row('Arme / Sexe',[armesLabel(e),e.sexe].filter(Boolean).join(' · '))}
     ${row('Catégories',(e.categories||[]).join(', '))}
     ${row('Type épreuve',e.type_epreuve)}
     ${row('Statut',e.statut)}
@@ -671,13 +673,17 @@ function showDP(id){
 function closeDP(){ document.getElementById('dp').classList.remove('open'); }
 
 // ── MODAL ─────────────────────────────────────────────────────────────────────
+function getArmes(){ return [...document.querySelectorAll('#eArmes input:checked')].map(c=>c.value); }
+function setArmes(list){ const s=new Set(list||[]); document.querySelectorAll('#eArmes input').forEach(c=>c.checked=s.has(c.value)); }
+function armesLabel(e){ const a=(e.armes&&e.armes.length)?e.armes:(e.arme?[e.arme]:[]); return a.join(' + '); }
+
 function openAdd(){
   document.getElementById('editId').value='';
   document.getElementById('modalTitle').textContent='Ajouter un événement';
   ['eDateD','eDateF','eIntitule','eLieu','eUrl','eNotes','eCats'].forEach(id=>document.getElementById(id).value='');
   document.getElementById('eType').value='competition';
   document.getElementById('eNiveau').value='regional';
-  document.getElementById('eArme').value='';
+  setArmes([]);
   document.getElementById('eSexe').value='H+D';
   document.getElementById('eTypeEp').value='Individuelle';
   document.getElementById('eGE').checked=true;
@@ -694,7 +700,7 @@ function editEvent(id){
   document.getElementById('eIntitule').value=e.intitule||'';
   document.getElementById('eLieu').value=e.lieu||'';
   document.getElementById('eNiveau').value=e.niveau||'regional';
-  document.getElementById('eArme').value=e.arme||'';
+  setArmes((e.armes&&e.armes.length)?e.armes:(e.arme?[e.arme]:[]));
   document.getElementById('eSexe').value=e.sexe||'H+D';
   document.getElementById('eTypeEp').value=e.type_epreuve||'Individuelle';
   document.getElementById('eCats').value=(e.categories||[]).join(', ');
@@ -715,7 +721,8 @@ async function saveEvent(){
     intitule:document.getElementById('eIntitule').value,
     lieu:document.getElementById('eLieu').value,
     niveau:document.getElementById('eNiveau').value,
-    arme:document.getElementById('eArme').value,
+    armes:getArmes(),
+    arme:getArmes().join(' + '),
     sexe:document.getElementById('eSexe').value,
     type_epreuve:document.getElementById('eTypeEp').value,
     categories:document.getElementById('eCats').value.split(',').map(s=>s.trim()).filter(Boolean),

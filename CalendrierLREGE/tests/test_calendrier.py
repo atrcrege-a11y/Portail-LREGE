@@ -106,6 +106,20 @@ class TestRoutes:
         client.delete(f"/api/events/{eid}")
         assert client.get("/api/events").get_json() == []
 
+    def test_ajout_multi_armes(self, client):
+        r = client.post("/api/events", json=_event_min(armes=["fleuret", "épée"]))
+        e = r.get_json()["event"]
+        assert e["armes"] == ["fleuret", "épée"]
+        assert e["arme"] == "fleuret + épée"      # chaîne d'affichage dérivée
+
+    def test_filtre_arme_multi(self, client):
+        client.post("/api/events", json=_event_min(armes=["fleuret", "épée"]))
+        client.post("/api/events", json=_event_min(intitule="Sabre", armes=["sabre"]))
+        # l'événement multi-armes doit ressortir sur chacune de ses armes
+        assert len(client.get("/api/events?arme=épée").get_json()) == 1
+        assert len(client.get("/api/events?arme=fleuret").get_json()) == 1
+        assert len(client.get("/api/events?arme=sabre").get_json()) == 1
+
     def test_filtre_niveau(self, client):
         client.post("/api/events", json=_event_min(niveau="regional"))
         client.post("/api/events", json=_event_min(intitule="Nat", niveau="national"))

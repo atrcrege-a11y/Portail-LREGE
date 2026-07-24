@@ -66,7 +66,7 @@ def apply_filters(events, args):
     date_to   = args.get('date_to')
 
     if niveau    and niveau    != 'tous': events = [e for e in events if e.get('niveau')==niveau]
-    if arme      and arme      != 'tous': events = [e for e in events if e.get('arme')==arme]
+    if arme      and arme      != 'tous': events = [e for e in events if arme in (e.get('armes') or []) or e.get('arme')==arme]
     if categorie and categorie != 'tous': events = [e for e in events if categorie in e.get('categories',[])]
     if type_ev   and type_ev   != 'tous': events = [e for e in events if e.get('type_evenement')==type_ev]
     if grand_est == '1': events = [e for e in events if e.get('grand_est')]
@@ -228,6 +228,13 @@ def add_event():
     except ValueError:
         return jsonify({'error': f"Format date invalide : '{date_debut}' — attendu AAAA-MM-JJ"}), 400
 
+    # Multi-armes : accepte 'armes' (liste) ; 'arme' devient une chaîne d'affichage
+    armes = data.get('armes')
+    if not isinstance(armes, list):
+        armes = [data['arme']] if data.get('arme') else []
+    armes = [a for a in (x.strip() for x in armes) if a]
+    arme_disp = data.get('arme') or ' + '.join(armes)
+
     events = load_events()
     e = {
         'id': str(uuid.uuid4()), 'source':'manuel', 'manuel':True,
@@ -238,8 +245,8 @@ def add_event():
         'niveau_raw': data.get('niveau','regional'), 'numero':'',
         'intitule': intitule, 'lieu': (data.get('lieu') or '').strip(),
         'perimetre': data.get('perimetre','Régional'),
-        'armes': [data.get('arme','')] if data.get('arme') else [],
-        'arme': data.get('arme',''), 'sexe': data.get('sexe',''),
+        'armes': armes,
+        'arme': arme_disp, 'sexe': data.get('sexe',''),
         'categories': data.get('categories',[]),
         'type_epreuve': data.get('type_epreuve',''),
         'url': data.get('url',''),
