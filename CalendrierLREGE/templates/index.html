@@ -447,18 +447,30 @@ function seasonParams(){
 async function init(){ await Promise.all([loadStats(), loadSeasons()]); }
 
 // ── SAISONS ─────────────────────────────────────────────────────────────────────
+const SAISONS_A_VENIR=5;  // saison courante + 4 suivantes proposées même sans événement
+
 async function loadSeasons(){
   const prev=curSeason;
   const d=await fetch('/api/seasons').then(r=>r.json());
   const present=d.seasons.map(s=>s.saison);
+  const cnt=Object.fromEntries(d.seasons.map(s=>[s.saison,s.total]));
+  // Union : saisons présentes dans les données + saison courante et les suivantes
+  const cur=d.saison_courante;
+  const futures=[];
+  for(let i=0;i<SAISONS_A_VENIR;i++) futures.push(cur+i);
+  const years=Array.from(new Set([...present,...futures])).sort((a,b)=>a-b);
   const sel=document.getElementById('seasonSelect');
   const opts=['<option value="">Toutes les saisons</option>'];
-  d.seasons.forEach(s=>opts.push(`<option value="${s.saison}">Saison ${s.label} (${s.total})</option>`));
+  years.forEach(y=>{
+    const n=cnt[y]||0;
+    const suffix=n?` (${n})`:' (à venir)';
+    opts.push(`<option value="${y}">Saison ${y}-${y+1}${suffix}</option>`);
+  });
   sel.innerHTML=opts.join('');
-  // Conserver la sélection si toujours valide, sinon dernière saison présente
-  if(prev!=null && present.includes(prev)) curSeason=prev;
+  // Conserver la sélection si toujours proposée, sinon dernière saison avec événements, sinon saison courante
+  if(prev!=null && years.includes(prev)) curSeason=prev;
   else if(present.length) curSeason=present[present.length-1];
-  else curSeason=null;
+  else curSeason=cur;
   sel.value=curSeason==null?'':String(curSeason);
   loadEvents();
 }
