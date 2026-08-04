@@ -27,6 +27,28 @@ except ImportError:
 
 CATS_NATIONALES = {"Seniors", "M20", "M17", "M13/M15", "Vétérans"}
 
+# Lignes internationales : libellé brut → (libellé d'affichage, catégories LREGE).
+# FIE = mondial, EFC = européen, EVF = vétérans européens → tous niveau "international".
+CATS_INTERNATIONALES = {
+    "EVF / FIE Vétérans":   ("EVF / FIE Vétérans",   ["Vétérans"]),
+    "FIE Seniors":          ("FIE Seniors",          ["Seniors"]),
+    "EFC Seniors/U23":      ("EFC Seniors/U23",      ["Seniors"]),
+    "FIE cadets / juniors": ("FIE cadets / juniors", ["M17", "M20"]),
+    "EFC / FIE U17":        ("EFC / FIE U17",        ["M17"]),
+    "EFCEFC / FIE U17":     ("EFC / FIE U17",        ["M17"]),  # coquille du PDF FFE
+}
+
+
+def _classer_ligne(cat_raw: str):
+    """(niveau, libellé d'affichage, catégories) pour une ligne de compétition, ou None."""
+    c = re.sub(r'\s+', ' ', str(cat_raw or "")).strip()
+    if c in CATS_NATIONALES:
+        return ("national", c, [c])
+    if c in CATS_INTERNATIONALES:
+        disp, cats = CATS_INTERNATIONALES[c]
+        return ("international", disp, cats)
+    return None
+
 MOIS_NUM = {
     "janvier":"01","février":"02","mars":"03","avril":"04",
     "mai":"05","juin":"06","juillet":"07","août":"08",
@@ -151,7 +173,7 @@ def parse_pdf_ffe(pdf_path: str) -> list[dict]:
     Parse le PDF calendrier FFE et retourne une liste d'événements
     compatibles avec le schéma CalendrierLREGE.
     """
-    bruts = []  # [(date_debut, date_fin, categorie, lieu, arme, sexe)]
+    bruts = []  # [(d1, d2, niveau, label, categories_tuple, lieu, arme, sexe)]
 
     with pdfplumber.open(pdf_path) as pdf:
         for page_num, page in enumerate(pdf.pages):
@@ -193,9 +215,10 @@ def parse_pdf_ffe(pdf_path: str) -> list[dict]:
                 for row in t:
                     if not row or len(row) < 2 or row[1] is None:
                         continue
-                    cat = str(row[1] or "").strip()
-                    if cat not in CATS_NATIONALES:
+                    classe = _classer_ligne(row[1])
+                    if not classe:
                         continue
+                    niveau, label, cats = classe
 
                     # Parcourir chaque colonne-date
                     for col_idx, _ in col_dates:
@@ -210,21 +233,23 @@ def parse_pdf_ffe(pdf_path: str) -> list[dict]:
                         if col_idx not in dates_map:
                             continue
                         d1, d2 = dates_map[col_idx]
-                        bruts.append((d1, d2, cat, lieu, arme, sexe))
+                        bruts.append((d1, d2, niveau, label, tuple(cats), lieu, arme, sexe))
 
-    # Déduplication (même date + catégorie + arme + sexe + lieu)
+    # Déduplication (même date + niveau + libellé + arme + sexe + lieu)
     # Le sexe fait partie de la clé : les épreuves H et D sont des événements distincts.
     dedup = {}
-    for d1, d2, cat, lieu, arme, sexe in bruts:
-        key = (d1, cat, arme, sexe, lieu.lower()[:30])
+    for d1, d2, niveau, label, cats, lieu, arme, sexe in bruts:
+        key = (d1, niveau, label, arme, sexe, lieu.lower()[:30])
         if key not in dedup:
-            dedup[key] = (d1, d2, cat, lieu, arme, sexe)
+            dedup[key] = (d1, d2, niveau, label, cats, lieu, arme, sexe)
 
     # Construction des événements finaux
     resultats = []
-    for d1, d2, cat, lieu, arme, sexe in sorted(dedup.values(), key=lambda x: (x[0], x[2])):
+    for d1, d2, niveau, label, cats, lieu, arme, sexe in sorted(
+            dedup.values(), key=lambda x: (x[0], x[2], x[3])):
         arme_lbl = (arme.capitalize() + (f" {sexe}" if sexe else "")).strip()
-        intitule = f"{cat} {arme_lbl} — {lieu}" if arme_lbl else f"{cat} — {lieu}"
+        intitule = f"{label} {arme_lbl} — {lieu}" if arme_lbl else f"{label} — {lieu}"
+        raw = "International(e)" if niveau == "international" else "National(e)"
         resultats.append({
             "id":               str(uuid.uuid4()),
             "source":           "pdf_ffe",
@@ -234,16 +259,16 @@ def parse_pdf_ffe(pdf_path: str) -> list[dict]:
             "date_debut":       d1,
             "date_fin":         d2 if d2 != d1 else d1,
             "type_competition": "",
-            "niveau":           _detecter_niveau(lieu),
-            "niveau_raw":       "National(e)",
+            "niveau":           niveau,
+            "niveau_raw":       raw,
             "numero":           "",
             "intitule":         intitule,
             "lieu":             lieu,
-            "perimetre":        "National(e)",
+            "perimetre":        raw,
             "armes":            [arme] if arme else [],
             "arme":             arme,
             "sexe":             sexe,
-            "categories":       [cat],
+            "categories":       list(cats),
             "type_epreuve":     "",
             "url":              "",
             "grand_est":        False,

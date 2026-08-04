@@ -189,6 +189,18 @@ def purge_season():
     resp['backup'] = backup
     return jsonify(resp)
 
+def _import_replace_source(new_events, source):
+    """Remplace uniquement les événements de la source indiquée ; conserve les
+    événements manuels (toutes sources) et ceux des autres sources d'import.
+    Sauvegarde horodatée avant écriture. Idempotent : ré-import = pas de doublon."""
+    existing = load_events()
+    kept = [e for e in existing if e.get('manuel') or e.get('source') != source]
+    backup = _backup_data()
+    merged = new_events + kept
+    merged.sort(key=lambda e: e.get('date_debut', ''))
+    save_events(merged)
+    return merged, kept, backup
+
 @app.route('/api/import', methods=['POST'])
 def import_xlsx():
     if 'file' not in request.files: return jsonify({'error':'Aucun fichier'}),400
@@ -199,12 +211,10 @@ def import_xlsx():
     tmp.close()
     f.save(tmp.name)
     try:
-        new_events = parse_xlsx(tmp.name)
-        manuels = [e for e in load_events() if e.get('manuel')]
-        merged = new_events + manuels
-        merged.sort(key=lambda e: e.get('date_debut',''))
-        save_events(merged)
-        return jsonify({'success':True,'total':len(merged),'ffe':len(new_events),'manuels':len(manuels)})
+        new_events = parse_xlsx(tmp.name)   # source 'ffe'
+        merged, kept, backup = _import_replace_source(new_events, 'ffe')
+        return jsonify({'success':True,'total':len(merged),
+                        'importes':len(new_events),'conserves':len(kept),'backup':backup})
     except ParseError as ex:
         return jsonify({'error': str(ex.args[0]), 'hint': ex.hint}),400
     except Exception as ex:
@@ -215,9 +225,9 @@ def import_xlsx():
 
 @app.route('/api/import/pdf', methods=['POST'])
 def import_pdf():
-    """Import additif du calendrier national FFE (grille annuelle PDF).
-    Ajoute les compétitions nationales sans toucher aux événements existants ;
-    déduplication par (date_debut, intitulé). Sauvegarde avant écriture."""
+    """Import du calendrier national/international FFE (grille annuelle PDF).
+    Remplace les précédents événements PDF, conserve Excel (FFE) et manuels.
+    Sauvegarde avant écriture. Idempotent : ré-import = pas de doublon."""
     if 'file' not in request.files: return jsonify({'error':'Aucun fichier'}),400
     f = request.files['file']
     if not f.filename.lower().endswith('.pdf'): return jsonify({'error':'Format .pdf attendu'}),400
@@ -226,25 +236,10 @@ def import_pdf():
     tmp.close()
     f.save(tmp.name)
     try:
-        new_events = parse_pdf_ffe(tmp.name)
-        existing = load_events()
-        seen = {(e.get('date_debut',''), (e.get('intitule','') or '').lower()) for e in existing}
-        added = []
-        for e in new_events:
-            key = (e.get('date_debut',''), (e.get('intitule','') or '').lower())
-            if key in seen:
-                continue
-            seen.add(key)
-            added.append(e)
-        if not added:
-            return jsonify({'success':True,'added':0,'skipped':len(new_events),
-                            'total':len(existing),'parsed':len(new_events)})
-        backup = _backup_data()
-        merged = existing + added
-        merged.sort(key=lambda e: e.get('date_debut',''))
-        save_events(merged)
-        return jsonify({'success':True,'added':len(added),'skipped':len(new_events)-len(added),
-                        'total':len(merged),'parsed':len(new_events),'backup':backup})
+        new_events = parse_pdf_ffe(tmp.name)   # source 'pdf_ffe'
+        merged, kept, backup = _import_replace_source(new_events, 'pdf_ffe')
+        return jsonify({'success':True,'total':len(merged),
+                        'importes':len(new_events),'conserves':len(kept),'backup':backup})
     except Exception as ex:
         return jsonify({'error':str(ex)}),500
     finally:

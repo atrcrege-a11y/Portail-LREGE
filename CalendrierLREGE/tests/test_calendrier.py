@@ -164,6 +164,21 @@ class TestParserPDF:
         assert pp._decode_arme_sexe("Juillet 2027") == ("", "")
         assert pp._decode_arme_sexe(None) == ("", "")
 
+    def test_classer_ligne_national(self):
+        assert pp._classer_ligne("Seniors") == ("national", "Seniors", ["Seniors"])
+
+    def test_classer_ligne_international(self):
+        niveau, label, cats = pp._classer_ligne("FIE Seniors")
+        assert niveau == "international" and label == "FIE Seniors" and cats == ["Seniors"]
+        # cadets/juniors → deux catégories LREGE
+        assert pp._classer_ligne("FIE cadets / juniors")[2] == ["M17", "M20"]
+        # coquille FFE normalisée à l'affichage
+        assert pp._classer_ligne("EFCEFC / FIE U17")[1] == "EFC / FIE U17"
+
+    def test_classer_ligne_inconnue(self):
+        assert pp._classer_ligne("Blabla") is None
+        assert pp._classer_ligne("") is None
+
 
 class TestImportPDF:
 
@@ -173,26 +188,38 @@ class TestImportPDF:
         return client.post("/api/import/pdf", data=data,
                            content_type="multipart/form-data")
 
-    def test_import_pdf_additif(self, client, monkeypatch):
-        client.post("/api/events", json=_event_min(intitule="Manuel"))  # existant conservé
+    def test_import_pdf_conserve_manuel(self, client, monkeypatch):
+        client.post("/api/events", json=_event_min(intitule="Manuel"))  # manuel conservé
         evs = [{"date_debut": "2026-10-10", "intitule": "Seniors Épée H — Etampes",
-                "arme": "épée", "sexe": "H"}]
+                "source": "pdf_ffe", "manuel": False, "arme": "épée", "sexe": "H"}]
         r = self._pdf_upload(client, monkeypatch, evs).get_json()
-        assert r["success"] and r["added"] == 1
+        assert r["success"] and r["importes"] == 1
         intitules = {e["intitule"] for e in client.get("/api/events").get_json()}
         assert intitules == {"Manuel", "Seniors Épée H — Etampes"}
 
-    def test_import_pdf_dedup(self, client, monkeypatch):
-        evs = [{"date_debut": "2026-10-10", "intitule": "Seniors Épée H — Etampes"}]
-        self._pdf_upload(client, monkeypatch, evs)             # 1er import
-        r = self._pdf_upload(client, monkeypatch, evs).get_json()  # ré-import
-        assert r["added"] == 0 and r["skipped"] == 1          # pas de doublon
+    def test_import_pdf_idempotent(self, client, monkeypatch):
+        evs = [{"date_debut": "2026-10-10", "intitule": "Seniors Épée H — Etampes",
+                "source": "pdf_ffe", "manuel": False}]
+        self._pdf_upload(client, monkeypatch, evs)                  # 1er import
+        r = self._pdf_upload(client, monkeypatch, evs).get_json()   # ré-import
+        assert r["total"] == 1                                      # remplacé, pas dupliqué
         assert len(client.get("/api/events").get_json()) == 1
 
     def test_import_pdf_mauvais_format(self, client):
         data = {"file": (io.BytesIO(b"xx"), "cal.xlsx")}
         r = client.post("/api/import/pdf", data=data, content_type="multipart/form-data")
         assert r.status_code == 400
+
+    def test_imports_croises_ne_s_ecrasent_pas(self, client, monkeypatch):
+        """Un import PDF ne supprime pas les événements Excel, et vice versa."""
+        # simuler un événement Excel (source 'ffe') déjà présent
+        appmod.save_events([{"id": "x1", "source": "ffe", "manuel": False,
+                             "date_debut": "2026-11-01", "intitule": "Régional Metz"}])
+        pdf_evs = [{"date_debut": "2026-10-10", "intitule": "Seniors PDF",
+                    "source": "pdf_ffe", "manuel": False}]
+        self._pdf_upload(client, monkeypatch, pdf_evs)
+        intitules = {e["intitule"] for e in client.get("/api/events").get_json()}
+        assert intitules == {"Régional Metz", "Seniors PDF"}   # l'Excel a survécu au PDF
 
 
 # ─────────────────────────────────────────────────────────────────────────────
