@@ -1,12 +1,12 @@
 ; ================================================================
 ;  Portail LREGE - Installeur Inno Setup
 ;  Genere automatiquement par generer_setup_iss.py
-;  Version : 14.1
+;  Version : 9.6
 ;  Editeur : Escrime Grand Est
 ; ================================================================
 
 #define AppName    "Portail LREGE"
-#define AppVersion "14.1"
+#define AppVersion "9.6"
 #define AppPublisher "Escrime Grand Est"
 #define AppURL     "https://www.lrege.fr"
 
@@ -47,6 +47,7 @@ Source: "CalendrierLREGE\*"; DestDir: "{app}\CalendrierLREGE"; Flags: ignorevers
 Source: "SelecMaster\*"; DestDir: "{app}\SelecMaster"; Flags: ignoreversion recursesubdirs; Excludes: "*.pyc,__pycache__,.venv\*,*.pkl,sorties\*,uploads\*,*.log"
 Source: "SuiviGE\*"; DestDir: "{app}\SuiviGE"; Flags: ignoreversion recursesubdirs; Excludes: "*.pyc,__pycache__,.venv\*,*.pkl,sorties\*,uploads\*,*.log"
 Source: "SuiviMaster\*"; DestDir: "{app}\SuiviMaster"; Flags: ignoreversion recursesubdirs; Excludes: "*.pyc,__pycache__,.venv\*,*.pkl,sorties\*,uploads\*,*.log"
+Source: "NotesOrga\*"; DestDir: "{app}\NotesOrga"; Flags: ignoreversion recursesubdirs; Excludes: "*.pyc,__pycache__,.venv\*,*.pkl,sorties\*,uploads\*,*.log"
 
 [Icons]
 Name: "{group}\{#AppName}"; Filename: "{app}\LANCER_PORTAIL.bat"; WorkingDir: "{app}"; IconFilename: "{app}\portail.ico"

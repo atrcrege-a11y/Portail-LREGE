@@ -5,7 +5,7 @@ import os, sys, subprocess, threading, webbrowser, time, json, tempfile
 import urllib.request as urlreq
 from flask import Flask, render_template_string, jsonify, request, make_response
 
-VERSION_LOCALE = "14.1"
+VERSION_LOCALE = "9.6"
 VERSION_JSON_URL = "https://raw.githubusercontent.com/atrcrege-a11y/Portail-LREGE/main/version.json"
 
 app = Flask(__name__)
@@ -89,6 +89,17 @@ OUTILS = {
         "type": "web",
         "cwd": os.path.join(BASE_DIR, "SuiviMaster"),
     },
+    "notesorga": {
+        "nom": "NotesOrga",
+        "description": "Notes d'organisation des competitions",
+        "detail": "Controle reglement LREGE - Horaires - Engagements - Generation",
+        "script": os.path.join(BASE_DIR, "NotesOrga", "app.py"),
+        "port": 5007,
+        "icone": "\U0001F4C4",
+        "couleur": "#8A6D1F",
+        "type": "web",
+        "cwd": os.path.join(BASE_DIR, "NotesOrga"),
+    },
 }
 
 _processus = {}
@@ -101,6 +112,7 @@ VENVS = {
     "selecmaster": None,
     "suivimaster": None,
     "suivige": None,
+    "notesorga": None,
 }
 
 
@@ -185,6 +197,7 @@ REQUIREMENTS = {
     "selecmaster": os.path.join(BASE_DIR, "SelecMaster",    "requirements.txt"),
     "suivimaster":  os.path.join(BASE_DIR, "SuiviMaster",    "requirements.txt"),
     "suivige":      os.path.join(BASE_DIR, "SuiviGE",       "requirements.txt"),
+    "notesorga":    os.path.join(BASE_DIR, "NotesOrga",     "requirements.txt"),
 }
 
 
