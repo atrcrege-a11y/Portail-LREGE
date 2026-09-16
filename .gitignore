@@ -34,3 +34,6 @@ desktop.ini
 **/pytest-cache-files-*/
 **/.fuse_hidden*
 publier_maj_log.txt
+
+# ── Donnees de session SYNESC (runtime, non partageables) ─
+SYNESC/sessions/

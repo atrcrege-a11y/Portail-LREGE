@@ -14,7 +14,7 @@ from pathlib import Path
 from flask import Flask, render_template, request, jsonify, send_file, session
 
 from core.config import APP_NAME, APP_VERSION, APP_RELEASE_DATE, CHANGELOG
-from core.parser import parse_xml, ParseError
+from core.parser import parse_xml, parse_arbitres_txt, ParseError
 from core import sessions_store, store_persist
 from competitions import get_competition, COMPETITIONS_META
 
@@ -80,10 +80,27 @@ def _meta_to_dict(meta, tireurs, arbitres):
     }
 
 
-def _process_xml(content, filename, store, errors):
-    """Parse un XML et l'ajoute au store. Retourne le dict ajouté ou None."""
+def _process_xml(content, filename, store, errors, arbitres_sup=None):
+    """Parse un XML et l'ajoute au store. Retourne le dict ajouté ou None.
+
+    arbitres_sup : arbitres lus hors XML (EngardeArbitres.txt du ZIP).
+    Le XML fait foi : un arbitre du TXT n'est ajouté que si sa licence
+    (à défaut nom+prénom) n'est pas déjà présente dans le XML.
+    """
     try:
         meta, tireurs, arbitres = parse_xml(content, filename)
+        if arbitres_sup:
+            def _cle(a):
+                lic = (a.get("licence") or "").strip()
+                if lic:
+                    return ("L", lic)
+                return ("N", (a.get("nom") or "").strip().upper(),
+                        (a.get("prenom") or "").strip().upper())
+            deja = {_cle(a) for a in arbitres}
+            for a in arbitres_sup:
+                if _cle(a) not in deja:
+                    arbitres.append(dict(a))
+                    deja.add(_cle(a))
         # Dédoublonnage uid unique
         if any(s[0].get("uid") and
                s[0]["id"] == meta["id"] and
@@ -126,11 +143,26 @@ def upload():
                     if not xml_names:
                         errors.append(f"{f.filename} — aucun XML trouvé.")
                         continue
+                    # Arbitres exportés à part : rattachés à TOUTES les épreuves du ZIP
+                    arbitres_zip = []
+                    for n in zf.namelist():
+                        base = Path(n).name.lower()
+                        if "__MACOSX" in n or not base.endswith(".txt"):
+                            continue
+                        if "arbitre" not in base:
+                            continue
+                        try:
+                            lus, avertis = parse_arbitres_txt(zf.read(n), Path(n).name)
+                            arbitres_zip.extend(lus)
+                            errors.extend(avertis)
+                        except ParseError as e:
+                            errors.append(str(e))
                     for xml_name in xml_names:
                         result = _process_xml(
                             zf.read(xml_name),
                             Path(xml_name).name,
                             store, errors,
+                            arbitres_sup=arbitres_zip,
                         )
                         if result:
                             added.append(result)
@@ -383,7 +415,7 @@ def upload_programme():
             "M9-M11","M17-M15","M11/M15","M20/Séniors/Vétérans","M13/M17"]
 
     ARMES_RE = _re.compile(r'(?<![A-Za-z])(fleuret|[eé]p[eé]e|sabre)(?![A-Za-z])', _re.IGNORECASE)
-    CAT_RE   = _re.compile(r'\b(M\s*\d+|V\d+|Vétérans?|Veteran|Seniors?)\b', _re.IGNORECASE)
+    CAT_RE   = _re.compile(r'\b(M\s*\d+|V\d+|Vétérans?|Veteran|S[ée]niors?)\b', _re.IGNORECASE)
 
     def normaliser_cat(cat):
         """Normalise un libellé brut vers (cat_norm, arme_code).
@@ -395,7 +427,8 @@ def upload_programme():
         if any(k in cat_low for k in ["loisir", "handi", "inaugur", "consolant", "convivial"]):
             return None
         VET_MAP_ = {"V1":"Vétérans","V2":"Vétérans","V3":"Vétérans","V4":"Vétérans",
-                    "V1/V2":"Vétérans","V3/V4":"Vétérans","Veteran":"Vétérans","Senior":"Seniors",
+                    "V1/V2":"Vétérans","V3/V4":"Vétérans","Veteran":"Vétérans",
+                    "Senior":"Seniors","Sénior":"Seniors","Séniors":"Seniors",
                     "Hommes":"Vétérans","Dames":"Vétérans","Hommes & Dames":"Vétérans"}
         cat = cat.strip().replace("\n"," ")
         # Chercher une arme dans le libellé
@@ -467,7 +500,10 @@ def upload_programme():
         ):
             for line in text.splitlines():
                 l = line.strip()
-                if any(k in l.lower() for k in keywords):
+                # Frontieres de mot obligatoires : sans elles, 'halle' matche
+                # a l'interieur de 'CHALLENGE' et renvoie une ligne de titre.
+                if any(_re.search(r'\b' + _re.escape(k) + r'\b', l, _re.IGNORECASE)
+                       for k in keywords):
                     return l
         return ""
 
@@ -719,11 +755,15 @@ def upload_programme():
                 "septembre":"09","octobre":"10","novembre":"11","décembre":"12"}
         JOURS_FR = ["lundi","mardi","mercredi","jeudi","vendredi","samedi","dimanche"]
 
+        # La ligne peut porter des colonnes APRES les 3 horaires (ex. Tarif '10€').
+        # La queue toleree ne doit contenir aucun horaire, sinon on decalerait
+        # la lecture d'une colonne (Appel/Scratch/Assaut) en silence.
         LINE4_RE = _re.compile(
             r'^(.+?)\s+'
             r'(\d{1,2}[hH]\d{0,2})\s+'
             r'(\d{1,2}[hH]\d{0,2})\s+'
-            r'(\d{1,2}[hH]\d{0,2})\s*$'
+            r'(\d{1,2}[hH]\d{0,2})'
+            r'(?:\s+(?!\d{1,2}[hH]\d{0,2}\b)\S+)*\s*$'
         )
         JOUR_ENTETE_RE = _re.compile(
             r'^(' + '|'.join(JOURS_FR) + r')\s+(\d{1,2})\s+(' +
@@ -849,7 +889,8 @@ def _generer_corps_mail(titre_long, lieu, comp_type, fichiers_list,
     Utilisé par mail_body() ET generate_mail() pour garantir l'identité.
     """
     from core.parser import construire_donnees, date_avec_jour as _daj
-    from core.config import BAREME_ARBITRES
+    from core.config import (BAREME_ARBITRES, besoin_arbitre_indiv,
+                             besoin_arbitre_equipe)
     from collections import defaultdict as _dd
     import html as _html
     import re as _re
@@ -899,11 +940,38 @@ def _generer_corps_mail(titre_long, lieu, comp_type, fichiers_list,
         return d.strip().lower()
 
     horaires_idx = {}
-    if comp_type == "lorraine" and programme_data:
+    # Les horaires importes du PDF programme valent pour tous les types de
+    # competition (Grand Est, Alsace, Lorraine), pas seulement la Lorraine.
+    if programme_data:
         for h in programme_data.get("categories", []):
             k = (h.get("cat", "").strip().upper(),
                  _date_key(h.get("date", "")))
             horaires_idx[k] = h
+
+    def _ligne_horaire(cat_base, arme_code, date_str):
+        """Ligne horaire d'une categorie a une date, ou "" si non importee."""
+        if not horaires_idx:
+            return ""
+        date_lbl = _date_key(_daj(date_str))
+        # Essayer les deux formes : "M11|F" (groupes par arme) et "M11"
+        for k in [f"{cat_base.upper()}|{arme_code}", cat_base.upper()]:
+            h = horaires_idx.get((k, date_lbl))
+            if h:
+                parts = []
+                if h.get("appel"):   parts.append(f"Appel {h['appel']}")
+                if h.get("scratch"): parts.append(f"Scratch {h['scratch']}")
+                if h.get("debut"):   parts.append(f"Début {h['debut']}")
+                if parts:
+                    return f"  ⏰ {' — '.join(parts)}"
+        return ""
+
+    import math as _math
+
+    def _nb_poules(n):
+        """Nombre de poules pour n tireurs (formule commune a tous les types)."""
+        if n < 2: return 0
+        if n <= 9: return 1
+        return _math.ceil(n / 7)
 
     lignes = []
     lignes.append("Bonjour,")
@@ -918,24 +986,6 @@ def _generer_corps_mail(titre_long, lieu, comp_type, fichiers_list,
         cats_indiv = groupes_indiv.get(date_str, {})
         if cats_indiv:
             if comp_type == "lorraine":
-                def _heure_lorraine(cat_base, arme_code, date_str):
-                    """Retourne la proposition horaire pour cat+arme à date_str."""
-                    date_lbl = _date_key(_daj(date_str))
-                    # Essayer les deux formes : "M11|F" et "M11"
-                    for k in [f"{cat_base.upper()}|{arme_code}", cat_base.upper()]:
-                        h = horaires_idx.get((k, date_lbl))
-                        if h:
-                            appel   = h.get("appel","")
-                            scratch = h.get("scratch","")
-                            debut   = h.get("debut","")
-                            parts = []
-                            if appel:   parts.append(f"Appel {appel}")
-                            if scratch: parts.append(f"Scratch {scratch}")
-                            if debut:   parts.append(f"Début {debut}")
-                            if parts:
-                                return f"  ⏰ {' — '.join(parts)}"
-                    return ""
-
                 CAT_ORDER = ["M9", "M11", "M13", "M15", "M17", "M20", "Seniors", "Vétérans"]
 
                 armes_presentes = {}
@@ -963,7 +1013,7 @@ def _generer_corps_mail(titre_long, lieu, comp_type, fichiers_list,
                             if cat_base not in _CATS_TABLEAU_DIRECT:
                                 f_line = _formule_poules(nb_d)
                                 if f_line: lignes.append(f_line)
-                        h_line = _heure_lorraine(cat_base, arme_code, date_str)
+                        h_line = _ligne_horaire(cat_base, arme_code, date_str)
                         if h_line: lignes.append(h_line)
                     lignes.append("")
             else:
@@ -983,6 +1033,9 @@ def _generer_corps_mail(titre_long, lieu, comp_type, fichiers_list,
                         if cat_base not in _CATS_TABLEAU_DIRECT:
                             f_line = _formule_poules(nb_d)
                             if f_line: lignes.append(f_line)
+                    arme_code = cat.split("|")[1] if "|" in cat else ""
+                    h_line = _ligne_horaire(cat_base, arme_code, date_str)
+                    if h_line: lignes.append(h_line)
                 lignes.append("")
 
         cats_equipe = groupes_equipe.get(date_str, {})
@@ -1013,12 +1066,6 @@ def _generer_corps_mail(titre_long, lieu, comp_type, fichiers_list,
         if comp_type == "lorraine" and horaires_idx:
             # Besoin = nb poules du créneau du matin, par arme
             # Grouper par arme → par appel → prendre le plus tôt → sommer les poules
-            import math as _math
-
-            def _nb_poules(n):
-                if n < 2: return 0
-                if n <= 9: return 1
-                return _math.ceil(n / 7)
 
             besoin_par_arme = {}
             cats_jour = groupes_indiv.get(date_str, {})
@@ -1059,7 +1106,29 @@ def _generer_corps_mail(titre_long, lieu, comp_type, fichiers_list,
 
             besoin = sum(besoin_par_arme.values())
         else:
-            besoin = (0 if total_tireurs<4 else (1 if total_tireurs<=8 else 2)) + \
+            # Grand Est / Alsace : somme des poules de TOUTES les epreuves
+            # individuelles de la journee. Le comptage se fait fichier par
+            # fichier (une epreuve = une categorie + une arme + un sexe).
+            # Une competition Grand Est est mono-arme, mais compter par fichier
+            # reste exact quel que soit le type et evite de dependre du
+            # regroupement (par_arme=False en Grand Est).
+            besoin_indiv = 0
+            for _m, _tireurs, _ in fichiers_list:
+                if _m.get("type", "I") == "E":
+                    continue
+                if (_m.get("date_debut") or _m.get("date", "")) != date_str:
+                    continue
+                # Meme filtre que construire_donnees : une categorie hors
+                # perimetre du type de competition n'est pas comptee.
+                if comp_obj.CAT_MAP_INDIV.get(_m["categorie"].upper()) is None:
+                    continue
+                nb_h = sum(1 for _t in _tireurs if (_t.get("sexe") or "").upper() == "M")
+                nb_d = sum(1 for _t in _tireurs if (_t.get("sexe") or "").upper() == "F")
+                if nb_h + nb_d:
+                    besoin_indiv += _nb_poules(nb_h) + _nb_poules(nb_d)
+                else:
+                    besoin_indiv += _nb_poules(len(_tireurs))
+            besoin = besoin_indiv + \
                      (0 if total_equipes==0 else (1 if total_equipes<=2 else (2 if total_equipes<=4 else 3)))
         lignes.append(f"ARBITRES INSCRITS — {nb_arb}")
         lignes.append(f"BESOIN ESTIMÉ — {besoin}")
@@ -1073,16 +1142,37 @@ def _generer_corps_mail(titre_long, lieu, comp_type, fichiers_list,
             clubs_all |= set(cats.keys())
         arb_par_club = _dd(int)
         for a in arb_jour: arb_par_club[a.get("club","").strip()] += 1
+        def _arme_de_cat(cat_key):
+            # cat_key vaut "CAT|ARME" quand construire_donnees a ete appele
+            # avec par_arme=True (Alsace, Lorraine). Sinon une seule arme
+            # (Grand Est est mono-arme) : toutes les categories tombent
+            # dans le meme groupe "".
+            return cat_key.split("|")[1] if "|" in cat_key else ""
+
         deficit = []
         for club in sorted(clubs_all):
-            nb_t = sum(v.get("H",0)+v.get("D",0)
-                       for cats in groupes_indiv.get(date_str,{}).values()
-                       for c,v in cats.items() if c==club)
-            nb_e = sum(1 for cats in groupes_equipe.get(date_str,{}).values()
-                       for c,v in cats.items()
-                       if c==club and v.get("tireurs_H",0)+v.get("tireurs_D",0)+v.get("tireurs_MX",0)>0)
-            b = (0 if nb_t<4 else (1 if nb_t<=8 else 2)) + \
-                (0 if nb_e==0 else (1 if nb_e<=2 else (2 if nb_e<=4 else 3)))
+            # Reglement LREGE : le bareme s'applique PAR ARME et par journee,
+            # les besoins de chaque arme etant ensuite sommes. Cumuler toutes
+            # les armes d'une journee donne un besoin faux des qu'un club
+            # engage dans plusieurs armes le meme jour (3 epee + 3 fleuret
+            # = 0 arbitre du, et non 1).
+            tireurs_arme = _dd(int)
+            for cat_key, cats in groupes_indiv.get(date_str,{}).items():
+                v = cats.get(club)
+                if v:
+                    tireurs_arme[_arme_de_cat(cat_key)] += v.get("H",0)+v.get("D",0)
+            equipes_arme = _dd(int)
+            for cat_key, cats in groupes_equipe.get(date_str,{}).items():
+                v = cats.get(club)
+                if v and v.get("tireurs_H",0)+v.get("tireurs_D",0)+v.get("tireurs_MX",0)>0:
+                    equipes_arme[_arme_de_cat(cat_key)] += 1
+            # Cote "fournis" : total des arbitres distincts du club ce jour,
+            # sans ventilation par arme. Le dedoublonnage se fait par licence
+            # et par jour (REGLES.md 9) et un arbitre issu d'un
+            # EngardeArbitres.txt est rattache a toutes les epreuves du ZIP :
+            # son arme n'est pas une donnee fiable.
+            b = sum(besoin_arbitre_indiv(n) for n in tireurs_arme.values()) + \
+                sum(besoin_arbitre_equipe(n) for n in equipes_arme.values())
             f = arb_par_club.get(club,0)
             if b>0 and f<b: deficit.append((club,b,f))
         if deficit:
