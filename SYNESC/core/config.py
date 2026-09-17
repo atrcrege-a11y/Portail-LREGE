@@ -4,10 +4,20 @@ Constantes partagées entre toutes les compétitions.
 """
 
 APP_NAME         = "SYNESC"
-APP_VERSION      = "2.4.4"
-APP_RELEASE_DATE = "2026-05-12"
+APP_VERSION      = "2.4.5"
+APP_RELEASE_DATE = "2026-09-17"
 
 CHANGELOG = [
+    {
+        "version": "2.4.5",
+        "date": "2026-09-17",
+        "label": "Barème arbitrage par arme",
+        "notes": [
+            "Déficit d'arbitrage : barème appliqué par arme puis sommé (corrige Alsace et Lorraine)",
+            "Contact CRA : arbitrage@escrime-grandest.fr remplace l'adresse personnelle",
+            "Serveur lancé sans mode debug",
+        ],
+    },
     {
         "version": "2.4.4",
         "date": "2026-05-12",

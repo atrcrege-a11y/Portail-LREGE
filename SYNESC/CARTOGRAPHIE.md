@@ -1,4 +1,4 @@
-# CARTOGRAPHIE — SYNESC v2.4.4
+# CARTOGRAPHIE — SYNESC v2.4.5
 
 **SYNESC** (Synthèse Compétitions Escrime) est une application web locale (Flask/Python) destinée à la Ligue Régionale d'Escrime Grand Est (LREGE). Elle transforme des fichiers XML exportés par Engarde en fichiers Excel standardisés (format EGESC), génère des mails de synthèse pour les DTs, et produit des PDF arbitres.
 
@@ -188,7 +188,7 @@ Quand `par_arme=True` (Alsace, Lorraine) : `cat_key` devient `"CAT|ARME"` (ex: `
 
 | Variable | Valeur actuelle | Rôle |
 |----------|----------------|------|
-| `APP_VERSION` | `"2.4.4"` | Version affichée dans l'interface |
+| `APP_VERSION` | `"2.4.5"` | Version affichée dans l'interface |
 | `APP_RELEASE_DATE` | `"2026-05-12"` | Date de release |
 | `BAREME_ARBITRES` | liste de tuples `(code, tarif €)` | Barème indemnités arbitres FFE 2024–2025 |
 | `COLORS` | dict hex | Palette couleurs Excel partagée |

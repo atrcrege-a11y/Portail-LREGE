@@ -1246,7 +1246,7 @@ def _generer_corps_mail(titre_long, lieu, comp_type, fichiers_list,
     lignes.append("• Tireurs absents : les engagements restent dus sauf motif valable.")
     if comp_type != "lorraine":
         lignes.append('  Inscriptions hors délai majorées — <a href="https://tinyurl.com/hdlrege">https://tinyurl.com/hdlrege</a>')
-    lignes.append('• Dérogations au niveau d\'arbitrage : contacter la Présidente de la CRA, Auxane Cholley — <a href="mailto:auxane.cholley@hotmail.fr">auxane.cholley@hotmail.fr</a>')
+    lignes.append('• Dérogations au niveau d\'arbitrage : contacter la Présidente de la CRA, Auxane Cholley — <a href="mailto:arbitrage@escrime-grandest.fr">arbitrage@escrime-grandest.fr</a>')
     lignes.append('• Fichiers résultats (*.cotcot, PDF, FFF) à transmettre à <a href="mailto:atrcrege@gmail.com">atrcrege@gmail.com</a>')
     lignes.append("")
     if comp_type == "grand_est":
@@ -1488,4 +1488,4 @@ def clear_excel_arbitres():
 
 
 if __name__ == "__main__":
-    app.run(debug=True, port=5002)
+    app.run(debug=False, port=5002)

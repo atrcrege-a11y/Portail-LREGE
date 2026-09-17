@@ -1,4 +1,4 @@
-# RÈGLES MÉTIER — SYNESC v2.4.4
+# RÈGLES MÉTIER — SYNESC v2.4.5
 
 Ce document décrit les règles métier extraites du code source. Il complète la cartographie technique.
 
@@ -312,7 +312,7 @@ Contenu du mail :
 - Pour Lorraine : horaires extraits du PDF si disponibles (Appel · Scratch · Début par arme et catégorie)
 - Arbitres également inscrits comme tireurs (détection par croisement licences)
 - Bilan financier prévisionnel (recettes estimées − dépenses arbitres)
-- Rappels fixes : absents restent dus, hors-délai majorés, contact CRA (Auxane Cholley, email hardcodé), envoi fichiers résultats à atrcrege@gmail.com
+- Rappels fixes : absents restent dus, hors-délai majorés, contact CRA (Auxane Cholley, arbitrage@escrime-grandest.fr — adresse en dur dans app.py), envoi fichiers résultats à atrcrege@gmail.com
 
 ### Calcul du besoin arbitres dans le mail
 - Grand Est / Alsace : somme besoin indiv + besoin équipe selon les règles des quotas (§5).
