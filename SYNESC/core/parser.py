@@ -5,6 +5,7 @@ Indépendant de tout type de compétition.
 """
 
 import datetime
+import unicodedata
 from collections import defaultdict
 from .config import JOURS_SEMAINE
 
@@ -60,8 +61,12 @@ def parse_xml(content_bytes, filename=""):
         ) from exc
 
     # ── Vérification de la balise racine
-    BALISES_ENGARDE = {"CompetitionIndividuelle", "CompetitionEquipe",
-                       "CompetitionSynchrone", "Competition", "Epreuve"}
+    # Engarde exporte soit la competition elle-meme (<CompetitionIndividuelle>),
+    # soit sa base d'engages (<BaseCompetitionIndividuelle>) : meme structure,
+    # memes attributs. Les deux familles sont acceptees.
+    _RACINES = {"CompetitionIndividuelle", "CompetitionEquipe",
+                "CompetitionSynchrone", "Competition", "Epreuve"}
+    BALISES_ENGARDE = _RACINES | {"Base" + b for b in _RACINES}
     if root.tag not in BALISES_ENGARDE:
         raise ParseError(
             f"Ce fichier n'est pas un export Engarde reconnu "
@@ -157,6 +162,118 @@ def parse_xml(content_bytes, filename=""):
         })
 
     return meta, tireurs, arbitres
+
+
+# ── Arbitres exportes a part (EngardeArbitres.txt)
+
+# Niveaux d'arbitrage reconnus par le bareme (core/config.py : BAREME_ARBITRES).
+NIVEAUX_ARBITRE = {"FT", "FD", "T", "D", "FR", "R", "FN", "N", "I"}
+
+# Libelles longs rencontres dans les exports -> code du bareme.
+_NIVEAU_ALIAS = {
+    "FORMATION TERRITORIALE": "FT",
+    "FORMATION TERRITORIAL": "FT",
+    "TERRITORIAL": "T",
+    "TERRITORIALE": "T",
+    "FORMATION REGIONALE": "FR",
+    "FORMATION REGIONAL": "FR",
+    "REGIONAL": "R",
+    "REGIONALE": "R",
+    "FORMATION NATIONALE": "FN",
+    "FORMATION NATIONAL": "FN",
+    "NATIONAL": "N",
+    "NATIONALE": "N",
+    "INTERNATIONAL": "I",
+    "INTERNATIONALE": "I",
+}
+
+
+def normaliser_niveau_arbitre(valeur):
+    """
+    Ramene un niveau d'arbitrage a un code du bareme (FT, D, R, N...).
+    Retourne (code, reconnu). Si non reconnu, code = valeur brute nettoyee
+    et reconnu = False : l'appelant doit le signaler, jamais le passer a 0 en silence.
+    """
+    brut = (valeur or "").strip()
+    if not brut:
+        return "", False
+    haut = brut.upper()
+    if haut in NIVEAUX_ARBITRE:
+        return haut, True
+    sans_accent = "".join(
+        c for c in unicodedata.normalize("NFD", haut)
+        if unicodedata.category(c) != "Mn"
+    )
+    if sans_accent in _NIVEAU_ALIAS:
+        return _NIVEAU_ALIAS[sans_accent], True
+    return brut, False
+
+
+def parse_arbitres_txt(content_bytes, filename=""):
+    """
+    Lit un EngardeArbitres.txt (CSV ';' avec ligne d'en-tete).
+
+    En-tete de reference :
+      nom;prenom;sexe;categorie;club;ligue;nation;date_nais;licence_fie;licence;
+
+    Les colonnes sont lues PAR NOM d'en-tete, jamais par position : un export
+    qui ajoute ou deplace une colonne ne doit pas decaler les donnees en silence.
+
+    Retourne (arbitres, avertissements) au meme format que les <Arbitre> du XML.
+    """
+    if isinstance(content_bytes, bytes):
+        for enc in ("utf-8-sig", "cp1252", "iso-8859-1"):
+            try:
+                texte = content_bytes.decode(enc)
+                break
+            except UnicodeDecodeError:
+                continue
+        else:
+            raise ParseError(f"{filename} — encodage illisible.")
+    else:
+        texte = content_bytes
+    texte = texte.lstrip("\ufeff")
+
+    lignes = [l for l in texte.splitlines() if l.strip(";").strip()]
+    if not lignes:
+        return [], []
+
+    entete = [c.strip().lower() for c in lignes[0].split(";")]
+    if "nom" not in entete:
+        raise ParseError(
+            f"{filename} — en-tete inattendue : colonne 'nom' absente "
+            f"(colonnes lues : {', '.join(c for c in entete if c) or 'aucune'})."
+        )
+
+    def col(ligne, nom):
+        if nom not in entete:
+            return ""
+        i = entete.index(nom)
+        return ligne[i].strip() if i < len(ligne) else ""
+
+    arbitres, avertissements = [], []
+    for brut in lignes[1:]:
+        ligne = brut.split(";")
+        nom = col(ligne, "nom")
+        if not nom:
+            continue
+        niveau, reconnu = normaliser_niveau_arbitre(col(ligne, "categorie"))
+        if niveau and not reconnu:
+            avertissements.append(
+                f"{filename} — niveau d'arbitrage non reconnu : "
+                f"'{niveau}' ({nom}). Indemnite non calculee."
+            )
+        arbitres.append({
+            "nom":       nom,
+            "prenom":    col(ligne, "prenom"),
+            "licence":   col(ligne, "licence"),
+            "club":      col(ligne, "club"),
+            "region":    col(ligne, "ligue"),   # pas de colonne 'region' dans ce format
+            "ligue":     col(ligne, "ligue"),
+            "dept":      "",
+            "categorie": niveau,
+        })
+    return arbitres, avertissements
 
 
 # ── Construction des données agrégées

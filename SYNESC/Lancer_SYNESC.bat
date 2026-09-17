@@ -9,8 +9,7 @@ title SYNESC - Synthese Competitions Escrime
 
 set "APP_DIR=%~dp0"
 set "APP_FILE=%APP_DIR%app.py"
-set "VENV_DIR=%APP_DIR%.venv"
-set "PORT=5000"
+set "PORT=5002"
 set "PYTHON_CMD="
 
 echo.
@@ -94,30 +93,11 @@ exit /b 1
 :PYTHON_OK
 
 :: ----------------------------------------------------------------
-:: 3. Environnement virtuel
+:: 3. Interpreteur Python (systeme - pas de venv dedie)
 :: ----------------------------------------------------------------
-echo  [3/5] Verification de l'environnement virtuel...
-
-if exist "%VENV_DIR%\Scripts\python.exe" (
-    echo        OK - Environnement virtuel existant
-    goto VENV_READY
-)
-
-echo        Creation de l'environnement virtuel ^(premiere fois^)...
-"%PYTHON_CMD%" -m venv "%VENV_DIR%"
-if %errorlevel% neq 0 (
-    echo.
-    echo  [ERREUR] Impossible de creer l'environnement virtuel.
-    echo  Essayez en tant qu'administrateur.
-    echo.
-    pause
-    exit /b 1
-)
-echo        OK - Environnement virtuel cree
-
-:VENV_READY
-set "VPYTHON=%VENV_DIR%\Scripts\python.exe"
-set "VPIP=%VENV_DIR%\Scripts\pip.exe"
+echo  [3/5] Interpreteur Python...
+set "VPYTHON=%PYTHON_CMD%"
+echo        OK - Python systeme (%PYTHON_CMD%)
 
 :: ----------------------------------------------------------------
 :: 4. Dependances
@@ -151,9 +131,9 @@ echo        Connexion internet requise - patientez...
 echo.
 
 if exist "%APP_DIR%requirements.txt" (
-    "%VPIP%" install -r "%APP_DIR%requirements.txt" --quiet
+    "%VPYTHON%" -m pip install -r "%APP_DIR%requirements.txt" --quiet
 ) else (
-    "%VPIP%" install flask openpyxl --quiet
+    "%VPYTHON%" -m pip install flask openpyxl --quiet
 )
 
 if %errorlevel% neq 0 (

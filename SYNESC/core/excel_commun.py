@@ -204,14 +204,17 @@ def feuille_arbitres(ws, arbitres_list, plage_dates="", fichiers_list=None, titr
 
     bareme_end = 2 + len(BAREME_ARBITRES)
 
-    # Validation liste déroulante pour Statut
+    # Validation liste déroulante pour Statut.
+    # Elle n'est attachée à la feuille qu'une fois qu'au moins une cellule la
+    # référence : sans arbitre, openpyxl écrirait <dataValidations count="0"/>,
+    # un conteneur vide invalide au schéma que Excel signale en "réparant" la
+    # feuille à l'ouverture.
     dv = DataValidation(
         type="list",
         formula1='"Retenu,Libéré"',
         allow_blank=True,
         showErrorMessage=False,
     )
-    ws.add_data_validation(dv)
 
     current_row = 2
     # Stocker les plages de données arbitres par date {date: (first_row, last_row)}
@@ -265,6 +268,10 @@ def feuille_arbitres(ws, arbitres_list, plage_dates="", fichiers_list=None, titr
 
         if multi_jours and date_str != dates_triees[-1]:
             current_row += 1
+
+    # Attacher la validation seulement si elle couvre au moins une cellule.
+    if dv.sqref and str(dv.sqref).strip():
+        ws.add_data_validation(dv)
 
     # Mise en forme conditionnelle sur la colonne Statut
     statut_range = f"G2:G{current_row}"
