@@ -1,12 +1,12 @@
 ; ================================================================
 ;  Portail LREGE - Installeur Inno Setup
 ;  Genere automatiquement par generer_setup_iss.py
-;  Version : 14.5
+;  Version : 14.7
 ;  Editeur : Escrime Grand Est
 ; ================================================================
 
 #define AppName    "Portail LREGE"
-#define AppVersion "14.5"
+#define AppVersion "14.7"
 #define AppPublisher "Escrime Grand Est"
 #define AppURL     "https://www.lrege.fr"
 
@@ -40,14 +40,14 @@ Source: "portail.ico"; DestDir: "{app}"; Flags: ignoreversion
 Source: "portail.py"; DestDir: "{app}"; Flags: ignoreversion
 Source: "LANCER_PORTAIL.bat"; DestDir: "{app}"; Flags: ignoreversion
 Source: "PREMIER_LANCEMENT.bat"; DestDir: "{app}"; Flags: ignoreversion
-Source: "SelecGE\*"; DestDir: "{app}\SelecGE"; Flags: ignoreversion recursesubdirs; Excludes: "*.pyc,__pycache__,.venv\*,*.pkl,sorties\*,uploads\*,*.log"
-Source: "SYNESC\*"; DestDir: "{app}\SYNESC"; Flags: ignoreversion recursesubdirs; Excludes: "*.pyc,__pycache__,.venv\*,*.pkl,sorties\*,uploads\*,*.log"
-Source: "EscriTools\*"; DestDir: "{app}\EscriTools"; Flags: ignoreversion recursesubdirs; Excludes: "*.pyc,__pycache__,.venv\*,*.pkl,sorties\*,uploads\*,*.log"
-Source: "CalendrierLREGE\*"; DestDir: "{app}\CalendrierLREGE"; Flags: ignoreversion recursesubdirs; Excludes: "*.pyc,__pycache__,.venv\*,*.pkl,sorties\*,uploads\*,*.log"
-Source: "SelecMaster\*"; DestDir: "{app}\SelecMaster"; Flags: ignoreversion recursesubdirs; Excludes: "*.pyc,__pycache__,.venv\*,*.pkl,sorties\*,uploads\*,*.log"
-Source: "SuiviGE\*"; DestDir: "{app}\SuiviGE"; Flags: ignoreversion recursesubdirs; Excludes: "*.pyc,__pycache__,.venv\*,*.pkl,sorties\*,uploads\*,*.log"
-Source: "SuiviMaster\*"; DestDir: "{app}\SuiviMaster"; Flags: ignoreversion recursesubdirs; Excludes: "*.pyc,__pycache__,.venv\*,*.pkl,sorties\*,uploads\*,*.log"
-Source: "NotesOrga\*"; DestDir: "{app}\NotesOrga"; Flags: ignoreversion recursesubdirs; Excludes: "*.pyc,__pycache__,.venv\*,*.pkl,sorties\*,uploads\*,*.log"
+Source: "SelecGE\*"; DestDir: "{app}\SelecGE"; Flags: ignoreversion recursesubdirs; Excludes: "*.pyc,__pycache__,.venv\*,*.pkl,sorties\*,upload\*,uploads\*,sessions\*,*.log"
+Source: "SYNESC\*"; DestDir: "{app}\SYNESC"; Flags: ignoreversion recursesubdirs; Excludes: "*.pyc,__pycache__,.venv\*,*.pkl,sorties\*,upload\*,uploads\*,sessions\*,*.log"
+Source: "EscriTools\*"; DestDir: "{app}\EscriTools"; Flags: ignoreversion recursesubdirs; Excludes: "*.pyc,__pycache__,.venv\*,*.pkl,sorties\*,upload\*,uploads\*,sessions\*,*.log"
+Source: "CalendrierLREGE\*"; DestDir: "{app}\CalendrierLREGE"; Flags: ignoreversion recursesubdirs; Excludes: "*.pyc,__pycache__,.venv\*,*.pkl,sorties\*,upload\*,uploads\*,sessions\*,*.log"
+Source: "SelecMaster\*"; DestDir: "{app}\SelecMaster"; Flags: ignoreversion recursesubdirs; Excludes: "*.pyc,__pycache__,.venv\*,*.pkl,sorties\*,upload\*,uploads\*,sessions\*,*.log"
+Source: "SuiviGE\*"; DestDir: "{app}\SuiviGE"; Flags: ignoreversion recursesubdirs; Excludes: "*.pyc,__pycache__,.venv\*,*.pkl,sorties\*,upload\*,uploads\*,sessions\*,*.log"
+Source: "SuiviMaster\*"; DestDir: "{app}\SuiviMaster"; Flags: ignoreversion recursesubdirs; Excludes: "*.pyc,__pycache__,.venv\*,*.pkl,sorties\*,upload\*,uploads\*,sessions\*,*.log"
+Source: "NotesOrga\*"; DestDir: "{app}\NotesOrga"; Flags: ignoreversion recursesubdirs; Excludes: "*.pyc,__pycache__,.venv\*,*.pkl,sorties\*,upload\*,uploads\*,sessions\*,*.log"
 
 [Icons]
 Name: "{group}\{#AppName}"; Filename: "{app}\LANCER_PORTAIL.bat"; WorkingDir: "{app}"; IconFilename: "{app}\portail.ico"
@@ -55,15 +55,8 @@ Name: "{group}\Desinstaller {#AppName}"; Filename: "{uninstallexe}"
 Name: "{autodesktop}\{#AppName}"; Filename: "{app}\LANCER_PORTAIL.bat"; WorkingDir: "{app}"; IconFilename: "{app}\portail.ico"
 
 [Run]
-Filename: "{app}\PREMIER_LANCEMENT.bat"; Description: "Installer les dependances (recommande)"; Flags: postinstall runasoriginaluser shellexec; Check: PremierLancement
+Filename: "{app}\PREMIER_LANCEMENT.bat"; Description: "Installer les dependances (recommande)"; Flags: postinstall runasoriginaluser shellexec
 Filename: "{app}\LANCER_PORTAIL.bat"; Description: "Relancer le Portail LREGE"; Flags: postinstall runasoriginaluser shellexec nowait; WorkingDir: "{app}"
 
-[Code]
-function PremierLancement(): Boolean;
-begin
-  Result := not FileExists(ExpandConstant('{app}\SYNESC\.venv\Scripts\python.exe'));
-end;
-
 [UninstallDelete]
-Type: filesandordirs; Name: "{app}\SYNESC\.venv"
 Type: filesandordirs; Name: "{app}\__pycache__"

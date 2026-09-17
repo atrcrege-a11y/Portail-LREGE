@@ -37,7 +37,9 @@ Source: "PREMIER_LANCEMENT.bat"; DestDir: "{app}"; Flags: ignoreversion"""
         ".venv\\*",
         "*.pkl",
         "sorties\\*",
+        "upload\\*",
         "uploads\\*",
+        "sessions\\*",
         "*.log",
     ])
 
@@ -92,17 +94,10 @@ Name: "{{group}}\\Desinstaller {{#AppName}}"; Filename: "{{uninstallexe}}"
 Name: "{{autodesktop}}\\{{#AppName}}"; Filename: "{{app}}\\LANCER_PORTAIL.bat"; WorkingDir: "{{app}}"; IconFilename: "{{app}}\\portail.ico"
 
 [Run]
-Filename: "{{app}}\\PREMIER_LANCEMENT.bat"; Description: "Installer les dependances (recommande)"; Flags: postinstall runasoriginaluser shellexec; Check: PremierLancement
+Filename: "{{app}}\\PREMIER_LANCEMENT.bat"; Description: "Installer les dependances (recommande)"; Flags: postinstall runasoriginaluser shellexec
 Filename: "{{app}}\\LANCER_PORTAIL.bat"; Description: "Relancer le Portail LREGE"; Flags: postinstall runasoriginaluser shellexec nowait; WorkingDir: "{{app}}"
 
-[Code]
-function PremierLancement(): Boolean;
-begin
-  Result := not FileExists(ExpandConstant('{{app}}\\SYNESC\\.venv\\Scripts\\python.exe'));
-end;
-
 [UninstallDelete]
-Type: filesandordirs; Name: "{{app}}\\SYNESC\\.venv"
 Type: filesandordirs; Name: "{{app}}\\__pycache__"
 """
     return iss

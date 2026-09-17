@@ -5,7 +5,7 @@ import os, sys, subprocess, threading, webbrowser, time, json, tempfile
 import urllib.request as urlreq
 from flask import Flask, render_template_string, jsonify, request, make_response
 
-VERSION_LOCALE = "14.5"
+VERSION_LOCALE = "14.7"
 VERSION_JSON_URL = "https://raw.githubusercontent.com/atrcrege-a11y/Portail-LREGE/main/version.json"
 
 app = Flask(__name__)
@@ -104,9 +104,12 @@ OUTILS = {
 
 _processus = {}
 _derniere_activite = {}
+# Tous les outils tournent sur le Python du portail (sys.executable).
+# Pas de venv dedie : un venv copie d'une autre machine reste present
+# (python.exe existe) mais ne demarre plus -> outil silencieusement inlancable.
 VENVS = {
-    "selecge":    os.path.join(BASE_DIR, "SelecGE", ".venv", "Scripts", "python.exe"),
-    "synesc":     os.path.join(BASE_DIR, "SYNESC", ".venv", "Scripts", "python.exe"),
+    "selecge":    None,
+    "synesc":     None,
     "escritools": None,
     "calendrier": None,
     "selecmaster": None,

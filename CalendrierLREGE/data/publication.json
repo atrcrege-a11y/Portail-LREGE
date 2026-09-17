@@ -1,0 +1,1440 @@
+[
+  {
+    "id": "b8ef7ab3-a976-4e6a-894f-67569ff84c42",
+    "__version__": 1,
+    "date_texte": "26-27 sept. 2026",
+    "jours": "sam-dim",
+    "bloc": "Épée",
+    "type": "ER1",
+    "categories": "Seniors + Vétérans",
+    "lieu": "",
+    "club": "",
+    "statut": "",
+    "est_tournoi": false,
+    "armes": [
+      "Épée"
+    ],
+    "notes": "",
+    "contact": "",
+    "email": "",
+    "ecart_accepte": false,
+    "categories_publiees": "Seniors-Vétérans",
+    "cats": [
+      "Seniors",
+      "Vétérans"
+    ],
+    "cats_index": "|Seniors|Vétérans|",
+    "tri_key": 20260926,
+    "cle_source": "26-27 sept. 2026|Épée|ER1|"
+  },
+  {
+    "id": "fd777e96-9f11-4e9d-981d-3b593f3b4775",
+    "__version__": 1,
+    "date_texte": "26-27 sept. 2026",
+    "jours": "sam-dim",
+    "bloc": "Fleuret",
+    "type": "ER1",
+    "categories": "M13 à Seniors",
+    "lieu": "",
+    "club": "",
+    "statut": "",
+    "est_tournoi": false,
+    "armes": [
+      "Fleuret"
+    ],
+    "notes": "",
+    "contact": "",
+    "email": "",
+    "ecart_accepte": false,
+    "categories_publiees": "M13-M15-M17-M20-Seniors",
+    "cats": [
+      "M13",
+      "M15",
+      "M17",
+      "M20",
+      "Seniors"
+    ],
+    "cats_index": "|M13|M15|M17|M20|Seniors|",
+    "tri_key": 20260926,
+    "cle_source": "26-27 sept. 2026|Fleuret|ER1|"
+  },
+  {
+    "id": "478d4571-bb1f-425e-86a0-d9d097e6918d",
+    "__version__": 1,
+    "date_texte": "3-4 oct. 2026",
+    "jours": "sam-dim",
+    "bloc": "Sabre",
+    "type": "ER1",
+    "categories": "M15 à Seniors",
+    "lieu": "",
+    "club": "",
+    "statut": "",
+    "est_tournoi": false,
+    "armes": [
+      "Sabre"
+    ],
+    "notes": "",
+    "contact": "",
+    "email": "",
+    "ecart_accepte": false,
+    "categories_publiees": "M15-M17-M20-Seniors",
+    "cats": [
+      "M15",
+      "M17",
+      "M20",
+      "Seniors"
+    ],
+    "cats_index": "|M15|M17|M20|Seniors|",
+    "tri_key": 20261003,
+    "cle_source": "3-4 oct. 2026|Sabre|ER1|"
+  },
+  {
+    "id": "865e2670-ae76-44a1-9288-ed743d10a6d4",
+    "__version__": 1,
+    "date_texte": "10-11 oct. 2026",
+    "jours": "sam-dim",
+    "bloc": "Épée",
+    "type": "ER1",
+    "categories": "M15 à M20",
+    "lieu": "",
+    "club": "",
+    "statut": "",
+    "est_tournoi": false,
+    "armes": [
+      "Épée"
+    ],
+    "notes": "",
+    "contact": "",
+    "email": "",
+    "ecart_accepte": false,
+    "categories_publiees": "M15-M17-M20",
+    "cats": [
+      "M15",
+      "M17",
+      "M20"
+    ],
+    "cats_index": "|M15|M17|M20|",
+    "tri_key": 20261010,
+    "cle_source": "10-11 oct. 2026|Épée|ER1|"
+  },
+  {
+    "id": "23da3d45-30c8-4a83-a736-17ffbd572387",
+    "__version__": 1,
+    "date_texte": "11 oct. 2026",
+    "jours": "dim",
+    "bloc": "Sabre laser",
+    "type": "Territoire",
+    "categories": "Alsace « Alsatia »",
+    "lieu": "",
+    "club": "",
+    "statut": "",
+    "est_tournoi": false,
+    "armes": [
+      "Sabre laser"
+    ],
+    "notes": "",
+    "contact": "",
+    "email": "",
+    "ecart_accepte": false,
+    "categories_publiees": "Alsace « Alsatia »",
+    "cats": [],
+    "cats_index": "",
+    "tri_key": 20261011,
+    "cle_source": "11 oct. 2026|Sabre laser|Territoire|"
+  },
+  {
+    "id": "b271a6ab-8b79-4295-9d54-09a3ca5fd0dd",
+    "__version__": 1,
+    "date_texte": "17 oct. 2026",
+    "jours": "sam",
+    "bloc": "Lorraine",
+    "type": "coupe de Moselle 1ère manche",
+    "categories": "",
+    "lieu": "Putelange-aux-lacs",
+    "club": "Sarreguemines",
+    "statut": "",
+    "est_tournoi": true,
+    "armes": [
+      {
+        "arme": "Fleuret",
+        "categories": "M9, M11, M13"
+      },
+      {
+        "arme": "Épée",
+        "categories": "M9, M11, M13"
+      },
+      {
+        "arme": "Sabre",
+        "categories": "M9, M11, M13"
+      }
+    ],
+    "notes": "",
+    "contact": "maître d'armes",
+    "email": "maitre.armes@cesarregueminesconfluences.fr",
+    "ecart_accepte": false,
+    "categories_publiees": "",
+    "armes_publiees": [
+      {
+        "arme": "Fleuret",
+        "categories": "M9, M11, M13"
+      },
+      {
+        "arme": "Épée",
+        "categories": "M9, M11, M13"
+      },
+      {
+        "arme": "Sabre",
+        "categories": "M9, M11, M13"
+      }
+    ],
+    "cats": [
+      "M9",
+      "M11",
+      "M13"
+    ],
+    "cats_index": "|M9|M11|M13|",
+    "tri_key": 20261017,
+    "cle_source": "17 oct. 2026|Lorraine|coupe de Moselle 1ère manche|Sarreguemines"
+  },
+  {
+    "id": "4a200713-ddec-4992-ab9c-6167950d4e21",
+    "__version__": 1,
+    "date_texte": "18 oct. 2026",
+    "jours": "dim",
+    "bloc": "Sabre laser",
+    "type": "Territoire",
+    "categories": "Champagne-Ardenne & Lorraine « Chard-Loria »",
+    "lieu": "",
+    "club": "",
+    "statut": "",
+    "est_tournoi": false,
+    "armes": [
+      "Sabre laser"
+    ],
+    "notes": "",
+    "contact": "",
+    "email": "",
+    "ecart_accepte": false,
+    "categories_publiees": "Champagne-Ardenne & Lorraine « Chard-Loria »",
+    "cats": [],
+    "cats_index": "",
+    "tri_key": 20261018,
+    "cle_source": "18 oct. 2026|Sabre laser|Territoire|"
+  },
+  {
+    "id": "795aad73-ffe0-4318-a62f-c73b8fe3e021",
+    "__version__": 1,
+    "date_texte": "8 nov. 2026",
+    "jours": "dim",
+    "bloc": "Sabre laser",
+    "type": "CR1 D1",
+    "categories": "Division 1 — « L'Étape 1, La voie du contrôle »",
+    "lieu": "",
+    "club": "",
+    "statut": "",
+    "est_tournoi": false,
+    "armes": [
+      "Sabre laser"
+    ],
+    "notes": "",
+    "contact": "",
+    "email": "",
+    "ecart_accepte": false,
+    "categories_publiees": "Division 1 — « L'Étape 1, La voie du contrôle »",
+    "cats": [],
+    "cats_index": "",
+    "tri_key": 20261108,
+    "cle_source": "8 nov. 2026|Sabre laser|CR1 D1|"
+  },
+  {
+    "id": "f8eaeb85-a4ec-422d-b4a0-c2c2d75a11eb",
+    "__version__": 1,
+    "date_texte": "14-15 nov. 2026",
+    "jours": "sam-dim",
+    "bloc": "Épée",
+    "type": "ER2",
+    "categories": "VET + M13",
+    "lieu": "",
+    "club": "",
+    "statut": "",
+    "est_tournoi": false,
+    "armes": [
+      "Épée"
+    ],
+    "notes": "Ligne « Challenge de France PARA + M13 épée + VET » du calendrier source retirée du présent calendrier (décision 08/09/2026)",
+    "contact": "",
+    "email": "",
+    "ecart_accepte": false,
+    "categories_publiees": "M13-Vétérans",
+    "cats": [
+      "M13",
+      "Vétérans"
+    ],
+    "cats_index": "|M13|Vétérans|",
+    "tri_key": 20261114,
+    "cle_source": "14-15 nov. 2026|Épée|ER2|"
+  },
+  {
+    "id": "ab34bb7b-2efe-481a-9168-126bbb90ca1b",
+    "__version__": 1,
+    "date_texte": "21-22 nov. 2026",
+    "jours": "sam-dim",
+    "bloc": "Coupe de Lorraine",
+    "type": "CDL 1",
+    "categories": "M9-M11-M13-M15",
+    "lieu": "VANDOEUVRE",
+    "club": "",
+    "statut": "",
+    "est_tournoi": false,
+    "armes": [],
+    "notes": "",
+    "contact": "",
+    "email": "",
+    "ecart_accepte": false,
+    "categories_publiees": "M9-M11-M13-M15",
+    "cats": [
+      "M9",
+      "M11",
+      "M13",
+      "M15"
+    ],
+    "cats_index": "|M9|M11|M13|M15|",
+    "tri_key": 20261121,
+    "cle_source": "21-22 nov. 2026|Coupe de Lorraine|CDL 1|"
+  },
+  {
+    "id": "33d6c892-6a3d-43f7-8d09-a6feba05c547",
+    "__version__": 1,
+    "date_texte": "21-22 nov. 2026",
+    "jours": "sam-dim",
+    "bloc": "Alsace",
+    "type": "TOURNOI DE LA JEUNESSE ET DES VETERANS",
+    "categories": "",
+    "lieu": "RD84 CENTRE SPORTIF 67118 GEISPOLSHEIM",
+    "club": "CERCLE D'ESCRIME DE GEISPOLSHEIM",
+    "statut": "",
+    "est_tournoi": true,
+    "armes": [
+      {
+        "arme": "Fleuret",
+        "categories": "M9, M11, M13"
+      },
+      {
+        "arme": "Épée",
+        "categories": "M9, M11, M13, Vétérans"
+      }
+    ],
+    "notes": "",
+    "contact": "MAITRE JEAN-LOUIS LE MEUR",
+    "email": "jllm.meur@gmail.com",
+    "ecart_accepte": false,
+    "categories_publiees": "",
+    "armes_publiees": [
+      {
+        "arme": "Fleuret",
+        "categories": "M9, M11, M13"
+      },
+      {
+        "arme": "Épée",
+        "categories": "M9, M11, M13, Vétérans"
+      }
+    ],
+    "cats": [
+      "M9",
+      "M11",
+      "M13",
+      "Vétérans"
+    ],
+    "cats_index": "|M9|M11|M13|Vétérans|",
+    "tri_key": 20261121,
+    "cle_source": "21-22 nov. 2026|Alsace|TOURNOI DE LA JEUNESSE ET DES VETERANS|CERCLE D'ESCRIME DE GEISPOLSHEIM"
+  },
+  {
+    "id": "2acd823c-3585-4f21-a47c-bc11730c3056",
+    "__version__": 1,
+    "date_texte": "21-22 nov. 2026",
+    "jours": "sam-dim",
+    "bloc": "Lorraine",
+    "type": "Tournoi de Lunéville",
+    "categories": "",
+    "lieu": "gymnase Berte Lunéville",
+    "club": "CE Lunéville",
+    "statut": "",
+    "est_tournoi": true,
+    "armes": [
+      {
+        "arme": "Épée",
+        "categories": "M9, M11, M13, M15, M17, M20, Seniors, Vétérans"
+      }
+    ],
+    "notes": "",
+    "contact": "VIRBEL Laurence présidente",
+    "email": "presidentesluneville@gmail.com",
+    "ecart_accepte": false,
+    "categories_publiees": "",
+    "armes_publiees": [
+      {
+        "arme": "Épée",
+        "categories": "M9, M11, M13, M15, M17, M20, Seniors, Vétérans"
+      }
+    ],
+    "cats": [
+      "M9",
+      "M11",
+      "M13",
+      "M15",
+      "M17",
+      "M20",
+      "Seniors",
+      "Vétérans"
+    ],
+    "cats_index": "|M9|M11|M13|M15|M17|M20|Seniors|Vétérans|",
+    "tri_key": 20261121,
+    "cle_source": "21-22 nov. 2026|Lorraine|Tournoi de Lunéville|CE Lunéville"
+  },
+  {
+    "id": "41853a2c-23a7-44e2-8f53-752eaa5aaa69",
+    "__version__": 1,
+    "date_texte": "22 nov. 2026",
+    "jours": "dim",
+    "bloc": "Sabre laser",
+    "type": "CR1 Sportif",
+    "categories": "Cadet & Benjamin — « L'Étape 1, La Nébuleuse »",
+    "lieu": "",
+    "club": "",
+    "statut": "",
+    "est_tournoi": false,
+    "armes": [
+      "Sabre laser"
+    ],
+    "notes": "",
+    "contact": "",
+    "email": "",
+    "ecart_accepte": false,
+    "categories_publiees": "Cadet & Benjamin — « L'Étape 1, La Nébuleuse »",
+    "cats": [],
+    "cats_index": "",
+    "tri_key": 20261122,
+    "cle_source": "22 nov. 2026|Sabre laser|CR1 Sportif|"
+  },
+  {
+    "id": "40ec0a80-26aa-46de-a85e-edca7b74c67f",
+    "__version__": 1,
+    "date_texte": "28-29 nov. 2026",
+    "jours": "sam-dim",
+    "bloc": "Sabre",
+    "type": "ER2",
+    "categories": "M15 à Seniors",
+    "lieu": "",
+    "club": "",
+    "statut": "",
+    "est_tournoi": false,
+    "armes": [
+      "Sabre"
+    ],
+    "notes": "",
+    "contact": "",
+    "email": "",
+    "ecart_accepte": false,
+    "categories_publiees": "M15-M17-M20-Seniors",
+    "cats": [
+      "M15",
+      "M17",
+      "M20",
+      "Seniors"
+    ],
+    "cats_index": "|M15|M17|M20|Seniors|",
+    "tri_key": 20261128,
+    "cle_source": "28-29 nov. 2026|Sabre|ER2|"
+  },
+  {
+    "id": "d95f222b-aeea-4aa7-bc4f-71ae3ab052f0",
+    "__version__": 1,
+    "date_texte": "4 déc. 2026",
+    "jours": "ven",
+    "bloc": "Alsace",
+    "type": "TOURNOI DU TELETHON",
+    "categories": "",
+    "lieu": "RD 84 CENTRE SPORTIF 67118 GEISPOLSHEIM",
+    "club": "CERCLE D'ESCRIME DE GEISPOLSHEIM",
+    "statut": "",
+    "est_tournoi": true,
+    "armes": [
+      {
+        "arme": "Épée",
+        "categories": "M15, M17, M20, Seniors, Vétérans"
+      }
+    ],
+    "notes": "",
+    "contact": "ETIENNE AUFRERE",
+    "email": "etienne.aufrere@free.fr",
+    "ecart_accepte": false,
+    "categories_publiees": "",
+    "armes_publiees": [
+      {
+        "arme": "Épée",
+        "categories": "M15, M17, M20, Seniors, Vétérans"
+      }
+    ],
+    "cats": [
+      "M15",
+      "M17",
+      "M20",
+      "Seniors",
+      "Vétérans"
+    ],
+    "cats_index": "|M15|M17|M20|Seniors|Vétérans|",
+    "tri_key": 20261204,
+    "cle_source": "4 déc. 2026|Alsace|TOURNOI DU TELETHON|CERCLE D'ESCRIME DE GEISPOLSHEIM"
+  },
+  {
+    "id": "997361f0-1055-4972-b3dd-a29a1bd585c6",
+    "__version__": 1,
+    "date_texte": "5-6 déc. 2026",
+    "jours": "sam-dim",
+    "bloc": "Autres",
+    "type": "AG + Ch. dép.",
+    "categories": "M15",
+    "lieu": "",
+    "club": "",
+    "statut": "À confirmer",
+    "est_tournoi": false,
+    "armes": [],
+    "notes": "AG Ligue + championnats départementaux",
+    "contact": "",
+    "email": "",
+    "ecart_accepte": false,
+    "categories_publiees": "M15",
+    "cats": [
+      "M15"
+    ],
+    "cats_index": "|M15|",
+    "tri_key": 20261205,
+    "cle_source": "5-6 déc. 2026|Autres|AG + Ch. dép.|"
+  },
+  {
+    "id": "2b5874a0-a6d6-4fc6-89dd-ee65fe1e2561",
+    "__version__": 1,
+    "date_texte": "12-13 déc. 2026",
+    "jours": "sam-dim",
+    "bloc": "Coupe de Lorraine",
+    "type": "CDL 2",
+    "categories": "M9-M11-M13",
+    "lieu": "EPINAL",
+    "club": "",
+    "statut": "",
+    "est_tournoi": false,
+    "armes": [],
+    "notes": "",
+    "contact": "",
+    "email": "",
+    "ecart_accepte": false,
+    "categories_publiees": "M9-M11-M13",
+    "cats": [
+      "M9",
+      "M11",
+      "M13"
+    ],
+    "cats_index": "|M9|M11|M13|",
+    "tri_key": 20261212,
+    "cle_source": "12-13 déc. 2026|Coupe de Lorraine|CDL 2|"
+  },
+  {
+    "id": "4e808481-7ffe-4214-bfda-1f45e290ce9c",
+    "__version__": 1,
+    "date_texte": "12-13 déc. 2026",
+    "jours": "sam-dim",
+    "bloc": "Autres",
+    "type": "CID",
+    "categories": "M15",
+    "lieu": "",
+    "club": "",
+    "statut": "",
+    "est_tournoi": false,
+    "armes": [],
+    "notes": "",
+    "contact": "",
+    "email": "",
+    "ecart_accepte": false,
+    "categories_publiees": "M15",
+    "cats": [
+      "M15"
+    ],
+    "cats_index": "|M15|",
+    "tri_key": 20261212,
+    "cle_source": "12-13 déc. 2026|Autres|CID|"
+  },
+  {
+    "id": "948a12a3-a355-453d-8974-1eeb282cb21e",
+    "__version__": 1,
+    "date_texte": "12-13 déc. 2026",
+    "jours": "sam-dim",
+    "bloc": "Alsace",
+    "type": "26ÈME TOURNOI INTERNATIONAL D'ESCRIME DE GUEBWILLER",
+    "categories": "",
+    "lieu": "CENTRE SPORTIF DU FLORIVAL - RUE DE LA PISCINE - 68500 GUEBWILLER",
+    "club": "SG 1860 SECTION ESCRIME",
+    "statut": "",
+    "est_tournoi": true,
+    "armes": [
+      {
+        "arme": "Fleuret",
+        "categories": "M9, M11, M13, M15, M17, M20, Seniors, Vétérans"
+      },
+      {
+        "arme": "Épée",
+        "categories": "M9, M11, M13, M17, M20, Seniors, Vétérans"
+      },
+      {
+        "arme": "Autres",
+        "categories": "Para : PAS ENCORE DÉTERMINÉE"
+      }
+    ],
+    "notes": "",
+    "contact": "PATRICK LEGALL",
+    "email": "escrime.guebwiller@gmail.com",
+    "ecart_accepte": false,
+    "categories_publiees": "",
+    "armes_publiees": [
+      {
+        "arme": "Fleuret",
+        "categories": "M9, M11, M13, M15, M17, M20, Seniors, Vétérans"
+      },
+      {
+        "arme": "Épée",
+        "categories": "M9, M11, M13, M17, M20, Seniors, Vétérans"
+      },
+      {
+        "arme": "Autres",
+        "categories": "Para : PAS ENCORE DÉTERMINÉE"
+      }
+    ],
+    "cats": [
+      "M9",
+      "M11",
+      "M13",
+      "M15",
+      "M17",
+      "M20",
+      "Seniors",
+      "Vétérans"
+    ],
+    "cats_index": "|M9|M11|M13|M15|M17|M20|Seniors|Vétérans|",
+    "tri_key": 20261212,
+    "cle_source": "12-13 déc. 2026|Alsace|26ÈME TOURNOI INTERNATIONAL D'ESCRIME DE GUEBWILLER|SG 1860 SECTION ESCRIME"
+  },
+  {
+    "id": "3c19976e-d5f5-4fe0-b0b4-1df7b20ad46b",
+    "__version__": 1,
+    "date_texte": "13 déc. 2026",
+    "jours": "dim",
+    "bloc": "Sabre laser",
+    "type": "CR2 D1",
+    "categories": "Division 1 — « L'Étape 2, La voie de la dualité »",
+    "lieu": "",
+    "club": "",
+    "statut": "",
+    "est_tournoi": false,
+    "armes": [
+      "Sabre laser"
+    ],
+    "notes": "",
+    "contact": "",
+    "email": "",
+    "ecart_accepte": false,
+    "categories_publiees": "Division 1 — « L'Étape 2, La voie de la dualité »",
+    "cats": [],
+    "cats_index": "",
+    "tri_key": 20261213,
+    "cle_source": "13 déc. 2026|Sabre laser|CR2 D1|"
+  },
+  {
+    "id": "e443313c-0bcb-46de-8f38-137304ddf430",
+    "__version__": 1,
+    "date_texte": "20 déc. 2026",
+    "jours": "dim",
+    "bloc": "Sabre laser",
+    "type": "CR1 D2",
+    "categories": "Division 2 — « L'Étape 1, Ordre des lames »",
+    "lieu": "",
+    "club": "",
+    "statut": "",
+    "est_tournoi": false,
+    "armes": [
+      "Sabre laser"
+    ],
+    "notes": "",
+    "contact": "",
+    "email": "",
+    "ecart_accepte": false,
+    "categories_publiees": "Division 2 — « L'Étape 1, Ordre des lames »",
+    "cats": [],
+    "cats_index": "",
+    "tri_key": 20261220,
+    "cle_source": "20 déc. 2026|Sabre laser|CR1 D2|"
+  },
+  {
+    "id": "44fa9f84-bb6f-481f-81c4-9e596f69989f",
+    "__version__": 1,
+    "date_texte": "9-10 jan. 2027",
+    "jours": "sam-dim",
+    "bloc": "Épée",
+    "type": "ER2",
+    "categories": "M15 à Seniors",
+    "lieu": "",
+    "club": "",
+    "statut": "",
+    "est_tournoi": false,
+    "armes": [
+      "Épée"
+    ],
+    "notes": "",
+    "contact": "",
+    "email": "",
+    "ecart_accepte": false,
+    "categories_publiees": "M15-M17-M20-Seniors",
+    "cats": [
+      "M15",
+      "M17",
+      "M20",
+      "Seniors"
+    ],
+    "cats_index": "|M15|M17|M20|Seniors|",
+    "tri_key": 20270109,
+    "cle_source": "9-10 jan. 2027|Épée|ER2|"
+  },
+  {
+    "id": "8ca00050-1c54-40f8-bec0-ad8af7591e8c",
+    "__version__": 1,
+    "date_texte": "10 jan. 2027",
+    "jours": "dim",
+    "bloc": "Sabre laser",
+    "type": "CR3 D1",
+    "categories": "Division 1 — « L'Étape 3, La voie de la maîtrise »",
+    "lieu": "",
+    "club": "",
+    "statut": "",
+    "est_tournoi": false,
+    "armes": [
+      "Sabre laser"
+    ],
+    "notes": "",
+    "contact": "",
+    "email": "",
+    "ecart_accepte": false,
+    "categories_publiees": "Division 1 — « L'Étape 3, La voie de la maîtrise »",
+    "cats": [],
+    "cats_index": "",
+    "tri_key": 20270110,
+    "cle_source": "10 jan. 2027|Sabre laser|CR3 D1|"
+  },
+  {
+    "id": "ff3ec1fe-0b4a-4bbf-852a-5256c65fa143",
+    "__version__": 1,
+    "date_texte": "16-17 jan. 2027",
+    "jours": "sam-dim",
+    "bloc": "Fleuret",
+    "type": "ER2",
+    "categories": "M13 à Seniors",
+    "lieu": "",
+    "club": "",
+    "statut": "",
+    "est_tournoi": false,
+    "armes": [
+      "Fleuret"
+    ],
+    "notes": "",
+    "contact": "",
+    "email": "",
+    "ecart_accepte": false,
+    "categories_publiees": "M13-M15-M17-M20-Seniors",
+    "cats": [
+      "M13",
+      "M15",
+      "M17",
+      "M20",
+      "Seniors"
+    ],
+    "cats_index": "|M13|M15|M17|M20|Seniors|",
+    "tri_key": 20270116,
+    "cle_source": "16-17 jan. 2027|Fleuret|ER2|"
+  },
+  {
+    "id": "72eac6ca-63d5-40f8-a19b-2ce89fe347f1",
+    "__version__": 1,
+    "date_texte": "23-24 jan. 2027",
+    "jours": "sam-dim",
+    "bloc": "Alsace",
+    "type": "Tournoi de souffel",
+    "categories": "",
+    "lieu": "16 Rue des 7 Arpents, 67460 Souffelweyersheim",
+    "club": "Souffel escrime club",
+    "statut": "",
+    "est_tournoi": true,
+    "armes": [
+      {
+        "arme": "Fleuret",
+        "categories": "M9, M11, M13, M15, M17, M20, Seniors, Vétérans"
+      },
+      {
+        "arme": "Épée",
+        "categories": "M11, M13, M15, M17, M20, Seniors, Vétérans"
+      },
+      {
+        "arme": "Autres",
+        "categories": "Laser : Chore cadet (si possibilité de changement de date par la commission)"
+      }
+    ],
+    "notes": "",
+    "contact": "Luc heintzelmann - president",
+    "email": "souffel.escrime.club@gmail.com",
+    "ecart_accepte": false,
+    "categories_publiees": "",
+    "armes_publiees": [
+      {
+        "arme": "Fleuret",
+        "categories": "M9, M11, M13, M15, M17, M20, Seniors, Vétérans"
+      },
+      {
+        "arme": "Épée",
+        "categories": "M11, M13, M15, M17, M20, Seniors, Vétérans"
+      },
+      {
+        "arme": "Autres",
+        "categories": "Laser : Chore cadet (si possibilité de changement de date par la commission)"
+      }
+    ],
+    "cats": [
+      "M9",
+      "M11",
+      "M13",
+      "M15",
+      "M17",
+      "M20",
+      "Seniors",
+      "Vétérans"
+    ],
+    "cats_index": "|M9|M11|M13|M15|M17|M20|Seniors|Vétérans|",
+    "tri_key": 20270123,
+    "cle_source": "23-24 jan. 2027|Alsace|Tournoi de souffel|Souffel escrime club"
+  },
+  {
+    "id": "ef871f8a-fd69-4b76-a5d2-7866f00c99d5",
+    "__version__": 1,
+    "date_texte": "30 jan. 2027",
+    "jours": "sam",
+    "bloc": "Parasport",
+    "type": "ER1",
+    "categories": "PARA",
+    "lieu": "",
+    "club": "",
+    "statut": "À confirmer",
+    "est_tournoi": false,
+    "armes": [
+      "Para"
+    ],
+    "notes": "Source : « 30-janv » — année et second jour absents",
+    "contact": "",
+    "email": "",
+    "ecart_accepte": false,
+    "categories_publiees": "Parasport",
+    "cats": [],
+    "cats_index": "",
+    "tri_key": 20270130,
+    "cle_source": "30 jan. 2027|Parasport|ER1|"
+  },
+  {
+    "id": "fa891b21-b56d-4ac5-aad0-58a342097d9f",
+    "__version__": 1,
+    "date_texte": "31 jan. 2027",
+    "jours": "dim",
+    "bloc": "Sabre laser",
+    "type": "CR1 Choré / CR Choré",
+    "categories": "Choré Cadet + Choré Sénior — « L'Écho de la Passion »",
+    "lieu": "",
+    "club": "",
+    "statut": "",
+    "est_tournoi": false,
+    "armes": [
+      "Sabre laser"
+    ],
+    "notes": "Para 3 armes ER1 la veille (30 jan.)",
+    "contact": "",
+    "email": "",
+    "ecart_accepte": false,
+    "categories_publiees": "Choré Cadet + Choré Sénior — « L'Écho de la Passion »",
+    "cats": [],
+    "cats_index": "",
+    "tri_key": 20270131,
+    "cle_source": "31 jan. 2027|Sabre laser|CR1 Choré / CR Choré|"
+  },
+  {
+    "id": "e6c684f2-d992-44fe-8e5a-47153665554a",
+    "__version__": 1,
+    "date_texte": "6-7 fév. 2027",
+    "jours": "sam-dim",
+    "bloc": "Autres",
+    "type": "Zone",
+    "categories": "M15",
+    "lieu": "en BFC",
+    "club": "",
+    "statut": "",
+    "est_tournoi": false,
+    "armes": [
+      "Épée",
+      "Fleuret"
+    ],
+    "notes": "",
+    "contact": "",
+    "email": "",
+    "ecart_accepte": false,
+    "categories_publiees": "M15",
+    "cats": [
+      "M15"
+    ],
+    "cats_index": "|M15|",
+    "tri_key": 20270206,
+    "cle_source": "6-7 fév. 2027|Autres|Zone|"
+  },
+  {
+    "id": "39cca8d9-2829-431c-a196-07dcb5aa6bc7",
+    "__version__": 1,
+    "date_texte": "13-14 fév. 2027",
+    "jours": "sam-dim",
+    "bloc": "Fleuret",
+    "type": "CR",
+    "categories": "M13 à Seniors",
+    "lieu": "",
+    "club": "",
+    "statut": "",
+    "est_tournoi": false,
+    "armes": [
+      "Fleuret"
+    ],
+    "notes": "",
+    "contact": "",
+    "email": "",
+    "ecart_accepte": false,
+    "categories_publiees": "M13-M15-M17-M20-Seniors",
+    "cats": [
+      "M13",
+      "M15",
+      "M17",
+      "M20",
+      "Seniors"
+    ],
+    "cats_index": "|M13|M15|M17|M20|Seniors|",
+    "tri_key": 20270213,
+    "cle_source": "13-14 fév. 2027|Fleuret|CR|"
+  },
+  {
+    "id": "121afd44-f64f-49cc-af30-7248e5af7aea",
+    "__version__": 1,
+    "date_texte": "13-14 fév. 2027",
+    "jours": "sam-dim",
+    "bloc": "Sabre",
+    "type": "CR",
+    "categories": "M15 à Seniors",
+    "lieu": "",
+    "club": "",
+    "statut": "",
+    "est_tournoi": false,
+    "armes": [
+      "Sabre"
+    ],
+    "notes": "",
+    "contact": "",
+    "email": "",
+    "ecart_accepte": false,
+    "categories_publiees": "M15-M17-M20-Seniors",
+    "cats": [
+      "M15",
+      "M17",
+      "M20",
+      "Seniors"
+    ],
+    "cats_index": "|M15|M17|M20|Seniors|",
+    "tri_key": 20270213,
+    "cle_source": "13-14 fév. 2027|Sabre|CR|"
+  },
+  {
+    "id": "a9537b2c-575c-4917-ae1e-f3a28282bf01",
+    "__version__": 1,
+    "date_texte": "20-21 fév. 2027",
+    "jours": "sam-dim",
+    "bloc": "Parasport",
+    "type": "ER2 / CdF",
+    "categories": "PARA + M13 épée",
+    "lieu": "",
+    "club": "",
+    "statut": "À confirmer",
+    "est_tournoi": false,
+    "armes": [
+      "Para"
+    ],
+    "notes": "Deux lignes source (Challenge de France et 3 armes ER2) sur la même date — doublon probable",
+    "contact": "",
+    "email": "",
+    "ecart_accepte": false,
+    "categories_publiees": "Parasport-M13 épée",
+    "cats": [
+      "M13"
+    ],
+    "cats_index": "|M13|",
+    "tri_key": 20270220,
+    "cle_source": "20-21 fév. 2027|Parasport|ER2 / CdF|"
+  },
+  {
+    "id": "2fbd2472-bf1a-45ea-80b6-ac04640862dc",
+    "__version__": 1,
+    "date_texte": "21 fév. 2027",
+    "jours": "dim",
+    "bloc": "Sabre laser",
+    "type": "CR2 D2",
+    "categories": "Division 2 — « L'Étape 2, Ordre des Gardiens »",
+    "lieu": "",
+    "club": "",
+    "statut": "",
+    "est_tournoi": false,
+    "armes": [
+      "Sabre laser"
+    ],
+    "notes": "",
+    "contact": "",
+    "email": "",
+    "ecart_accepte": false,
+    "categories_publiees": "Division 2 — « L'Étape 2, Ordre des Gardiens »",
+    "cats": [],
+    "cats_index": "",
+    "tri_key": 20270221,
+    "cle_source": "21 fév. 2027|Sabre laser|CR2 D2|"
+  },
+  {
+    "id": "ef9bd1db-8846-4d5e-bce8-0f23521c8376",
+    "__version__": 1,
+    "date_texte": "6-7 mars 2027",
+    "jours": "sam-dim",
+    "bloc": "Épée",
+    "type": "CR",
+    "categories": "Vétérans",
+    "lieu": "",
+    "club": "",
+    "statut": "",
+    "est_tournoi": false,
+    "armes": [
+      "Épée"
+    ],
+    "notes": "",
+    "contact": "",
+    "email": "",
+    "ecart_accepte": false,
+    "categories_publiees": "Vétérans",
+    "cats": [
+      "Vétérans"
+    ],
+    "cats_index": "|Vétérans|",
+    "tri_key": 20270306,
+    "cle_source": "6-7 mars 2027|Épée|CR|"
+  },
+  {
+    "id": "a53aa238-ecec-4329-b8d1-5934e2fcb2b0",
+    "__version__": 1,
+    "date_texte": "6-7 mars 2027",
+    "jours": "sam-dim",
+    "bloc": "Coupe de Lorraine",
+    "type": "CDL 3",
+    "categories": "M9-M11-M13",
+    "lieu": "THIONVILLE SET",
+    "club": "",
+    "statut": "",
+    "est_tournoi": false,
+    "armes": [],
+    "notes": "",
+    "contact": "",
+    "email": "",
+    "ecart_accepte": false,
+    "categories_publiees": "M9-M11-M13",
+    "cats": [
+      "M9",
+      "M11",
+      "M13"
+    ],
+    "cats_index": "|M9|M11|M13|",
+    "tri_key": 20270306,
+    "cle_source": "6-7 mars 2027|Coupe de Lorraine|CDL 3|"
+  },
+  {
+    "id": "2d380025-5c15-4d31-b1f9-18c8b98a90b6",
+    "__version__": 1,
+    "date_texte": "13-14 mars 2027",
+    "jours": "sam-dim",
+    "bloc": "Parasport",
+    "type": "CR / CdF",
+    "categories": "PARA + M13 épée",
+    "lieu": "",
+    "club": "",
+    "statut": "À confirmer",
+    "est_tournoi": false,
+    "armes": [
+      "Para"
+    ],
+    "notes": "Deux lignes source (Challenge de France et 3 armes CR) sur la même date — doublon probable",
+    "contact": "",
+    "email": "",
+    "ecart_accepte": false,
+    "categories_publiees": "Parasport-M13 épée",
+    "cats": [
+      "M13"
+    ],
+    "cats_index": "|M13|",
+    "tri_key": 20270313,
+    "cle_source": "13-14 mars 2027|Parasport|CR / CdF|"
+  },
+  {
+    "id": "de5d72f9-1b89-4c26-aee2-ee890512b0e7",
+    "__version__": 1,
+    "date_texte": "20-21 mars 2027",
+    "jours": "sam-dim",
+    "bloc": "Épée",
+    "type": "CR",
+    "categories": "M15 à M20",
+    "lieu": "",
+    "club": "",
+    "statut": "",
+    "est_tournoi": false,
+    "armes": [
+      "Épée"
+    ],
+    "notes": "",
+    "contact": "",
+    "email": "",
+    "ecart_accepte": false,
+    "categories_publiees": "M15-M17-M20",
+    "cats": [
+      "M15",
+      "M17",
+      "M20"
+    ],
+    "cats_index": "|M15|M17|M20|",
+    "tri_key": 20270320,
+    "cle_source": "20-21 mars 2027|Épée|CR|"
+  },
+  {
+    "id": "a9f20db5-35ef-4143-9449-ffba84d86bc2",
+    "__version__": 1,
+    "date_texte": "21 mars 2027",
+    "jours": "dim",
+    "bloc": "Sabre laser",
+    "type": "CR2 Sportif",
+    "categories": "Cadet & Benjamin — « L'Étape 2, L'Étoile Naissante »",
+    "lieu": "",
+    "club": "",
+    "statut": "",
+    "est_tournoi": false,
+    "armes": [
+      "Sabre laser"
+    ],
+    "notes": "",
+    "contact": "",
+    "email": "",
+    "ecart_accepte": false,
+    "categories_publiees": "Cadet & Benjamin — « L'Étape 2, L'Étoile Naissante »",
+    "cats": [],
+    "cats_index": "",
+    "tri_key": 20270321,
+    "cle_source": "21 mars 2027|Sabre laser|CR2 Sportif|"
+  },
+  {
+    "id": "9a2ab32d-e64b-4818-aac1-d26fd411fa8a",
+    "__version__": 1,
+    "date_texte": "27-28 mars 2027",
+    "jours": "sam-dim",
+    "bloc": "Épée",
+    "type": "CR",
+    "categories": "Seniors",
+    "lieu": "",
+    "club": "",
+    "statut": "À confirmer",
+    "est_tournoi": false,
+    "armes": [
+      "Épée"
+    ],
+    "notes": "Année absente de la source. À vérifier : 28 mars 2027 = dimanche de Pâques",
+    "contact": "",
+    "email": "",
+    "ecart_accepte": false,
+    "categories_publiees": "Seniors",
+    "cats": [
+      "Seniors"
+    ],
+    "cats_index": "|Seniors|",
+    "tri_key": 20270327,
+    "cle_source": "27-28 mars 2027|Épée|CR|"
+  },
+  {
+    "id": "5f1e00dc-6580-402c-8a86-0046a7f3997a",
+    "__version__": 1,
+    "date_texte": "3-4 avr. 2027",
+    "jours": "sam-dim",
+    "bloc": "Alsace",
+    "type": "30eme Tournoi International",
+    "categories": "",
+    "lieu": "Illzach",
+    "club": "ASIM ESCRIME",
+    "statut": "",
+    "est_tournoi": true,
+    "armes": [
+      {
+        "arme": "Fleuret",
+        "categories": "M9, M11, M13, M15, M17"
+      },
+      {
+        "arme": "Épée",
+        "categories": "M11, M13, M15, M17, Seniors"
+      }
+    ],
+    "notes": "",
+    "contact": "Les dates ne sont pas fixé, j'attend la parution du calendrier régional pour trouver le meilleur weekend. Maël Murgante président",
+    "email": "mael.murgante@gmail.com",
+    "ecart_accepte": false,
+    "categories_publiees": "",
+    "armes_publiees": [
+      {
+        "arme": "Fleuret",
+        "categories": "M9, M11, M13, M15, M17"
+      },
+      {
+        "arme": "Épée",
+        "categories": "M11, M13, M15, M17, Seniors"
+      }
+    ],
+    "cats": [
+      "M9",
+      "M11",
+      "M13",
+      "M15",
+      "M17",
+      "Seniors"
+    ],
+    "cats_index": "|M9|M11|M13|M15|M17|Seniors|",
+    "tri_key": 20270403,
+    "cle_source": "3-4 avr. 2027|Alsace|30eme Tournoi International|ASIM ESCRIME"
+  },
+  {
+    "id": "51c98038-c6c5-4d92-9efd-dbb5aecb7901",
+    "__version__": 1,
+    "date_texte": "3-4 avr. 2027",
+    "jours": "sam-dim",
+    "bloc": "Lorraine",
+    "type": "Tournoi des 3 villes",
+    "categories": "",
+    "lieu": "A définir - en attente réponse mairie",
+    "club": "Laxou - Luneville - Toul",
+    "statut": "",
+    "est_tournoi": true,
+    "armes": [
+      {
+        "arme": "Fleuret",
+        "categories": "M7, M9, M11, M13, M15, M17, M20, Seniors, Vétérans"
+      },
+      {
+        "arme": "Épée",
+        "categories": "M7, M9, M11, M13, M15, M17, M20, Seniors, Vétérans"
+      },
+      {
+        "arme": "Sabre",
+        "categories": "M7, M9, M11, M13, M15, M17, M20, Seniors, Vétérans"
+      }
+    ],
+    "notes": "",
+    "contact": "Cholley Auxane, Maitre d'armes",
+    "email": "auxane.cholley@hotmail.fr",
+    "ecart_accepte": true,
+    "categories_publiees": "",
+    "armes_publiees": [
+      {
+        "arme": "Fleuret",
+        "categories": "M7, M9, M11, M13, M15, M17, M20, Seniors, Vétérans"
+      },
+      {
+        "arme": "Épée",
+        "categories": "M7, M9, M11, M13, M15, M17, M20, Seniors, Vétérans"
+      },
+      {
+        "arme": "Sabre",
+        "categories": "M7, M9, M11, M13, M15, M17, M20, Seniors, Vétérans"
+      }
+    ],
+    "cats": [
+      "M7",
+      "M9",
+      "M11",
+      "M13",
+      "M15",
+      "M17",
+      "M20",
+      "Seniors",
+      "Vétérans"
+    ],
+    "cats_index": "|M7|M9|M11|M13|M15|M17|M20|Seniors|Vétérans|",
+    "tri_key": 20270403,
+    "cle_source": "3-4 avr. 2027|Lorraine|Tournoi des 3 villes|Laxou - Luneville - Toul"
+  },
+  {
+    "id": "148eb91e-8dff-4c68-95e2-61eddac9d502",
+    "__version__": 1,
+    "date_texte": "4 avr. 2027",
+    "jours": "dim",
+    "bloc": "Sabre laser",
+    "type": "CR3 D2",
+    "categories": "Division 2 — « L'Étape 3, Ordre des Veilleurs »",
+    "lieu": "",
+    "club": "",
+    "statut": "",
+    "est_tournoi": false,
+    "armes": [
+      "Sabre laser"
+    ],
+    "notes": "",
+    "contact": "",
+    "email": "",
+    "ecart_accepte": false,
+    "categories_publiees": "Division 2 — « L'Étape 3, Ordre des Veilleurs »",
+    "cats": [],
+    "cats_index": "",
+    "tri_key": 20270404,
+    "cle_source": "4 avr. 2027|Sabre laser|CR3 D2|"
+  },
+  {
+    "id": "4e5fc8ef-21a8-4b46-8e8f-2d68f183127e",
+    "__version__": 1,
+    "date_texte": "18 avr. 2027",
+    "jours": "dim",
+    "bloc": "Sabre laser",
+    "type": "CR2 Choré / Technique",
+    "categories": "Choré Cadet + Épreuve Technique Cadet + Épreuve Technique Sénior — « La Résonance de l'Harmonie »",
+    "lieu": "",
+    "club": "",
+    "statut": "",
+    "est_tournoi": false,
+    "armes": [
+      "Sabre laser"
+    ],
+    "notes": "Trois épreuves le même jour — à confirmer",
+    "contact": "",
+    "email": "",
+    "ecart_accepte": false,
+    "categories_publiees": "Choré Cadet + Épreuve Technique Cadet + Épreuve Technique Sénior — « La Résonance de l'Harmonie »",
+    "cats": [],
+    "cats_index": "",
+    "tri_key": 20270418,
+    "cle_source": "18 avr. 2027|Sabre laser|CR2 Choré / Technique|"
+  },
+  {
+    "id": "1fcf5f7a-6ae1-467d-8bd8-6172a0d1c908",
+    "__version__": 1,
+    "date_texte": "1-2 mai 2027",
+    "jours": "sam-dim",
+    "bloc": "Coupe de Lorraine",
+    "type": "CHDL",
+    "categories": "M9-M11-M13",
+    "lieu": "ST DIE",
+    "club": "",
+    "statut": "À confirmer",
+    "est_tournoi": false,
+    "armes": [],
+    "notes": "",
+    "contact": "",
+    "email": "",
+    "ecart_accepte": false,
+    "categories_publiees": "M9-M11-M13",
+    "cats": [
+      "M9",
+      "M11",
+      "M13"
+    ],
+    "cats_index": "|M9|M11|M13|",
+    "tri_key": 20270501,
+    "cle_source": "1-2 mai 2027|Coupe de Lorraine|CHDL|"
+  },
+  {
+    "id": "73aba7cc-a570-4966-a359-bb5afef8dce2",
+    "__version__": 1,
+    "date_texte": "1-2 mai 2027",
+    "jours": "sam-dim",
+    "bloc": "Alsace",
+    "type": "Tournoi du Sandhaas",
+    "categories": "",
+    "lieu": "MDS rue du tournoi 67500 HAGUENAU",
+    "club": "Club d'Escrime de haguenau",
+    "statut": "",
+    "est_tournoi": true,
+    "armes": [
+      {
+        "arme": "Fleuret",
+        "categories": "M7, M9, M11, M13, M15, Seniors, Vétérans"
+      },
+      {
+        "arme": "Épée",
+        "categories": "Seniors, Vétérans"
+      }
+    ],
+    "notes": "",
+    "contact": "Stéphane MARTIN Président",
+    "email": "presidence.escrime.haguenau@gmail.com",
+    "ecart_accepte": false,
+    "categories_publiees": "",
+    "armes_publiees": [
+      {
+        "arme": "Fleuret",
+        "categories": "M7, M9, M11, M13, M15, Seniors, Vétérans"
+      },
+      {
+        "arme": "Épée",
+        "categories": "Seniors, Vétérans"
+      }
+    ],
+    "cats": [
+      "M7",
+      "M9",
+      "M11",
+      "M13",
+      "M15",
+      "Seniors",
+      "Vétérans"
+    ],
+    "cats_index": "|M7|M9|M11|M13|M15|Seniors|Vétérans|",
+    "tri_key": 20270501,
+    "cle_source": "1-2 mai 2027|Alsace|Tournoi du Sandhaas|Club d'Escrime de haguenau"
+  },
+  {
+    "id": "7c4c99af-9823-4b8e-8cad-c802597602d8",
+    "__version__": 1,
+    "date_texte": "23 mai 2027",
+    "jours": "dim",
+    "bloc": "Autres",
+    "type": "Master",
+    "categories": "M11-M13",
+    "lieu": "Wassy",
+    "club": "",
+    "statut": "À confirmer",
+    "est_tournoi": false,
+    "armes": [
+      "Épée",
+      "Fleuret",
+      "Sabre"
+    ],
+    "notes": "Date illisible dans la source (« 23-mai-07 »)",
+    "contact": "",
+    "email": "",
+    "ecart_accepte": false,
+    "categories_publiees": "M11-M13",
+    "cats": [
+      "M11",
+      "M13"
+    ],
+    "cats_index": "|M11|M13|",
+    "tri_key": 20270523,
+    "cle_source": "23 mai 2027|Autres|Master|"
+  }
+]

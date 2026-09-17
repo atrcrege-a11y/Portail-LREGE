@@ -1,0 +1,2110 @@
+{
+    "source": "calendrier-lrege 1.0.1 — LREGE_Texte \/ LREGE_Classeur",
+    "php": "8.4.21",
+    "dates": [
+        {
+            "in": "3-4 avril 2027",
+            "tri_key": 20270403,
+            "illisible": false
+        },
+        {
+            "in": "3-4 avr. 2027",
+            "tri_key": 20270403,
+            "illisible": false
+        },
+        {
+            "in": "26-27 sept. 2026",
+            "tri_key": 20260926,
+            "illisible": false
+        },
+        {
+            "in": "mai 2027",
+            "tri_key": 20270531,
+            "illisible": false
+        },
+        {
+            "in": "1-2 mai 2027",
+            "tri_key": 20270501,
+            "illisible": false
+        },
+        {
+            "in": "30 jan. 2027",
+            "tri_key": 20270130,
+            "illisible": false
+        },
+        {
+            "in": "3-4 avr. 2027 ou 1-2 mai 2027",
+            "tri_key": 20270403,
+            "illisible": false
+        },
+        {
+            "in": "1 août 2027",
+            "tri_key": 20270801,
+            "illisible": false
+        },
+        {
+            "in": "3-4 pluviose 2027",
+            "tri_key": 99991231,
+            "illisible": true
+        },
+        {
+            "in": "semaine 12",
+            "tri_key": 99991231,
+            "illisible": true
+        },
+        {
+            "in": "",
+            "tri_key": 99991231,
+            "illisible": true
+        },
+        {
+            "in": "   ",
+            "tri_key": 99991231,
+            "illisible": true
+        },
+        {
+            "in": "  26-27 sept. 2026  ",
+            "tri_key": 20260926,
+            "illisible": false
+        },
+        {
+            "in": "26 - 27 sept. 2026",
+            "tri_key": 20260926,
+            "illisible": false
+        },
+        {
+            "in": "26-27 SEPT. 2026",
+            "tri_key": 20260926,
+            "illisible": false
+        },
+        {
+            "in": "26-27 Sept 2026",
+            "tri_key": 20260926,
+            "illisible": false
+        },
+        {
+            "in": "1 mai 2027",
+            "tri_key": 20270501,
+            "illisible": false
+        },
+        {
+            "in": "01 mai 2027",
+            "tri_key": 20270501,
+            "illisible": false
+        },
+        {
+            "in": "Mai 2027",
+            "tri_key": 20270531,
+            "illisible": false
+        },
+        {
+            "in": "MAI 2027",
+            "tri_key": 20270531,
+            "illisible": false
+        },
+        {
+            "in": "mai. 2027",
+            "tri_key": 20270531,
+            "illisible": false
+        },
+        {
+            "in": "mai 2027 ou juin 2027",
+            "tri_key": 99991231,
+            "illisible": true
+        },
+        {
+            "in": "2027",
+            "tri_key": 99991231,
+            "illisible": true
+        },
+        {
+            "in": "26\/09\/2026",
+            "tri_key": 99991231,
+            "illisible": true
+        },
+        {
+            "in": "26 sept.2026",
+            "tri_key": 99991231,
+            "illisible": true
+        },
+        {
+            "in": "26  sept.  2026",
+            "tri_key": 20260926,
+            "illisible": false
+        },
+        {
+            "in": "31 déc. 2026",
+            "tri_key": 20261231,
+            "illisible": false
+        },
+        {
+            "in": "1 janv. 2027",
+            "tri_key": 20270101,
+            "illisible": false
+        },
+        {
+            "in": "23 mai 2027",
+            "tri_key": 20270523,
+            "illisible": false
+        },
+        {
+            "in": "juin 2027",
+            "tri_key": 20270631,
+            "illisible": false
+        },
+        {
+            "in": "6-7 fév. 2027",
+            "tri_key": 20270206,
+            "illisible": false
+        },
+        {
+            "in": "6-7 février 2027",
+            "tri_key": 20270206,
+            "illisible": false
+        },
+        {
+            "in": "1-2 mai 2027 (à confirmer)",
+            "tri_key": 20270501,
+            "illisible": false
+        },
+        {
+            "in": "pluviose 2027",
+            "tri_key": 99991231,
+            "illisible": true
+        },
+        {
+            "in": "12 germinal 2027",
+            "tri_key": 99991231,
+            "illisible": true
+        },
+        {
+            "in": "du 3 au 4 avril 2027",
+            "tri_key": 99991231,
+            "illisible": true
+        },
+        {
+            "in": "1 janv 2027",
+            "tri_key": 20270101,
+            "illisible": false
+        },
+        {
+            "in": "janv 2027",
+            "tri_key": 20270131,
+            "illisible": false
+        },
+        {
+            "in": "10-11 janv 2027",
+            "tri_key": 20270110,
+            "illisible": false
+        },
+        {
+            "in": "1 jan 2027",
+            "tri_key": 20270101,
+            "illisible": false
+        },
+        {
+            "in": "1 jan. 2027",
+            "tri_key": 20270101,
+            "illisible": false
+        },
+        {
+            "in": "jan 2027",
+            "tri_key": 20270131,
+            "illisible": false
+        },
+        {
+            "in": "10-11 jan 2027",
+            "tri_key": 20270110,
+            "illisible": false
+        },
+        {
+            "in": "1 janvier 2027",
+            "tri_key": 20270101,
+            "illisible": false
+        },
+        {
+            "in": "1 janvier. 2027",
+            "tri_key": 20270101,
+            "illisible": false
+        },
+        {
+            "in": "janvier 2027",
+            "tri_key": 20270131,
+            "illisible": false
+        },
+        {
+            "in": "10-11 janvier 2027",
+            "tri_key": 20270110,
+            "illisible": false
+        },
+        {
+            "in": "1 fév 2027",
+            "tri_key": 20270201,
+            "illisible": false
+        },
+        {
+            "in": "1 fév. 2027",
+            "tri_key": 20270201,
+            "illisible": false
+        },
+        {
+            "in": "fév 2027",
+            "tri_key": 20270231,
+            "illisible": false
+        },
+        {
+            "in": "10-11 fév 2027",
+            "tri_key": 20270210,
+            "illisible": false
+        },
+        {
+            "in": "1 fev 2027",
+            "tri_key": 20270201,
+            "illisible": false
+        },
+        {
+            "in": "1 fev. 2027",
+            "tri_key": 20270201,
+            "illisible": false
+        },
+        {
+            "in": "fev 2027",
+            "tri_key": 20270231,
+            "illisible": false
+        },
+        {
+            "in": "10-11 fev 2027",
+            "tri_key": 20270210,
+            "illisible": false
+        },
+        {
+            "in": "1 février 2027",
+            "tri_key": 20270201,
+            "illisible": false
+        },
+        {
+            "in": "1 février. 2027",
+            "tri_key": 20270201,
+            "illisible": false
+        },
+        {
+            "in": "février 2027",
+            "tri_key": 20270231,
+            "illisible": false
+        },
+        {
+            "in": "10-11 février 2027",
+            "tri_key": 20270210,
+            "illisible": false
+        },
+        {
+            "in": "1 fevrier 2027",
+            "tri_key": 20270201,
+            "illisible": false
+        },
+        {
+            "in": "1 fevrier. 2027",
+            "tri_key": 20270201,
+            "illisible": false
+        },
+        {
+            "in": "fevrier 2027",
+            "tri_key": 20270231,
+            "illisible": false
+        },
+        {
+            "in": "10-11 fevrier 2027",
+            "tri_key": 20270210,
+            "illisible": false
+        },
+        {
+            "in": "1 mars 2027",
+            "tri_key": 20270301,
+            "illisible": false
+        },
+        {
+            "in": "1 mars. 2027",
+            "tri_key": 20270301,
+            "illisible": false
+        },
+        {
+            "in": "mars 2027",
+            "tri_key": 20270331,
+            "illisible": false
+        },
+        {
+            "in": "10-11 mars 2027",
+            "tri_key": 20270310,
+            "illisible": false
+        },
+        {
+            "in": "1 avr 2027",
+            "tri_key": 20270401,
+            "illisible": false
+        },
+        {
+            "in": "1 avr. 2027",
+            "tri_key": 20270401,
+            "illisible": false
+        },
+        {
+            "in": "avr 2027",
+            "tri_key": 20270431,
+            "illisible": false
+        },
+        {
+            "in": "10-11 avr 2027",
+            "tri_key": 20270410,
+            "illisible": false
+        },
+        {
+            "in": "1 avril 2027",
+            "tri_key": 20270401,
+            "illisible": false
+        },
+        {
+            "in": "1 avril. 2027",
+            "tri_key": 20270401,
+            "illisible": false
+        },
+        {
+            "in": "avril 2027",
+            "tri_key": 20270431,
+            "illisible": false
+        },
+        {
+            "in": "10-11 avril 2027",
+            "tri_key": 20270410,
+            "illisible": false
+        },
+        {
+            "in": "1 mai. 2027",
+            "tri_key": 20270501,
+            "illisible": false
+        },
+        {
+            "in": "10-11 mai 2027",
+            "tri_key": 20270510,
+            "illisible": false
+        },
+        {
+            "in": "1 juin 2027",
+            "tri_key": 20270601,
+            "illisible": false
+        },
+        {
+            "in": "1 juin. 2027",
+            "tri_key": 20270601,
+            "illisible": false
+        },
+        {
+            "in": "10-11 juin 2027",
+            "tri_key": 20270610,
+            "illisible": false
+        },
+        {
+            "in": "1 juil 2027",
+            "tri_key": 20270701,
+            "illisible": false
+        },
+        {
+            "in": "1 juil. 2027",
+            "tri_key": 20270701,
+            "illisible": false
+        },
+        {
+            "in": "juil 2027",
+            "tri_key": 20270731,
+            "illisible": false
+        },
+        {
+            "in": "10-11 juil 2027",
+            "tri_key": 20270710,
+            "illisible": false
+        },
+        {
+            "in": "1 juillet 2027",
+            "tri_key": 20270701,
+            "illisible": false
+        },
+        {
+            "in": "1 juillet. 2027",
+            "tri_key": 20270701,
+            "illisible": false
+        },
+        {
+            "in": "juillet 2027",
+            "tri_key": 20270731,
+            "illisible": false
+        },
+        {
+            "in": "10-11 juillet 2027",
+            "tri_key": 20270710,
+            "illisible": false
+        },
+        {
+            "in": "1 août. 2027",
+            "tri_key": 20270801,
+            "illisible": false
+        },
+        {
+            "in": "août 2027",
+            "tri_key": 20270831,
+            "illisible": false
+        },
+        {
+            "in": "10-11 août 2027",
+            "tri_key": 20270810,
+            "illisible": false
+        },
+        {
+            "in": "1 aout 2027",
+            "tri_key": 20270801,
+            "illisible": false
+        },
+        {
+            "in": "1 aout. 2027",
+            "tri_key": 20270801,
+            "illisible": false
+        },
+        {
+            "in": "aout 2027",
+            "tri_key": 20270831,
+            "illisible": false
+        },
+        {
+            "in": "10-11 aout 2027",
+            "tri_key": 20270810,
+            "illisible": false
+        },
+        {
+            "in": "1 sept 2027",
+            "tri_key": 20270901,
+            "illisible": false
+        },
+        {
+            "in": "1 sept. 2027",
+            "tri_key": 20270901,
+            "illisible": false
+        },
+        {
+            "in": "sept 2027",
+            "tri_key": 20270931,
+            "illisible": false
+        },
+        {
+            "in": "10-11 sept 2027",
+            "tri_key": 20270910,
+            "illisible": false
+        },
+        {
+            "in": "1 septembre 2027",
+            "tri_key": 20270901,
+            "illisible": false
+        },
+        {
+            "in": "1 septembre. 2027",
+            "tri_key": 20270901,
+            "illisible": false
+        },
+        {
+            "in": "septembre 2027",
+            "tri_key": 20270931,
+            "illisible": false
+        },
+        {
+            "in": "10-11 septembre 2027",
+            "tri_key": 20270910,
+            "illisible": false
+        },
+        {
+            "in": "1 oct 2027",
+            "tri_key": 20271001,
+            "illisible": false
+        },
+        {
+            "in": "1 oct. 2027",
+            "tri_key": 20271001,
+            "illisible": false
+        },
+        {
+            "in": "oct 2027",
+            "tri_key": 20271031,
+            "illisible": false
+        },
+        {
+            "in": "10-11 oct 2027",
+            "tri_key": 20271010,
+            "illisible": false
+        },
+        {
+            "in": "1 octobre 2027",
+            "tri_key": 20271001,
+            "illisible": false
+        },
+        {
+            "in": "1 octobre. 2027",
+            "tri_key": 20271001,
+            "illisible": false
+        },
+        {
+            "in": "octobre 2027",
+            "tri_key": 20271031,
+            "illisible": false
+        },
+        {
+            "in": "10-11 octobre 2027",
+            "tri_key": 20271010,
+            "illisible": false
+        },
+        {
+            "in": "1 nov 2027",
+            "tri_key": 20271101,
+            "illisible": false
+        },
+        {
+            "in": "1 nov. 2027",
+            "tri_key": 20271101,
+            "illisible": false
+        },
+        {
+            "in": "nov 2027",
+            "tri_key": 20271131,
+            "illisible": false
+        },
+        {
+            "in": "10-11 nov 2027",
+            "tri_key": 20271110,
+            "illisible": false
+        },
+        {
+            "in": "1 novembre 2027",
+            "tri_key": 20271101,
+            "illisible": false
+        },
+        {
+            "in": "1 novembre. 2027",
+            "tri_key": 20271101,
+            "illisible": false
+        },
+        {
+            "in": "novembre 2027",
+            "tri_key": 20271131,
+            "illisible": false
+        },
+        {
+            "in": "10-11 novembre 2027",
+            "tri_key": 20271110,
+            "illisible": false
+        },
+        {
+            "in": "1 déc 2027",
+            "tri_key": 20271201,
+            "illisible": false
+        },
+        {
+            "in": "1 déc. 2027",
+            "tri_key": 20271201,
+            "illisible": false
+        },
+        {
+            "in": "déc 2027",
+            "tri_key": 20271231,
+            "illisible": false
+        },
+        {
+            "in": "10-11 déc 2027",
+            "tri_key": 20271210,
+            "illisible": false
+        },
+        {
+            "in": "1 dec 2027",
+            "tri_key": 20271201,
+            "illisible": false
+        },
+        {
+            "in": "1 dec. 2027",
+            "tri_key": 20271201,
+            "illisible": false
+        },
+        {
+            "in": "dec 2027",
+            "tri_key": 20271231,
+            "illisible": false
+        },
+        {
+            "in": "10-11 dec 2027",
+            "tri_key": 20271210,
+            "illisible": false
+        },
+        {
+            "in": "1 décembre 2027",
+            "tri_key": 20271201,
+            "illisible": false
+        },
+        {
+            "in": "1 décembre. 2027",
+            "tri_key": 20271201,
+            "illisible": false
+        },
+        {
+            "in": "décembre 2027",
+            "tri_key": 20271231,
+            "illisible": false
+        },
+        {
+            "in": "10-11 décembre 2027",
+            "tri_key": 20271210,
+            "illisible": false
+        },
+        {
+            "in": "1 decembre 2027",
+            "tri_key": 20271201,
+            "illisible": false
+        },
+        {
+            "in": "1 decembre. 2027",
+            "tri_key": 20271201,
+            "illisible": false
+        },
+        {
+            "in": "decembre 2027",
+            "tri_key": 20271231,
+            "illisible": false
+        },
+        {
+            "in": "10-11 decembre 2027",
+            "tri_key": 20271210,
+            "illisible": false
+        }
+    ],
+    "categories": [
+        {
+            "in": "",
+            "developpe": "",
+            "normalise": "",
+            "cats": [],
+            "cats_index": ""
+        },
+        {
+            "in": "Seniors",
+            "developpe": "Seniors",
+            "normalise": "Seniors",
+            "cats": [
+                "Seniors"
+            ],
+            "cats_index": "|Seniors|"
+        },
+        {
+            "in": "M13 à Seniors",
+            "developpe": "M13-M15-M17-M20-Seniors",
+            "normalise": "M13-M15-M17-M20-Seniors",
+            "cats": [
+                "M13",
+                "M15",
+                "M17",
+                "M20",
+                "Seniors"
+            ],
+            "cats_index": "|M13|M15|M17|M20|Seniors|"
+        },
+        {
+            "in": "M7 à Vétérans",
+            "developpe": "M7-M9-M11-M13-M15-M17-M20-Seniors-Vétérans",
+            "normalise": "M7-M9-M11-M13-M15-M17-M20-Seniors-Vétérans",
+            "cats": [
+                "M7",
+                "M9",
+                "M11",
+                "M13",
+                "M15",
+                "M17",
+                "M20",
+                "Seniors",
+                "Vétérans"
+            ],
+            "cats_index": "|M7|M9|M11|M13|M15|M17|M20|Seniors|Vétérans|"
+        },
+        {
+            "in": "Seniors à M13",
+            "developpe": "Seniors à M13",
+            "normalise": "Seniors à M13",
+            "cats": [
+                "M13",
+                "Seniors"
+            ],
+            "cats_index": "|M13|Seniors|"
+        },
+        {
+            "in": "VET + M13",
+            "developpe": "VET + M13",
+            "normalise": "M13-Vétérans",
+            "cats": [
+                "M13",
+                "Vétérans"
+            ],
+            "cats_index": "|M13|Vétérans|"
+        },
+        {
+            "in": "PARA + M13 épée",
+            "developpe": "PARA + M13 épée",
+            "normalise": "Parasport-M13 épée",
+            "cats": [
+                "M13"
+            ],
+            "cats_index": "|M13|"
+        },
+        {
+            "in": "M13 à Seniors + VET",
+            "developpe": "M13-M15-M17-M20-Seniors + VET",
+            "normalise": "M13-M15-M17-M20-Seniors + VET",
+            "cats": [
+                "M13",
+                "M15",
+                "M17",
+                "M20",
+                "Seniors",
+                "Vétérans"
+            ],
+            "cats_index": "|M13|M15|M17|M20|Seniors|Vétérans|"
+        },
+        {
+            "in": "M9-M11-M13",
+            "developpe": "M9-M11-M13",
+            "normalise": "M9-M11-M13",
+            "cats": [
+                "M9",
+                "M11",
+                "M13"
+            ],
+            "cats_index": "|M9|M11|M13|"
+        },
+        {
+            "in": "M13 a Seniors",
+            "developpe": "M13-M15-M17-M20-Seniors",
+            "normalise": "M13-M15-M17-M20-Seniors",
+            "cats": [
+                "M13",
+                "M15",
+                "M17",
+                "M20",
+                "Seniors"
+            ],
+            "cats_index": "|M13|M15|M17|M20|Seniors|"
+        },
+        {
+            "in": "M13 À Seniors",
+            "developpe": "M13-M15-M17-M20-Seniors",
+            "normalise": "M13-M15-M17-M20-Seniors",
+            "cats": [
+                "M13",
+                "M15",
+                "M17",
+                "M20",
+                "Seniors"
+            ],
+            "cats_index": "|M13|M15|M17|M20|Seniors|"
+        },
+        {
+            "in": "vet + m13",
+            "developpe": "vet + m13",
+            "normalise": "M13-Vétérans",
+            "cats": [
+                "M13",
+                "Vétérans"
+            ],
+            "cats_index": "|M13|Vétérans|"
+        },
+        {
+            "in": "PARA",
+            "developpe": "PARA",
+            "normalise": "Parasport",
+            "cats": [],
+            "cats_index": ""
+        },
+        {
+            "in": "Parasport",
+            "developpe": "Parasport",
+            "normalise": "Parasport",
+            "cats": [],
+            "cats_index": ""
+        },
+        {
+            "in": "paras",
+            "developpe": "paras",
+            "normalise": "Parasport",
+            "cats": [],
+            "cats_index": ""
+        },
+        {
+            "in": "Sén à M20",
+            "developpe": "Sén à M20",
+            "normalise": "Sén à M20",
+            "cats": [
+                "M20"
+            ],
+            "cats_index": "|M20|"
+        },
+        {
+            "in": "M20 à Sén",
+            "developpe": "M20-Seniors",
+            "normalise": "M20-Seniors",
+            "cats": [
+                "M20",
+                "Seniors"
+            ],
+            "cats_index": "|M20|Seniors|"
+        },
+        {
+            "in": "M13 à pluviose",
+            "developpe": "M13 à pluviose",
+            "normalise": "M13 à pluviose",
+            "cats": [
+                "M13"
+            ],
+            "cats_index": "|M13|"
+        },
+        {
+            "in": "Cadet",
+            "developpe": "Cadet",
+            "normalise": "Cadet",
+            "cats": [],
+            "cats_index": ""
+        },
+        {
+            "in": "Benjamin + Sénior",
+            "developpe": "Benjamin + Sénior",
+            "normalise": "Benjamin + Sénior",
+            "cats": [],
+            "cats_index": ""
+        },
+        {
+            "in": "M17 mixte",
+            "developpe": "M17 mixte",
+            "normalise": "M17 mixte",
+            "cats": [
+                "M17"
+            ],
+            "cats_index": "|M17|"
+        },
+        {
+            "in": "M13 épée + PARA",
+            "developpe": "M13 épée + PARA",
+            "normalise": "Parasport-M13 épée",
+            "cats": [
+                "M13"
+            ],
+            "cats_index": "|M13|"
+        },
+        {
+            "in": "Vétérans",
+            "developpe": "Vétérans",
+            "normalise": "Vétérans",
+            "cats": [
+                "Vétérans"
+            ],
+            "cats_index": "|Vétérans|"
+        },
+        {
+            "in": "M11 à M15",
+            "developpe": "M11-M13-M15",
+            "normalise": "M11-M13-M15",
+            "cats": [
+                "M11",
+                "M13",
+                "M15"
+            ],
+            "cats_index": "|M11|M13|M15|"
+        },
+        {
+            "in": "M15",
+            "developpe": "M15",
+            "normalise": "M15",
+            "cats": [
+                "M15"
+            ],
+            "cats_index": "|M15|"
+        },
+        {
+            "in": "M13 + M15 + M17",
+            "developpe": "M13 + M15 + M17",
+            "normalise": "M13-M15-M17",
+            "cats": [
+                "M13",
+                "M15",
+                "M17"
+            ],
+            "cats_index": "|M13|M15|M17|"
+        },
+        {
+            "in": "M13+M15",
+            "developpe": "M13+M15",
+            "normalise": "M13-M15",
+            "cats": [
+                "M13",
+                "M15"
+            ],
+            "cats_index": "|M13|M15|"
+        },
+        {
+            "in": "Seniors + Vétérans",
+            "developpe": "Seniors + Vétérans",
+            "normalise": "Seniors-Vétérans",
+            "cats": [
+                "Seniors",
+                "Vétérans"
+            ],
+            "cats_index": "|Seniors|Vétérans|"
+        },
+        {
+            "in": "M13 à M13",
+            "developpe": "M13",
+            "normalise": "M13",
+            "cats": [
+                "M13"
+            ],
+            "cats_index": "|M13|"
+        },
+        {
+            "in": "Toutes catégories",
+            "developpe": "Toutes catégories",
+            "normalise": "Toutes catégories",
+            "cats": [],
+            "cats_index": ""
+        },
+        {
+            "in": "M7 à M9 et M13",
+            "developpe": "M7-M9 et M13",
+            "normalise": "M7-M9 et M13",
+            "cats": [
+                "M7",
+                "M9",
+                "M13"
+            ],
+            "cats_index": "|M7|M9|M13|"
+        },
+        {
+            "in": "VET",
+            "developpe": "VET",
+            "normalise": "VET",
+            "cats": [
+                "Vétérans"
+            ],
+            "cats_index": "|Vétérans|"
+        },
+        {
+            "in": "M20 à Vétérans",
+            "developpe": "M20-Seniors-Vétérans",
+            "normalise": "M20-Seniors-Vétérans",
+            "cats": [
+                "M20",
+                "Seniors",
+                "Vétérans"
+            ],
+            "cats_index": "|M20|Seniors|Vétérans|"
+        },
+        {
+            "in": "Sabre laser Sénior",
+            "developpe": "Sabre laser Sénior",
+            "normalise": "Sabre laser Sénior",
+            "cats": [],
+            "cats_index": ""
+        },
+        {
+            "in": "M13 à Seniors (hors M15)",
+            "developpe": "M13-M15-M17-M20-Seniors (hors M15)",
+            "normalise": "M13-M15-M17-M20-Seniors (hors M15)",
+            "cats": [
+                "M13",
+                "M15",
+                "M17",
+                "M20",
+                "Seniors"
+            ],
+            "cats_index": "|M13|M15|M17|M20|Seniors|"
+        }
+    ],
+    "cats_index": [
+        {
+            "in": [],
+            "cats_index": ""
+        },
+        {
+            "in": [
+                "M13"
+            ],
+            "cats_index": "|M13|"
+        },
+        {
+            "in": [
+                "M13",
+                "M15"
+            ],
+            "cats_index": "|M13|M15|"
+        },
+        {
+            "in": [
+                "Parasport",
+                "M13"
+            ],
+            "cats_index": "|Parasport|M13|"
+        },
+        {
+            "in": [
+                "Seniors",
+                "Vétérans"
+            ],
+            "cats_index": "|Seniors|Vétérans|"
+        },
+        {
+            "in": [
+                "M7",
+                "M9",
+                "M11",
+                "M13",
+                "M15",
+                "M17",
+                "M20",
+                "Seniors",
+                "Vétérans"
+            ],
+            "cats_index": "|M7|M9|M11|M13|M15|M17|M20|Seniors|Vétérans|"
+        }
+    ],
+    "cle_source": {
+        "lignes": [
+            {
+                "date_texte": "26-27 sept. 2026",
+                "bloc": "Épée",
+                "type": "ER1",
+                "club": ""
+            },
+            {
+                "date_texte": "26-27 sept. 2026",
+                "bloc": "Épée",
+                "type": "ER1",
+                "club": ""
+            },
+            {
+                "date_texte": "26-27 sept. 2026",
+                "bloc": "Épée",
+                "type": "ER1",
+                "club": ""
+            },
+            {
+                "date_texte": "21-22 nov. 2026",
+                "bloc": "Coupe de Lorraine",
+                "type": "CDL 1",
+                "club": "VANDOEUVRE"
+            },
+            {
+                "date_texte": "3-4 avr. 2027",
+                "bloc": "Lorraine",
+                "type": "Tournoi club",
+                "club": "SOIG"
+            },
+            {
+                "date_texte": "",
+                "bloc": "",
+                "type": "",
+                "club": ""
+            },
+            {
+                "date_texte": "26-27 sept. 2026",
+                "bloc": "Épée",
+                "type": "ER2",
+                "club": ""
+            },
+            {
+                "date_texte": "3-4 avr. 2027",
+                "bloc": "Lorraine",
+                "type": "Tournoi club",
+                "club": "SOIG"
+            }
+        ],
+        "attendu": [
+            "26-27 sept. 2026|Épée|ER1|",
+            "26-27 sept. 2026|Épée|ER1|#2",
+            "26-27 sept. 2026|Épée|ER1|#3",
+            "21-22 nov. 2026|Coupe de Lorraine|CDL 1|VANDOEUVRE",
+            "3-4 avr. 2027|Lorraine|Tournoi club|SOIG",
+            "|||",
+            "26-27 sept. 2026|Épée|ER2|",
+            "3-4 avr. 2027|Lorraine|Tournoi club|SOIG#2"
+        ],
+        "doublons": [
+            "26-27 sept. 2026|Épée|ER1|",
+            "26-27 sept. 2026|Épée|ER1|",
+            "3-4 avr. 2027|Lorraine|Tournoi club|SOIG"
+        ]
+    },
+    "classeur": {
+        "saison": "2026-2027",
+        "nb_officiels": 36,
+        "nb_tournois": 9,
+        "lignes": [
+            {
+                "date_texte": "26-27 sept. 2026",
+                "jours": "sam-dim",
+                "bloc": "Épée",
+                "type": "ER1",
+                "categories": "Seniors-Vétérans",
+                "lieu": "",
+                "club": "",
+                "statut": "",
+                "est_tournoi": false,
+                "armes": [],
+                "tri_key": 20260926,
+                "cle_source": "26-27 sept. 2026|Épée|ER1|",
+                "cats": [
+                    "Seniors",
+                    "Vétérans"
+                ],
+                "cats_index": "|Seniors|Vétérans|"
+            },
+            {
+                "date_texte": "26-27 sept. 2026",
+                "jours": "sam-dim",
+                "bloc": "Fleuret",
+                "type": "ER1",
+                "categories": "M13-M15-M17-M20-Seniors",
+                "lieu": "",
+                "club": "",
+                "statut": "",
+                "est_tournoi": false,
+                "armes": [],
+                "tri_key": 20260926,
+                "cle_source": "26-27 sept. 2026|Fleuret|ER1|",
+                "cats": [
+                    "M13",
+                    "M15",
+                    "M17",
+                    "M20",
+                    "Seniors"
+                ],
+                "cats_index": "|M13|M15|M17|M20|Seniors|"
+            },
+            {
+                "date_texte": "3-4 oct. 2026",
+                "jours": "sam-dim",
+                "bloc": "Sabre",
+                "type": "ER1",
+                "categories": "M15-M17-M20-Seniors",
+                "lieu": "",
+                "club": "",
+                "statut": "",
+                "est_tournoi": false,
+                "armes": [],
+                "tri_key": 20261003,
+                "cle_source": "3-4 oct. 2026|Sabre|ER1|",
+                "cats": [
+                    "M15",
+                    "M17",
+                    "M20",
+                    "Seniors"
+                ],
+                "cats_index": "|M15|M17|M20|Seniors|"
+            },
+            {
+                "date_texte": "10-11 oct. 2026",
+                "jours": "sam-dim",
+                "bloc": "Épée",
+                "type": "ER1",
+                "categories": "M15-M17-M20",
+                "lieu": "",
+                "club": "",
+                "statut": "",
+                "est_tournoi": false,
+                "armes": [],
+                "tri_key": 20261010,
+                "cle_source": "10-11 oct. 2026|Épée|ER1|",
+                "cats": [
+                    "M15",
+                    "M17",
+                    "M20"
+                ],
+                "cats_index": "|M15|M17|M20|"
+            },
+            {
+                "date_texte": "11 oct. 2026",
+                "jours": "dim",
+                "bloc": "Sabre laser",
+                "type": "Territoire",
+                "categories": "Alsace « Alsatia »",
+                "lieu": "",
+                "club": "",
+                "statut": "",
+                "est_tournoi": false,
+                "armes": [],
+                "tri_key": 20261011,
+                "cle_source": "11 oct. 2026|Sabre laser|Territoire|",
+                "cats": [],
+                "cats_index": ""
+            },
+            {
+                "date_texte": "17 oct. 2026",
+                "jours": "sam",
+                "bloc": "Lorraine",
+                "type": "coupe de Moselle 1ère manche",
+                "categories": "",
+                "lieu": "Putelange-aux-lacs",
+                "club": "Sarreguemines",
+                "statut": "",
+                "est_tournoi": true,
+                "armes": [
+                    {
+                        "arme": "Fleuret",
+                        "categories": "M9, M11, M13"
+                    },
+                    {
+                        "arme": "Épée",
+                        "categories": "M9, M11, M13"
+                    },
+                    {
+                        "arme": "Sabre",
+                        "categories": "M9, M11, M13"
+                    }
+                ],
+                "tri_key": 20261017,
+                "cle_source": "17 oct. 2026|Lorraine|coupe de Moselle 1ère manche|Sarreguemines",
+                "cats": [
+                    "M9",
+                    "M11",
+                    "M13"
+                ],
+                "cats_index": "|M9|M11|M13|"
+            },
+            {
+                "date_texte": "18 oct. 2026",
+                "jours": "dim",
+                "bloc": "Sabre laser",
+                "type": "Territoire",
+                "categories": "Champagne-Ardenne & Lorraine « Chard-Loria »",
+                "lieu": "",
+                "club": "",
+                "statut": "",
+                "est_tournoi": false,
+                "armes": [],
+                "tri_key": 20261018,
+                "cle_source": "18 oct. 2026|Sabre laser|Territoire|",
+                "cats": [],
+                "cats_index": ""
+            },
+            {
+                "date_texte": "8 nov. 2026",
+                "jours": "dim",
+                "bloc": "Sabre laser",
+                "type": "CR1 D1",
+                "categories": "Division 1 — « L'Étape 1, La voie du contrôle »",
+                "lieu": "",
+                "club": "",
+                "statut": "",
+                "est_tournoi": false,
+                "armes": [],
+                "tri_key": 20261108,
+                "cle_source": "8 nov. 2026|Sabre laser|CR1 D1|",
+                "cats": [],
+                "cats_index": ""
+            },
+            {
+                "date_texte": "14-15 nov. 2026",
+                "jours": "sam-dim",
+                "bloc": "Épée",
+                "type": "ER2",
+                "categories": "M13-Vétérans",
+                "lieu": "",
+                "club": "",
+                "statut": "",
+                "est_tournoi": false,
+                "armes": [],
+                "tri_key": 20261114,
+                "cle_source": "14-15 nov. 2026|Épée|ER2|",
+                "cats": [
+                    "M13",
+                    "Vétérans"
+                ],
+                "cats_index": "|M13|Vétérans|"
+            },
+            {
+                "date_texte": "21-22 nov. 2026",
+                "jours": "sam-dim",
+                "bloc": "Coupe de Lorraine",
+                "type": "CDL 1",
+                "categories": "M9-M11-M13",
+                "lieu": "VANDOEUVRE",
+                "club": "",
+                "statut": "",
+                "est_tournoi": false,
+                "armes": [],
+                "tri_key": 20261121,
+                "cle_source": "21-22 nov. 2026|Coupe de Lorraine|CDL 1|",
+                "cats": [
+                    "M9",
+                    "M11",
+                    "M13"
+                ],
+                "cats_index": "|M9|M11|M13|"
+            },
+            {
+                "date_texte": "21-22 nov. 2026",
+                "jours": "sam-dim",
+                "bloc": "Alsace",
+                "type": "TOURNOI DE LA JEUNESSE ET DES VETERANS",
+                "categories": "",
+                "lieu": "RD84 CENTRE SPORTIF 67118 GEISPOLSHEIM",
+                "club": "CERCLE D'ESCRIME DE GEISPOLSHEIM",
+                "statut": "",
+                "est_tournoi": true,
+                "armes": [
+                    {
+                        "arme": "Fleuret",
+                        "categories": "M9, M11, M13"
+                    },
+                    {
+                        "arme": "Épée",
+                        "categories": "M9, M11, M13, Vétérans"
+                    }
+                ],
+                "tri_key": 20261121,
+                "cle_source": "21-22 nov. 2026|Alsace|TOURNOI DE LA JEUNESSE ET DES VETERANS|CERCLE D'ESCRIME DE GEISPOLSHEIM",
+                "cats": [
+                    "M9",
+                    "M11",
+                    "M13",
+                    "Vétérans"
+                ],
+                "cats_index": "|M9|M11|M13|Vétérans|"
+            },
+            {
+                "date_texte": "21-22 nov. 2026",
+                "jours": "sam-dim",
+                "bloc": "Lorraine",
+                "type": "Tournoi de Lunéville",
+                "categories": "",
+                "lieu": "gymnase Berte Lunéville",
+                "club": "CE Lunéville",
+                "statut": "",
+                "est_tournoi": true,
+                "armes": [
+                    {
+                        "arme": "Épée",
+                        "categories": "M9, M11, M13, M15, M17, M20, Seniors, Vétérans"
+                    }
+                ],
+                "tri_key": 20261121,
+                "cle_source": "21-22 nov. 2026|Lorraine|Tournoi de Lunéville|CE Lunéville",
+                "cats": [
+                    "M9",
+                    "M11",
+                    "M13",
+                    "M15",
+                    "M17",
+                    "M20",
+                    "Seniors",
+                    "Vétérans"
+                ],
+                "cats_index": "|M9|M11|M13|M15|M17|M20|Seniors|Vétérans|"
+            },
+            {
+                "date_texte": "22 nov. 2026",
+                "jours": "dim",
+                "bloc": "Sabre laser",
+                "type": "CR1 Sportif",
+                "categories": "Cadet & Benjamin — « L'Étape 1, La Nébuleuse »",
+                "lieu": "",
+                "club": "",
+                "statut": "",
+                "est_tournoi": false,
+                "armes": [],
+                "tri_key": 20261122,
+                "cle_source": "22 nov. 2026|Sabre laser|CR1 Sportif|",
+                "cats": [],
+                "cats_index": ""
+            },
+            {
+                "date_texte": "28-29 nov. 2026",
+                "jours": "sam-dim",
+                "bloc": "Sabre",
+                "type": "ER2",
+                "categories": "M15-M17-M20-Seniors",
+                "lieu": "",
+                "club": "",
+                "statut": "",
+                "est_tournoi": false,
+                "armes": [],
+                "tri_key": 20261128,
+                "cle_source": "28-29 nov. 2026|Sabre|ER2|",
+                "cats": [
+                    "M15",
+                    "M17",
+                    "M20",
+                    "Seniors"
+                ],
+                "cats_index": "|M15|M17|M20|Seniors|"
+            },
+            {
+                "date_texte": "4 déc. 2026",
+                "jours": "ven",
+                "bloc": "Alsace",
+                "type": "TOURNOI DU TELETHON",
+                "categories": "",
+                "lieu": "RD 84 CENTRE SPORTIF 67118 GEISPOLSHEIM",
+                "club": "CERCLE D'ESCRIME DE GEISPOLSHEIM",
+                "statut": "",
+                "est_tournoi": true,
+                "armes": [
+                    {
+                        "arme": "Épée",
+                        "categories": "M15, M17, M20, Seniors, Vétérans"
+                    }
+                ],
+                "tri_key": 20261204,
+                "cle_source": "4 déc. 2026|Alsace|TOURNOI DU TELETHON|CERCLE D'ESCRIME DE GEISPOLSHEIM",
+                "cats": [
+                    "M15",
+                    "M17",
+                    "M20",
+                    "Seniors",
+                    "Vétérans"
+                ],
+                "cats_index": "|M15|M17|M20|Seniors|Vétérans|"
+            },
+            {
+                "date_texte": "5-6 déc. 2026",
+                "jours": "sam-dim",
+                "bloc": "Autres",
+                "type": "AG + Ch. dép.",
+                "categories": "M15",
+                "lieu": "",
+                "club": "",
+                "statut": "À confirmer",
+                "est_tournoi": false,
+                "armes": [],
+                "tri_key": 20261205,
+                "cle_source": "5-6 déc. 2026|Autres|AG + Ch. dép.|",
+                "cats": [
+                    "M15"
+                ],
+                "cats_index": "|M15|"
+            },
+            {
+                "date_texte": "12-13 déc. 2026",
+                "jours": "sam-dim",
+                "bloc": "Coupe de Lorraine",
+                "type": "CDL 2",
+                "categories": "M9-M11-M13-M15",
+                "lieu": "EPINAL",
+                "club": "",
+                "statut": "",
+                "est_tournoi": false,
+                "armes": [],
+                "tri_key": 20261212,
+                "cle_source": "12-13 déc. 2026|Coupe de Lorraine|CDL 2|",
+                "cats": [
+                    "M9",
+                    "M11",
+                    "M13",
+                    "M15"
+                ],
+                "cats_index": "|M9|M11|M13|M15|"
+            },
+            {
+                "date_texte": "12-13 déc. 2026",
+                "jours": "sam-dim",
+                "bloc": "Autres",
+                "type": "CID",
+                "categories": "M15",
+                "lieu": "",
+                "club": "",
+                "statut": "",
+                "est_tournoi": false,
+                "armes": [],
+                "tri_key": 20261212,
+                "cle_source": "12-13 déc. 2026|Autres|CID|",
+                "cats": [
+                    "M15"
+                ],
+                "cats_index": "|M15|"
+            },
+            {
+                "date_texte": "12-13 déc. 2026",
+                "jours": "sam-dim",
+                "bloc": "Alsace",
+                "type": "26ÈME TOURNOI INTERNATIONAL D'ESCRIME DE GUEBWILLER",
+                "categories": "",
+                "lieu": "CENTRE SPORTIF DU FLORIVAL - RUE DE LA PISCINE - 68500 GUEBWILLER",
+                "club": "SG 1860 SECTION ESCRIME",
+                "statut": "",
+                "est_tournoi": true,
+                "armes": [
+                    {
+                        "arme": "Fleuret",
+                        "categories": "M9, M11, M13, M15, M17, M20, Seniors, Vétérans"
+                    },
+                    {
+                        "arme": "Épée",
+                        "categories": "M9, M11, M13, M17, M20, Seniors, Vétérans"
+                    },
+                    {
+                        "arme": "Autres",
+                        "categories": "Para : PAS ENCORE DÉTERMINÉE"
+                    }
+                ],
+                "tri_key": 20261212,
+                "cle_source": "12-13 déc. 2026|Alsace|26ÈME TOURNOI INTERNATIONAL D'ESCRIME DE GUEBWILLER|SG 1860 SECTION ESCRIME",
+                "cats": [
+                    "M9",
+                    "M11",
+                    "M13",
+                    "M15",
+                    "M17",
+                    "M20",
+                    "Seniors",
+                    "Vétérans"
+                ],
+                "cats_index": "|M9|M11|M13|M15|M17|M20|Seniors|Vétérans|"
+            },
+            {
+                "date_texte": "13 déc. 2026",
+                "jours": "dim",
+                "bloc": "Sabre laser",
+                "type": "CR2 D1",
+                "categories": "Division 1 — « L'Étape 2, La voie de la dualité »",
+                "lieu": "",
+                "club": "",
+                "statut": "",
+                "est_tournoi": false,
+                "armes": [],
+                "tri_key": 20261213,
+                "cle_source": "13 déc. 2026|Sabre laser|CR2 D1|",
+                "cats": [],
+                "cats_index": ""
+            },
+            {
+                "date_texte": "20 déc. 2026",
+                "jours": "dim",
+                "bloc": "Sabre laser",
+                "type": "CR1 D2",
+                "categories": "Division 2 — « L'Étape 1, Ordre des lames »",
+                "lieu": "",
+                "club": "",
+                "statut": "",
+                "est_tournoi": false,
+                "armes": [],
+                "tri_key": 20261220,
+                "cle_source": "20 déc. 2026|Sabre laser|CR1 D2|",
+                "cats": [],
+                "cats_index": ""
+            },
+            {
+                "date_texte": "9-10 jan. 2027",
+                "jours": "sam-dim",
+                "bloc": "Épée",
+                "type": "ER2",
+                "categories": "M15-M17-M20-Seniors",
+                "lieu": "",
+                "club": "",
+                "statut": "",
+                "est_tournoi": false,
+                "armes": [],
+                "tri_key": 20270109,
+                "cle_source": "9-10 jan. 2027|Épée|ER2|",
+                "cats": [
+                    "M15",
+                    "M17",
+                    "M20",
+                    "Seniors"
+                ],
+                "cats_index": "|M15|M17|M20|Seniors|"
+            },
+            {
+                "date_texte": "10 jan. 2027",
+                "jours": "dim",
+                "bloc": "Sabre laser",
+                "type": "CR3 D1",
+                "categories": "Division 1 — « L'Étape 3, La voie de la maîtrise »",
+                "lieu": "",
+                "club": "",
+                "statut": "",
+                "est_tournoi": false,
+                "armes": [],
+                "tri_key": 20270110,
+                "cle_source": "10 jan. 2027|Sabre laser|CR3 D1|",
+                "cats": [],
+                "cats_index": ""
+            },
+            {
+                "date_texte": "16-17 jan. 2027",
+                "jours": "sam-dim",
+                "bloc": "Fleuret",
+                "type": "ER2",
+                "categories": "M13-M15-M17-M20-Seniors",
+                "lieu": "",
+                "club": "",
+                "statut": "",
+                "est_tournoi": false,
+                "armes": [],
+                "tri_key": 20270116,
+                "cle_source": "16-17 jan. 2027|Fleuret|ER2|",
+                "cats": [
+                    "M13",
+                    "M15",
+                    "M17",
+                    "M20",
+                    "Seniors"
+                ],
+                "cats_index": "|M13|M15|M17|M20|Seniors|"
+            },
+            {
+                "date_texte": "23-24 jan. 2027",
+                "jours": "sam-dim",
+                "bloc": "Alsace",
+                "type": "Tournoi de souffel",
+                "categories": "",
+                "lieu": "16 Rue des 7 Arpents, 67460 Souffelweyersheim",
+                "club": "Souffel escrime club",
+                "statut": "",
+                "est_tournoi": true,
+                "armes": [
+                    {
+                        "arme": "Fleuret",
+                        "categories": "M9, M11, M13, M15, M17, M20, Seniors, Vétérans"
+                    },
+                    {
+                        "arme": "Épée",
+                        "categories": "M11, M13, M15, M17, M20, Seniors, Vétérans"
+                    },
+                    {
+                        "arme": "Autres",
+                        "categories": "Laser : Chore cadet (si possibilité de changement de date par la commission)"
+                    }
+                ],
+                "tri_key": 20270123,
+                "cle_source": "23-24 jan. 2027|Alsace|Tournoi de souffel|Souffel escrime club",
+                "cats": [
+                    "M9",
+                    "M11",
+                    "M13",
+                    "M15",
+                    "M17",
+                    "M20",
+                    "Seniors",
+                    "Vétérans"
+                ],
+                "cats_index": "|M9|M11|M13|M15|M17|M20|Seniors|Vétérans|"
+            },
+            {
+                "date_texte": "30 jan. 2027",
+                "jours": "sam",
+                "bloc": "Parasport",
+                "type": "ER1",
+                "categories": "Parasport",
+                "lieu": "",
+                "club": "",
+                "statut": "À confirmer",
+                "est_tournoi": false,
+                "armes": [],
+                "tri_key": 20270130,
+                "cle_source": "30 jan. 2027|Parasport|ER1|",
+                "cats": [],
+                "cats_index": ""
+            },
+            {
+                "date_texte": "31 jan. 2027",
+                "jours": "dim",
+                "bloc": "Sabre laser",
+                "type": "CR1 Choré \/ CR Choré",
+                "categories": "Choré Cadet + Choré Sénior — « L'Écho de la Passion »",
+                "lieu": "",
+                "club": "",
+                "statut": "",
+                "est_tournoi": false,
+                "armes": [],
+                "tri_key": 20270131,
+                "cle_source": "31 jan. 2027|Sabre laser|CR1 Choré \/ CR Choré|",
+                "cats": [],
+                "cats_index": ""
+            },
+            {
+                "date_texte": "6-7 fév. 2027",
+                "jours": "sam-dim",
+                "bloc": "Autres",
+                "type": "Zone",
+                "categories": "M15",
+                "lieu": "en BFC",
+                "club": "",
+                "statut": "",
+                "est_tournoi": false,
+                "armes": [],
+                "tri_key": 20270206,
+                "cle_source": "6-7 fév. 2027|Autres|Zone|",
+                "cats": [
+                    "M15"
+                ],
+                "cats_index": "|M15|"
+            },
+            {
+                "date_texte": "13-14 fév. 2027",
+                "jours": "sam-dim",
+                "bloc": "Fleuret",
+                "type": "CR",
+                "categories": "M13-M15-M17-M20-Seniors",
+                "lieu": "",
+                "club": "",
+                "statut": "",
+                "est_tournoi": false,
+                "armes": [],
+                "tri_key": 20270213,
+                "cle_source": "13-14 fév. 2027|Fleuret|CR|",
+                "cats": [
+                    "M13",
+                    "M15",
+                    "M17",
+                    "M20",
+                    "Seniors"
+                ],
+                "cats_index": "|M13|M15|M17|M20|Seniors|"
+            },
+            {
+                "date_texte": "13-14 fév. 2027",
+                "jours": "sam-dim",
+                "bloc": "Sabre",
+                "type": "CR",
+                "categories": "M15-M17-M20-Seniors",
+                "lieu": "",
+                "club": "",
+                "statut": "",
+                "est_tournoi": false,
+                "armes": [],
+                "tri_key": 20270213,
+                "cle_source": "13-14 fév. 2027|Sabre|CR|",
+                "cats": [
+                    "M15",
+                    "M17",
+                    "M20",
+                    "Seniors"
+                ],
+                "cats_index": "|M15|M17|M20|Seniors|"
+            },
+            {
+                "date_texte": "20-21 fév. 2027",
+                "jours": "sam-dim",
+                "bloc": "Parasport",
+                "type": "ER2 \/ CdF",
+                "categories": "Parasport-M13 épée",
+                "lieu": "",
+                "club": "",
+                "statut": "À confirmer",
+                "est_tournoi": false,
+                "armes": [],
+                "tri_key": 20270220,
+                "cle_source": "20-21 fév. 2027|Parasport|ER2 \/ CdF|",
+                "cats": [
+                    "M13"
+                ],
+                "cats_index": "|M13|"
+            },
+            {
+                "date_texte": "21 fév. 2027",
+                "jours": "dim",
+                "bloc": "Sabre laser",
+                "type": "CR2 D2",
+                "categories": "Division 2 — « L'Étape 2, Ordre des Gardiens »",
+                "lieu": "",
+                "club": "",
+                "statut": "",
+                "est_tournoi": false,
+                "armes": [],
+                "tri_key": 20270221,
+                "cle_source": "21 fév. 2027|Sabre laser|CR2 D2|",
+                "cats": [],
+                "cats_index": ""
+            },
+            {
+                "date_texte": "6-7 mars 2027",
+                "jours": "sam-dim",
+                "bloc": "Épée",
+                "type": "CR",
+                "categories": "Vétérans",
+                "lieu": "",
+                "club": "",
+                "statut": "",
+                "est_tournoi": false,
+                "armes": [],
+                "tri_key": 20270306,
+                "cle_source": "6-7 mars 2027|Épée|CR|",
+                "cats": [
+                    "Vétérans"
+                ],
+                "cats_index": "|Vétérans|"
+            },
+            {
+                "date_texte": "6-7 mars 2027",
+                "jours": "sam-dim",
+                "bloc": "Coupe de Lorraine",
+                "type": "CDL 3",
+                "categories": "M9-M11-M13",
+                "lieu": "THIONVILLE SET",
+                "club": "",
+                "statut": "",
+                "est_tournoi": false,
+                "armes": [],
+                "tri_key": 20270306,
+                "cle_source": "6-7 mars 2027|Coupe de Lorraine|CDL 3|",
+                "cats": [
+                    "M9",
+                    "M11",
+                    "M13"
+                ],
+                "cats_index": "|M9|M11|M13|"
+            },
+            {
+                "date_texte": "13-14 mars 2027",
+                "jours": "sam-dim",
+                "bloc": "Parasport",
+                "type": "CR \/ CdF",
+                "categories": "Parasport-M13 épée",
+                "lieu": "",
+                "club": "",
+                "statut": "À confirmer",
+                "est_tournoi": false,
+                "armes": [],
+                "tri_key": 20270313,
+                "cle_source": "13-14 mars 2027|Parasport|CR \/ CdF|",
+                "cats": [
+                    "M13"
+                ],
+                "cats_index": "|M13|"
+            },
+            {
+                "date_texte": "20-21 mars 2027",
+                "jours": "sam-dim",
+                "bloc": "Épée",
+                "type": "CR",
+                "categories": "M15-M17-M20",
+                "lieu": "",
+                "club": "",
+                "statut": "",
+                "est_tournoi": false,
+                "armes": [],
+                "tri_key": 20270320,
+                "cle_source": "20-21 mars 2027|Épée|CR|",
+                "cats": [
+                    "M15",
+                    "M17",
+                    "M20"
+                ],
+                "cats_index": "|M15|M17|M20|"
+            },
+            {
+                "date_texte": "21 mars 2027",
+                "jours": "dim",
+                "bloc": "Sabre laser",
+                "type": "CR2 Sportif",
+                "categories": "Cadet & Benjamin — « L'Étape 2, L'Étoile Naissante »",
+                "lieu": "",
+                "club": "",
+                "statut": "",
+                "est_tournoi": false,
+                "armes": [],
+                "tri_key": 20270321,
+                "cle_source": "21 mars 2027|Sabre laser|CR2 Sportif|",
+                "cats": [],
+                "cats_index": ""
+            },
+            {
+                "date_texte": "27-28 mars 2027",
+                "jours": "sam-dim",
+                "bloc": "Épée",
+                "type": "CR",
+                "categories": "Seniors",
+                "lieu": "",
+                "club": "",
+                "statut": "À confirmer",
+                "est_tournoi": false,
+                "armes": [],
+                "tri_key": 20270327,
+                "cle_source": "27-28 mars 2027|Épée|CR|",
+                "cats": [
+                    "Seniors"
+                ],
+                "cats_index": "|Seniors|"
+            },
+            {
+                "date_texte": "3-4 avr. 2027 ou 1-2 mai 2027",
+                "jours": "sam-dim",
+                "bloc": "Coupe de Lorraine",
+                "type": "CHDL",
+                "categories": "M9-M11-M13",
+                "lieu": "ST DIE",
+                "club": "",
+                "statut": "À confirmer",
+                "est_tournoi": false,
+                "armes": [],
+                "tri_key": 20270403,
+                "cle_source": "3-4 avr. 2027 ou 1-2 mai 2027|Coupe de Lorraine|CHDL|",
+                "cats": [
+                    "M9",
+                    "M11",
+                    "M13"
+                ],
+                "cats_index": "|M9|M11|M13|"
+            },
+            {
+                "date_texte": "3-4 avr. 2027",
+                "jours": "sam-dim",
+                "bloc": "Alsace",
+                "type": "30eme Tournoi International",
+                "categories": "",
+                "lieu": "Illzach",
+                "club": "ASIM ESCRIME",
+                "statut": "",
+                "est_tournoi": true,
+                "armes": [
+                    {
+                        "arme": "Fleuret",
+                        "categories": "M9, M11, M13, M15, M17"
+                    },
+                    {
+                        "arme": "Épée",
+                        "categories": "M11, M13, M15, M17, Seniors"
+                    }
+                ],
+                "tri_key": 20270403,
+                "cle_source": "3-4 avr. 2027|Alsace|30eme Tournoi International|ASIM ESCRIME",
+                "cats": [
+                    "M9",
+                    "M11",
+                    "M13",
+                    "M15",
+                    "M17",
+                    "Seniors"
+                ],
+                "cats_index": "|M9|M11|M13|M15|M17|Seniors|"
+            },
+            {
+                "date_texte": "3-4 avril 2027",
+                "jours": "sam-dim",
+                "bloc": "Lorraine",
+                "type": "Tournoi des 3 villes",
+                "categories": "",
+                "lieu": "A définir - en attente réponse mairie",
+                "club": "Laxou - Luneville - Toul",
+                "statut": "",
+                "est_tournoi": true,
+                "armes": [
+                    {
+                        "arme": "Fleuret",
+                        "categories": "M7, M9, M11, M13, M15, M17, M20, Seniors, Vétérans"
+                    },
+                    {
+                        "arme": "Épée",
+                        "categories": "M7, M9, M11, M13, M15, M17, M20, Seniors, Vétérans"
+                    },
+                    {
+                        "arme": "Sabre",
+                        "categories": "M7, M9, M11, M13, M15, M17, M20, Seniors, Vétérans"
+                    }
+                ],
+                "tri_key": 20270403,
+                "cle_source": "3-4 avril 2027|Lorraine|Tournoi des 3 villes|Laxou - Luneville - Toul",
+                "cats": [
+                    "M7",
+                    "M9",
+                    "M11",
+                    "M13",
+                    "M15",
+                    "M17",
+                    "M20",
+                    "Seniors",
+                    "Vétérans"
+                ],
+                "cats_index": "|M7|M9|M11|M13|M15|M17|M20|Seniors|Vétérans|"
+            },
+            {
+                "date_texte": "4 avr. 2027",
+                "jours": "dim",
+                "bloc": "Sabre laser",
+                "type": "CR3 D2",
+                "categories": "Division 2 — « L'Étape 3, Ordre des Veilleurs »",
+                "lieu": "",
+                "club": "",
+                "statut": "",
+                "est_tournoi": false,
+                "armes": [],
+                "tri_key": 20270404,
+                "cle_source": "4 avr. 2027|Sabre laser|CR3 D2|",
+                "cats": [],
+                "cats_index": ""
+            },
+            {
+                "date_texte": "18 avr. 2027",
+                "jours": "dim",
+                "bloc": "Sabre laser",
+                "type": "CR2 Choré \/ Technique",
+                "categories": "Choré Cadet + Épreuve Technique Cadet + Épreuve Technique Sénior — « La Résonance de l'Harmonie »",
+                "lieu": "",
+                "club": "",
+                "statut": "",
+                "est_tournoi": false,
+                "armes": [],
+                "tri_key": 20270418,
+                "cle_source": "18 avr. 2027|Sabre laser|CR2 Choré \/ Technique|",
+                "cats": [],
+                "cats_index": ""
+            },
+            {
+                "date_texte": "1-2 mai 2027",
+                "jours": "sam-dim",
+                "bloc": "Alsace",
+                "type": "Tournoi du Sandhaas",
+                "categories": "",
+                "lieu": "MDS rue du tournoi 67500 HAGUENAU",
+                "club": "Club d'Escrime de haguenau",
+                "statut": "",
+                "est_tournoi": true,
+                "armes": [
+                    {
+                        "arme": "Fleuret",
+                        "categories": "M7, M9, M11, M13, M15, Seniors, Vétérans"
+                    },
+                    {
+                        "arme": "Épée",
+                        "categories": "Seniors, Vétérans"
+                    }
+                ],
+                "tri_key": 20270501,
+                "cle_source": "1-2 mai 2027|Alsace|Tournoi du Sandhaas|Club d'Escrime de haguenau",
+                "cats": [
+                    "M7",
+                    "M9",
+                    "M11",
+                    "M13",
+                    "M15",
+                    "Seniors",
+                    "Vétérans"
+                ],
+                "cats_index": "|M7|M9|M11|M13|M15|Seniors|Vétérans|"
+            },
+            {
+                "date_texte": "mai 2027",
+                "jours": "?",
+                "bloc": "Autres",
+                "type": "Master",
+                "categories": "M11-M13",
+                "lieu": "Wassy",
+                "club": "",
+                "statut": "À confirmer",
+                "est_tournoi": false,
+                "armes": [],
+                "tri_key": 20270531,
+                "cle_source": "mai 2027|Autres|Master|",
+                "cats": [
+                    "M11",
+                    "M13"
+                ],
+                "cats_index": "|M11|M13|"
+            }
+        ]
+    }
+}

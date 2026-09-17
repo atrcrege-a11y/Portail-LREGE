@@ -35,14 +35,13 @@ if %errorlevel% neq 0 (
 echo        Installation dependances EscriTools...
 "%PYTHON_CMD%" -m pip install pdfplumber pillow --quiet
 
-:: ── Venv SYNESC ─────────────────────────────────────────────
-echo  [3/3] Creation environnement SYNESC...
-if not exist "%~dp0SYNESC\.venv\Scripts\python.exe" (
-    "%PYTHON_CMD%" -m venv "%~dp0SYNESC\.venv"
-    "%~dp0SYNESC\.venv\Scripts\pip.exe" install flask openpyxl pdfplumber requests reportlab --quiet
-    echo        OK - Environnement SYNESC cree
+:: ── Dependances SYNESC (Python systeme, pas de venv) ────
+echo  [3/3] Installation dependances SYNESC...
+"%PYTHON_CMD%" -m pip install flask openpyxl pdfplumber requests reportlab --quiet
+if %errorlevel% neq 0 (
+    echo  [ATTENTION] Erreur installation SYNESC - verifiez la connexion internet
 ) else (
-    echo        OK - Environnement SYNESC deja present
+    echo        OK - Dependances SYNESC installees
 )
 
 echo.
