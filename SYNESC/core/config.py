@@ -4,10 +4,20 @@ Constantes partagées entre toutes les compétitions.
 """
 
 APP_NAME         = "SYNESC"
-APP_VERSION      = "2.4.5"
-APP_RELEASE_DATE = "2026-09-17"
+APP_VERSION      = "2.4.6"
+APP_RELEASE_DATE = "2026-10-12"
 
 CHANGELOG = [
+    {
+        "version": "2.4.6",
+        "date": "2026-10-12",
+        "label": "Lecture EngardeArbitres.txt et validation Excel",
+        "notes": [
+            "Lecture des arbitres depuis EngardeArbitres.txt (export Engarde)",
+            "Validation Excel renforcée (dataValidations)",
+            "Nouveau lanceur Lancer_SYNESC.bat et PREMIER_LANCEMENT_SYNESC.bat",
+        ],
+    },
     {
         "version": "2.4.5",
         "date": "2026-09-17",
