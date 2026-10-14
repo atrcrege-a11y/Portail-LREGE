@@ -4,8 +4,8 @@ Constantes partagées entre toutes les compétitions.
 """
 
 APP_NAME         = "SYNESC"
-APP_VERSION      = "2.4.6"
-APP_RELEASE_DATE = "2026-10-12"
+APP_VERSION      = "2.4.7"
+APP_RELEASE_DATE = "2026-10-14"
 
 CHANGELOG = [
     {
