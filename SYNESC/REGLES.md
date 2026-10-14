@@ -208,7 +208,7 @@ Dans la feuille Arbitres et dans toute les agrégations : un arbitre ne compte q
 
 ## 10. Détection des arbitres-tireurs
 
-Croisement des numéros de licence entre la liste des tireurs et la liste des arbitres. Les doublons sont signalés dans la feuille Arbitres (section "Arbitres-Tireurs") et dans le corps du mail généré.
+Croisement **licence + jour** entre la liste des tireurs et la liste des arbitres (jour = date de début de l'épreuve). Un arbitre n'est signalé que s'il tire **le jour même** où il est inscrit comme arbitre : inscrit arbitre le samedi et tireur le dimanche → non signalé. Implémentation unique : `core/parser.py::detecter_arbitres_tireurs`. Les cas sont signalés dans la feuille Arbitres (section "Arbitres-Tireurs") et dans le corps du mail généré.
 
 ---
 

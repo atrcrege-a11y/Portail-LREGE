@@ -389,3 +389,28 @@ def construire_donnees(fichiers_list, cat_map_indiv, cat_map_equipe, par_arme=Fa
 
     return (groupes_indiv, groupes_equipe, arbitres_all,
             titre, ligue_info, plage_dates, dates_ordonnees)
+
+
+def detecter_arbitres_tireurs(fichiers_list, arbitres_all):
+    """
+    Arbitres également tireurs LE MÊME JOUR (REGLES.md §10).
+    Croisement licence + date de début d'épreuve : un arbitre du samedi
+    qui tire le dimanche n'est pas signalé.
+    Retourne [(licence, tireur, arbitre, date), ...] trié par club, un seul
+    élément par (licence, date).
+    """
+    tireurs_jour = {}
+    for meta, tireurs, _ in fichiers_list:
+        date_src = meta.get("date_debut") or meta.get("date", "")
+        for t in tireurs:
+            lic = t.get("licence", "").strip()
+            if lic:
+                tireurs_jour.setdefault((lic, date_src), t)
+    res, vus = [], set()
+    for a in arbitres_all:
+        cle = (a.get("licence", "").strip(), a.get("date_source", ""))
+        if cle[0] and cle in tireurs_jour and cle not in vus:
+            vus.add(cle)
+            res.append((cle[0], tireurs_jour[cle], a, cle[1]))
+    res.sort(key=lambda x: (x[1].get("club", ""), x[3]))
+    return res

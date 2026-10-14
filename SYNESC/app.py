@@ -33,6 +33,24 @@ def get_store():
     return _store.setdefault(sid, [])
 
 
+# ── Excel modifié chargé via « Excel → Mail » : un fichier par sid dans sessions/
+#    (persisté comme _store, pour rester cohérent avec arbitres_statuts du cookie)
+_EXCEL_ARB_DIR = os.path.normpath(os.path.join(os.path.dirname(__file__), "sessions"))
+
+
+def _chemin_excel_arb():
+    sid = session.get("sid")
+    if not sid or not re.fullmatch(r"[0-9a-f-]{36}", sid):
+        return None
+    return os.path.join(_EXCEL_ARB_DIR, f"_excel_arbitres_{sid}.xlsx")
+
+
+def _supprimer_excel_arb():
+    chemin = _chemin_excel_arb()
+    if chemin and os.path.isfile(chemin):
+        os.remove(chemin)
+
+
 # ── Routes principales
 
 @app.route("/")
@@ -200,6 +218,8 @@ def remove_file():
 def clear_files():
     get_store().clear()
     store_persist.sauvegarder(_store)
+    session.pop("arbitres_statuts", None)
+    _supprimer_excel_arb()
     return jsonify({"total": 0})
 
 
@@ -917,15 +937,8 @@ def _generer_corps_mail(titre_long, lieu, comp_type, fichiers_list,
             seen_arb[date_src].add(lic)
             arb_par_date[date_src].append(a)
 
-    licences_tireurs = {}
-    for meta, tireurs, _ in fichiers_list:
-        for t in tireurs:
-            lic = t.get("licence", "").strip()
-            if lic: licences_tireurs[lic] = t
-    licences_arbitres = {a.get("licence","").strip(): a
-                         for a in arbitres_all if a.get("licence","").strip()}
-    arb_tireurs = [(lic, licences_tireurs[lic], licences_arbitres[lic])
-                   for lic in licences_tireurs if lic in licences_arbitres]
+    from core.parser import detecter_arbitres_tireurs
+    arb_tireurs = detecter_arbitres_tireurs(fichiers_list, arbitres_all)
 
     SEP = "─" * 50
 
@@ -1184,9 +1197,9 @@ def _generer_corps_mail(titre_long, lieu, comp_type, fichiers_list,
 
     if arb_tireurs:
         lignes += [SEP, "  ARBITRES ÉGALEMENT INSCRITS EN COMPÉTITION", SEP, ""]
-        for lic, tireur, arb in sorted(arb_tireurs, key=lambda x: x[1]["club"]):
+        for lic, tireur, arb, jour in arb_tireurs:
             nom = f"{tireur['nom']} {tireur['prenom']}".strip()
-            lignes.append(f"  • {nom} ({tireur['club']}) — licence {lic}")
+            lignes.append(f"  • {nom} ({tireur['club']}) — licence {lic} — {jour}")
         lignes.append("")
 
     # Bilan financier prévisionnel
@@ -1341,8 +1354,14 @@ def generate_mail():
     elif comp_type == "lorraine" and sups_lorraine_m:
         resp_override_m = {"type": "superviseurs", "noms": sups_lorraine_m,
                            "armes": ["Fleuret", "Épée", "Sabre"]}
-    excel_buf = comp.generer_excel(fichiers_list, titre_comp=titre,
-                                   responsables_override=resp_override_m)
+    # Excel modifié rechargé via « Excel → Mail » prioritaire sur la régénération
+    chemin_arb = _chemin_excel_arb()
+    if chemin_arb and os.path.isfile(chemin_arb):
+        with open(chemin_arb, "rb") as fx:
+            excel_buf = io.BytesIO(fx.read())
+    else:
+        excel_buf = comp.generer_excel(fichiers_list, titre_comp=titre,
+                                       responsables_override=resp_override_m)
     safe = unicodedata.normalize("NFD", titre)
     safe = "".join(c for c in safe if unicodedata.category(c) != "Mn")
     safe = "".join(c for c in safe if c.isalnum() or c in " -_").strip()
@@ -1436,7 +1455,8 @@ def charger_excel_arbitres():
         return jsonify({"error": "Fichier Excel (.xlsx) attendu"}), 400
 
     try:
-        wb = openpyxl.load_workbook(BytesIO(f.read()), data_only=True)
+        excel_bytes = f.read()
+        wb = openpyxl.load_workbook(BytesIO(excel_bytes), data_only=True)
         if "Arbitres" not in wb.sheetnames:
             return jsonify({"error": "Feuille 'Arbitres' introuvable"}), 400
 
@@ -1468,6 +1488,10 @@ def charger_excel_arbitres():
 
         # Stocker en session
         session["arbitres_statuts"] = arbitres_statuts
+        get_store()  # garantit un sid
+        os.makedirs(_EXCEL_ARB_DIR, exist_ok=True)
+        with open(_chemin_excel_arb(), "wb") as fx:
+            fx.write(excel_bytes)
 
         return jsonify({
             "ok": True,
@@ -1484,6 +1508,7 @@ def charger_excel_arbitres():
 @app.route("/api/clear_excel_arbitres", methods=["POST"])
 def clear_excel_arbitres():
     session.pop("arbitres_statuts", None)
+    _supprimer_excel_arb()
     return jsonify({"ok": True})
 
 

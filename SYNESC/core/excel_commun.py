@@ -284,29 +284,8 @@ def feuille_arbitres(ws, arbitres_list, plage_dates="", fichiers_list=None, titr
 
     # ── Section Arbitres-Tireurs
     if fichiers_list:
-        licences_tireurs = {}
-        for meta, tireurs, _ in fichiers_list:
-            for t in tireurs:
-                lic = t.get("licence", "").strip()
-                if lic:
-                    licences_tireurs[lic] = {
-                        "nom":    t.get("nom", ""),
-                        "prenom": t.get("prenom", ""),
-                        "club":   t.get("club", ""),
-                    }
-
-        licences_arbitres = {}
-        for a in arbitres_list:
-            lic = a.get("licence", "").strip()
-            if lic and lic not in licences_arbitres:
-                licences_arbitres[lic] = a
-
-        arb_tireurs = [
-            (lic, licences_tireurs[lic], licences_arbitres[lic])
-            for lic in licences_tireurs
-            if lic in licences_arbitres
-        ]
-        arb_tireurs.sort(key=lambda x: x[1]["club"])
+        from core.parser import detecter_arbitres_tireurs
+        arb_tireurs = detecter_arbitres_tireurs(fichiers_list, arbitres_list)
 
         current_row += 1
 
@@ -320,14 +299,14 @@ def feuille_arbitres(ws, arbitres_list, plage_dates="", fichiers_list=None, titr
         current_row += 1
 
         if arb_tireurs:
-            for j, h in enumerate(["Club", "Nom Prénom", "Licence"], start=1):
+            for j, h in enumerate(["Club", "Nom Prénom", "Licence", "Jour"], start=1):
                 sc(ws.cell(row=current_row, column=j, value=h),
                    bold=True, bg="FFC89A", fg="7F3F00", size=10)
             current_row += 1
 
-            for lic, tireur, arbitre in arb_tireurs:
-                nom_prn = f"{tireur['nom']} {tireur['prenom']}".strip()
-                for j, v in enumerate([tireur["club"], nom_prn, lic], start=1):
+            for lic, tireur, arbitre, jour in arb_tireurs:
+                nom_prn = f"{tireur.get('nom', '')} {tireur.get('prenom', '')}".strip()
+                for j, v in enumerate([tireur.get("club", ""), nom_prn, lic, jour], start=1):
                     c = ws.cell(row=current_row, column=j, value=v)
                     c.font      = mk_font(size=10, bold=True, color="7F3F00")
                     c.fill      = mk_fill("FFF3E8")
