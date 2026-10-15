@@ -348,7 +348,8 @@ class Alsace(GrandEst):
             ws.column_dimensions[get_column_letter(ci)].width = w
         ws.sheet_view.showGridLines = False
 
-    def generer_excel(self, fichiers_list, titre_comp="", responsables_override=None):
+    def generer_excel(self, fichiers_list, titre_comp="", responsables_override=None,
+                       arbitres_manuels=None):
         """
         Surcharge : génère des feuilles séparées par arme (F / E / S).
         """
@@ -360,6 +361,7 @@ class Alsace(GrandEst):
             self.CAT_MAP_INDIV,
             self.CAT_MAP_EQUIPE,
             par_arme=True,
+            arbitres_manuels=arbitres_manuels,
         )
 
         titre_comp  = titre_comp or titre_xml or "EGESC"

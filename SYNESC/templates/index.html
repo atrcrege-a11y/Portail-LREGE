@@ -943,6 +943,21 @@ tbody td:first-child {
         <div class="file-list" id="file-list">
           <div class="empty-state">Aucun fichier chargé</div>
         </div>
+        <!-- Arbitres saisis à la main (licence obligatoire, rattachés à un jour) -->
+        <details class="arb-manuels" style="margin-top:.6rem;">
+          <summary class="section-label" style="cursor:pointer;">Ajouter un arbitre à la main</summary>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-top:.5rem;">
+            <select class="input-field" id="am-jour" style="grid-column:1/-1;"></select>
+            <input class="input-field" id="am-nom" placeholder="Nom *">
+            <input class="input-field" id="am-prenom" placeholder="Prénom">
+            <input class="input-field" id="am-licence" placeholder="Licence * (chiffres)" inputmode="numeric">
+            <input class="input-field" id="am-club" placeholder="Club *">
+            <input class="input-field" id="am-niveau" placeholder="Niveau (ex : R, N, FR)" style="grid-column:1/-1;">
+            <button class="btn btn-secondary" style="grid-column:1/-1;" onclick="ajouterArbitreManuel()">Ajouter</button>
+          </div>
+          <div id="am-liste" style="margin-top:.6rem;font-size:.8rem;"></div>
+        </details>
+
         <div class="stats-row" style="margin-top:.6rem;">
           <div class="stat-card">
             <div class="stat-value" id="stat-files">0</div>
@@ -1464,6 +1479,56 @@ async function clearAll() {
   toast('Liste vidée', 'info');
 }
 
+// ── Arbitres saisis à la main
+function _echapperArb(v) {
+  return String(v ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
+
+async function chargerArbitresManuels() {
+  try {
+    const res  = await fetch('/api/arbitres_manuels');
+    const data = await res.json();
+    const sel = document.getElementById('am-jour');
+    const choix = sel.value;
+    sel.innerHTML = data.jours.map(j => `<option value="${_echapperArb(j)}">${_echapperArb(j)}</option>`).join('')
+                    || '<option value="">Aucune épreuve chargée</option>';
+    if (choix && data.jours.includes(choix)) sel.value = choix;
+    document.getElementById('am-liste').innerHTML = data.arbitres.map(a =>
+      `<div style="display:flex;justify-content:space-between;gap:6px;padding:2px 0;">
+         <span>${_echapperArb(a.nom)} ${_echapperArb(a.prenom)} · ${_echapperArb(a.licence)} · ${_echapperArb(a.club)} · ${_echapperArb(a.date_source)}</span>
+         <button class="btn btn-ghost" onclick="supprimerArbitreManuel('${_echapperArb(a.uid)}')">✕</button>
+       </div>`).join('');
+  } catch(e) {
+    console.error('Erreur arbitres manuels:', e);
+  }
+}
+
+async function ajouterArbitreManuel() {
+  const corps = {
+    nom: document.getElementById('am-nom').value,
+    prenom: document.getElementById('am-prenom').value,
+    licence: document.getElementById('am-licence').value,
+    club: document.getElementById('am-club').value,
+    categorie: document.getElementById('am-niveau').value,
+    date_source: document.getElementById('am-jour').value,
+  };
+  const res = await fetch('/api/arbitres_manuels/ajouter', {
+    method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(corps)
+  });
+  const data = await res.json();
+  if (!res.ok) { toast(`Erreur : ${data.error}`, 'error'); return; }
+  ['am-nom','am-prenom','am-licence','am-club','am-niveau'].forEach(id => document.getElementById(id).value = '');
+  toast('Arbitre ajouté', 'success');
+  chargerArbitresManuels();
+}
+
+async function supprimerArbitreManuel(uid) {
+  await fetch('/api/arbitres_manuels/supprimer', {
+    method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ uid })
+  });
+  chargerArbitresManuels();
+}
+
 // ── Synchronisation depuis le serveur
 async function syncFromServer() {
   try {
@@ -1471,6 +1536,7 @@ async function syncFromServer() {
     const data = await res.json();
     state.files = data;
     renderFileList();
+    chargerArbitresManuels();
   } catch(e) {
     console.error('Erreur sync serveur:', e);
   }

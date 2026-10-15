@@ -18,7 +18,8 @@ def _ensure_dir():
     os.makedirs(SESSIONS_DIR, exist_ok=True)
 
 
-def sauvegarder(store: list, titre: str, comp_type: str) -> str:
+def sauvegarder(store: list, titre: str, comp_type: str,
+                 arbitres_manuels: list | None = None) -> str:
     """
     Sauvegarde le store courant en JSON.
     Retourne l'id de la session créée.
@@ -32,7 +33,8 @@ def sauvegarder(store: list, titre: str, comp_type: str) -> str:
         "titre":     titre,
         "comp_type": comp_type,
         "sauvegarde": now,
-        "fichiers": []
+        "fichiers": [],
+        "arbitres_manuels": list(arbitres_manuels or []),
     }
 
     for meta, tireurs, arbitres in store:
@@ -98,6 +100,19 @@ def charger(session_id: str) -> tuple[list, str, str] | None:
         except Exception:
             return None
     return None
+
+
+def charger_manuels(session_id: str) -> list:
+    """Arbitres saisis à la main d'une session. Liste vide si absente."""
+    _ensure_dir()
+    for fname in os.listdir(SESSIONS_DIR):
+        if fname.endswith(".json") and fname.startswith(session_id):
+            try:
+                with open(os.path.join(SESSIONS_DIR, fname), encoding="utf-8") as f:
+                    return json.load(f).get("arbitres_manuels", [])
+            except Exception:
+                return []
+    return []
 
 
 def supprimer(session_id: str) -> bool:

@@ -9,6 +9,17 @@ APP_RELEASE_DATE = "2026-10-14"
 
 CHANGELOG = [
     {
+        "version": "2.4.7",
+        "date": "2026-10-14",
+        "label": "Arbitres saisis à la main, export mail/Excel, arbitre-tireur du jour",
+        "notes": [
+            "Ajout manuel d'arbitres (licence obligatoire) rattachés à un jour d'épreuve",
+            "Arbitres manuels pris en compte : feuille Arbitres, récap, coût, mail, .eml, PDF",
+            "Export .eml : l'Excel rechargé (Excel → Mail) est joint au mail",
+            "Arbitre-tireur signalé seulement s'il tire le jour où il arbitre (REGLES.md §10)",
+        ],
+    },
+    {
         "version": "2.4.6",
         "date": "2026-10-12",
         "label": "Lecture EngardeArbitres.txt et validation Excel",

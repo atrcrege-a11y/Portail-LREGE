@@ -7,7 +7,7 @@ Structure fichier : {"__version__": DB_VERSION, "stores": {sid: [(meta, tireurs,
 import os
 import pickle
 
-DB_VERSION = 1
+DB_VERSION = 2
 
 _STORE_FILE = os.path.normpath(
     os.path.join(os.path.dirname(__file__), "..", "sessions", "_store.pkl")
@@ -20,7 +20,8 @@ def _migrer(brut: dict) -> dict:
     if version == DB_VERSION:
         return brut
     print(f"[SYNESC] Migration store v{version} -> v{DB_VERSION}")
-    # v1 : version initiale — rien à migrer.
+    # v1 -> v2 : ajout de la liste des arbitres saisis à la main.
+    brut.setdefault("manuels", {})
     brut["__version__"] = DB_VERSION
     return brut
 
@@ -41,11 +42,25 @@ def charger() -> dict:
     return {}
 
 
-def sauvegarder(store: dict) -> None:
-    """Sauvegarde le store de travail (silencieux en cas d'erreur)."""
+def charger_manuels() -> dict:
+    """Arbitres saisis à la main, par sid. Dict vide si absent ou illisible."""
+    try:
+        if os.path.isfile(_STORE_FILE):
+            with open(_STORE_FILE, "rb") as f:
+                brut = _migrer(pickle.load(f))
+            manuels = brut.get("manuels", {})
+            return manuels if isinstance(manuels, dict) else {}
+    except Exception as e:
+        print(f"[SYNESC] Erreur chargement arbitres manuels : {e}")
+    return {}
+
+
+def sauvegarder(store: dict, manuels: dict | None = None) -> None:
+    """Sauvegarde le store de travail et les arbitres manuels (silencieux en cas d'erreur)."""
     try:
         os.makedirs(os.path.dirname(_STORE_FILE), exist_ok=True)
         with open(_STORE_FILE, "wb") as f:
-            pickle.dump({"__version__": DB_VERSION, "stores": store}, f)
+            pickle.dump({"__version__": DB_VERSION, "stores": store,
+                         "manuels": manuels or {}}, f)
     except Exception as e:
         print(f"[SYNESC] Erreur sauvegarde store : {e}")

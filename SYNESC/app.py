@@ -24,6 +24,7 @@ app.config["MAX_CONTENT_LENGTH"] = 32 * 1024 * 1024
 
 # ── Store en mémoire par session (persisté sur disque, voir core/store_persist.py)
 _store = store_persist.charger()
+_manuels = store_persist.charger_manuels()  # arbitres saisis à la main, par sid
 
 def get_store():
     sid = session.get("sid")
@@ -31,6 +32,12 @@ def get_store():
         sid = str(uuid.uuid4())
         session["sid"] = sid
     return _store.setdefault(sid, [])
+
+
+def get_manuels():
+    """Arbitres saisis à la main pour la session courante."""
+    get_store()  # garantit un sid
+    return _manuels.setdefault(session["sid"], [])
 
 
 # ── Excel modifié chargé via « Excel → Mail » : un fichier par sid dans sessions/
@@ -194,7 +201,7 @@ def upload():
         else:
             errors.append(f"{f.filename} — format non supporté.")
 
-    store_persist.sauvegarder(_store)
+    store_persist.sauvegarder(_store, _manuels)
     return jsonify({"added": added, "errors": errors, "total": len(store)})
 
 
@@ -210,14 +217,15 @@ def remove_file():
     store = get_store()
     before = len(store)
     store[:] = [s for s in store if s[0].get("uid") != uid]
-    store_persist.sauvegarder(_store)
+    store_persist.sauvegarder(_store, _manuels)
     return jsonify({"removed": before - len(store), "total": len(store)})
 
 
 @app.route("/api/clear", methods=["POST"])
 def clear_files():
     get_store().clear()
-    store_persist.sauvegarder(_store)
+    get_manuels().clear()
+    store_persist.sauvegarder(_store, _manuels)
     session.pop("arbitres_statuts", None)
     _supprimer_excel_arb()
     return jsonify({"total": 0})
@@ -316,7 +324,12 @@ def api_sessions_charger():
             import uuid as _uuid
             meta["uid"] = str(_uuid.uuid4())
         store.append((meta, tireurs, arbitres))
-    store_persist.sauvegarder(_store)
+    manuels = get_manuels()
+    manuels[:] = [
+        {**a, "uid": a.get("uid") or str(uuid.uuid4())}
+        for a in sessions_store.charger_manuels(session_id)
+    ]
+    store_persist.sauvegarder(_store, _manuels)
 
     added = [_meta_to_dict(m, t, a) for m, t, a in store]
     return jsonify({
@@ -335,6 +348,53 @@ def api_sessions_supprimer():
     session_id = data.get("id", "").strip()
     ok = sessions_store.supprimer(session_id)
     return jsonify({"ok": ok})
+
+# ── Arbitres saisis à la main : licence obligatoire, rattachés à un jour d'épreuve
+
+
+@app.route("/api/arbitres_manuels", methods=["GET"])
+def api_arbitres_manuels_lister():
+    jours = sorted({(m.get("date_debut") or m.get("date", "")) for m, _, _ in get_store()} - {""})
+    return jsonify({"arbitres": get_manuels(), "jours": jours})
+
+
+@app.route("/api/arbitres_manuels/ajouter", methods=["POST"])
+def api_arbitres_manuels_ajouter():
+    data = request.get_json() or {}
+    champs = {k: str(data.get(k) or "").strip()
+              for k in ("nom", "prenom", "licence", "club", "categorie", "date_source")}
+    if not champs["nom"]:
+        return jsonify({"error": "Nom obligatoire"}), 400
+    if not champs["licence"].isdigit():
+        return jsonify({"error": "Licence obligatoire (chiffres)"}), 400
+    if not champs["club"]:
+        return jsonify({"error": "Club obligatoire"}), 400
+    jours = {(m.get("date_debut") or m.get("date", "")) for m, _, _ in get_store()}
+    if champs["date_source"] not in jours:
+        return jsonify({"error": "Choisir un jour d'épreuve chargé"}), 400
+    liste = get_manuels()
+    deja_saisi = any(a["licence"] == champs["licence"] and a["date_source"] == champs["date_source"]
+                     for a in liste)
+    deja_xml = any(a.get("licence", "").strip() == champs["licence"]
+                   and (m.get("date_debut") or m.get("date", "")) == champs["date_source"]
+                   for m, _, arbs in get_store() for a in arbs)
+    if deja_saisi or deja_xml:
+        return jsonify({"error": "Cet arbitre est déjà présent ce jour-là"}), 409
+    arbitre = {**champs, "region": "", "ligue": "", "dept": "", "uid": str(uuid.uuid4())}
+    liste.append(arbitre)
+    store_persist.sauvegarder(_store, _manuels)
+    return jsonify({"ok": True, "arbitre": arbitre})
+
+
+@app.route("/api/arbitres_manuels/supprimer", methods=["POST"])
+def api_arbitres_manuels_supprimer():
+    uid = (request.get_json() or {}).get("uid", "")
+    liste = get_manuels()
+    avant = len(liste)
+    liste[:] = [a for a in liste if a["uid"] != uid]
+    store_persist.sauvegarder(_store, _manuels)
+    return jsonify({"ok": len(liste) < avant})
+
 
 @app.route("/api/arbitres_liste", methods=["GET"])
 def api_arbitres_liste():
@@ -390,7 +450,8 @@ def generate():
 
     comp = get_competition(comp_type)
     buf  = comp.generer_excel([(m, t, a) for m, t, a in store],
-                              titre_comp=titre, responsables_override=resp_override)
+                              titre_comp=titre, responsables_override=resp_override,
+                              arbitres_manuels=get_manuels())
 
     # Nom de fichier sans accents
     safe = unicodedata.normalize("NFD", titre)
@@ -401,7 +462,7 @@ def generate():
 
     # Sauvegarde automatique de la session
     try:
-        sessions_store.sauvegarder(store, titre, comp_type)
+        sessions_store.sauvegarder(store, titre, comp_type, get_manuels())
     except Exception:
         pass  # non bloquant
 
@@ -902,7 +963,8 @@ _CATS_TABLEAU_DIRECT = set()
 
 
 def _generer_corps_mail(titre_long, lieu, comp_type, fichiers_list,
-                        arbitres_statuts=None, programme_data=None):
+                        arbitres_statuts=None, programme_data=None,
+                        arbitres_manuels=None):
     """
     Génère le corps du mail (sujet, HTML, texte brut).
     Retourne (corps_html, sujet).
@@ -922,7 +984,8 @@ def _generer_corps_mail(titre_long, lieu, comp_type, fichiers_list,
     (groupes_indiv, groupes_equipe, arbitres_all,
      _, _, plage_dates, dates_ordonnees) = construire_donnees(
         fichiers_list, comp_obj.CAT_MAP_INDIV, comp_obj.CAT_MAP_EQUIPE,
-        par_arme=(comp_type in ("alsace", "lorraine")))
+        par_arme=(comp_type in ("alsace", "lorraine")),
+        arbitres_manuels=arbitres_manuels)
 
     CAT_LBL_I = comp_obj.CAT_LABEL_INDIV
     CAT_LBL_E = comp_obj.CAT_LABEL_EQUIPE
@@ -1309,6 +1372,7 @@ def mail_body():
         titre_long=titre_long, lieu=lieu, comp_type=comp_type,
         fichiers_list=fichiers_list, arbitres_statuts=arbitres_statuts,
         programme_data=session.get("programme"),
+        arbitres_manuels=get_manuels(),
     )
     return jsonify({"sujet": sujet, "corps": corps_txt_clean, "corps_html": corps_html})
 
@@ -1361,7 +1425,8 @@ def generate_mail():
             excel_buf = io.BytesIO(fx.read())
     else:
         excel_buf = comp.generer_excel(fichiers_list, titre_comp=titre,
-                                       responsables_override=resp_override_m)
+                                       responsables_override=resp_override_m,
+                                       arbitres_manuels=get_manuels())
     safe = unicodedata.normalize("NFD", titre)
     safe = "".join(c for c in safe if unicodedata.category(c) != "Mn")
     safe = "".join(c for c in safe if c.isalnum() or c in " -_").strip()
@@ -1373,6 +1438,7 @@ def generate_mail():
         titre_long=titre_long, lieu=lieu, comp_type=comp_type,
         fichiers_list=fichiers_list,
         arbitres_statuts=session.get("arbitres_statuts"),
+        arbitres_manuels=get_manuels(),
         programme_data=session.get("programme"),
     )
 

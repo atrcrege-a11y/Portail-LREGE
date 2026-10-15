@@ -62,7 +62,8 @@ class Lorraine(CompetitionBase):
 
     # ── Pipeline principal (surcharge totale)
 
-    def generer_excel(self, fichiers_list, titre_comp="", responsables_override=None):
+    def generer_excel(self, fichiers_list, titre_comp="", responsables_override=None,
+                       arbitres_manuels=None):
         """
         Génère le fichier Excel Lorraine :
           - Bilan Financier (en premier)
@@ -78,6 +79,7 @@ class Lorraine(CompetitionBase):
             fichiers_list,
             self.CAT_MAP_INDIV,
             self.CAT_MAP_EQUIPE,
+            arbitres_manuels=arbitres_manuels,
         )
 
         titre_comp  = titre_comp or titre_xml or "Coupe de Lorraine"

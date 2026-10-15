@@ -278,7 +278,8 @@ def parse_arbitres_txt(content_bytes, filename=""):
 
 # ── Construction des données agrégées
 
-def construire_donnees(fichiers_list, cat_map_indiv, cat_map_equipe, par_arme=False):
+def construire_donnees(fichiers_list, cat_map_indiv, cat_map_equipe, par_arme=False,
+                       arbitres_manuels=None):
     """
     Agrège les données de tous les fichiers XML.
 
@@ -375,6 +376,22 @@ def construire_donnees(fichiers_list, cat_map_indiv, cat_map_equipe, par_arme=Fa
                     "ligue":  a["ligue"],
                     "dept":   a["dept"],
                 }
+
+    # Arbitres saisis à la main : liste séparée par session, rattachée à un jour
+    # d'épreuve existant. Ajoutés après les XML : le dédoublonnage par licence
+    # (REGLES.md §9) garde la version XML si la licence existe déjà ce jour-là.
+    cles_xml = {(a.get("licence", "").strip(), a.get("date_source", ""))
+                for a in arbitres_all}
+    for a in (arbitres_manuels or []):
+        if (a.get("licence", "").strip(), a.get("date_source", "")) in cles_xml:
+            continue  # déjà présent dans les XML ce jour-là : compté une seule fois
+        arbitres_all.append({
+            **a,
+            "arme":        "?",
+            "arme_label":  "?",
+            "cat_comp":    "",
+            "type_comp":   "",
+        })
 
     dates_ordonnees = sorted(toutes_dates, key=parse_date_key)
 
