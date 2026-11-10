@@ -52,6 +52,34 @@ def _chemin_excel_arb():
     return os.path.join(_EXCEL_ARB_DIR, f"_excel_arbitres_{sid}.xlsx")
 
 
+def _lire_arbitres_excel():
+    """Arbitres de l'Excel rechargé et sauvegardé pour la session (club, licence,
+    jour, statut). None si aucun Excel rechargé."""
+    import openpyxl
+    chemin = _chemin_excel_arb()
+    if not chemin or not os.path.isfile(chemin):
+        return None
+    wb = openpyxl.load_workbook(chemin, data_only=True)
+    if "Arbitres" not in wb.sheetnames:
+        return None
+    arbitres, jour = [], ""
+    for row in wb["Arbitres"].iter_rows(values_only=True):
+        v0 = str(row[0] or "").strip()
+        if not v0 or v0 == "Club":
+            continue
+        if "arbitres du" in v0.lower() or "arbitres —" in v0.lower():
+            m = re.search(r"\d{2}\.\d{2}\.\d{4}", v0)
+            jour = m.group(0) if m else ""
+            continue
+        if "tireur" in v0.lower():
+            break
+        if jour and row[1]:
+            arbitres.append({"jour": jour, "club": v0,
+                             "licence": str(row[2] or "").strip(),
+                             "statut": str(row[6] or "Retenu").strip()})
+    return arbitres
+
+
 def _supprimer_excel_arb():
     chemin = _chemin_excel_arb()
     if chemin and os.path.isfile(chemin):
@@ -451,7 +479,8 @@ def generate():
     comp = get_competition(comp_type)
     buf  = comp.generer_excel([(m, t, a) for m, t, a in store],
                               titre_comp=titre, responsables_override=resp_override,
-                              arbitres_manuels=get_manuels())
+                              arbitres_manuels=get_manuels(),
+                              arbitres_excel=_lire_arbitres_excel())
 
     # Nom de fichier sans accents
     safe = unicodedata.normalize("NFD", titre)
@@ -964,7 +993,7 @@ _CATS_TABLEAU_DIRECT = set()
 
 def _generer_corps_mail(titre_long, lieu, comp_type, fichiers_list,
                         arbitres_statuts=None, programme_data=None,
-                        arbitres_manuels=None):
+                        arbitres_manuels=None, arbitres_excel=None):
     """
     Génère le corps du mail (sujet, HTML, texte brut).
     Retourne (corps_html, sujet).
@@ -985,7 +1014,7 @@ def _generer_corps_mail(titre_long, lieu, comp_type, fichiers_list,
      _, _, plage_dates, dates_ordonnees) = construire_donnees(
         fichiers_list, comp_obj.CAT_MAP_INDIV, comp_obj.CAT_MAP_EQUIPE,
         par_arme=(comp_type in ("alsace", "lorraine")),
-        arbitres_manuels=arbitres_manuels)
+        arbitres_manuels=arbitres_manuels, arbitres_excel=arbitres_excel)
 
     CAT_LBL_I = comp_obj.CAT_LABEL_INDIV
     CAT_LBL_E = comp_obj.CAT_LABEL_EQUIPE
@@ -1094,6 +1123,11 @@ def _generer_corps_mail(titre_long, lieu, comp_type, fichiers_list,
                     lignes.append("")
             else:
                 lignes.append("ÉPREUVES INDIVIDUELLES")
+                # Vétérans dames à l'épée : V1+V2 et V3+V4 comptés ensemble
+                VET_DAMES = {"V1": "V1", "V2": "V1", "V3": "V3", "V4": "V3"}
+                VET_DAMES_LBL = {"V1": "Vétérans dames (V1+V2)", "V3": "Grands vétérans dames (V3+V4)"}
+                fusion_vet = bool(fichiers_list) and all(m.get("arme") == "E" for m, _, _ in fichiers_list)
+                vet_traites = set()
                 for cat, clubs in cats_indiv.items():
                     cat_base = cat.split("|")[0] if "|" in cat else cat
                     nb_h = sum(v.get("H",0) for v in clubs.values())
@@ -1104,7 +1138,21 @@ def _generer_corps_mail(titre_long, lieu, comp_type, fichiers_list,
                         if cat_base not in _CATS_TABLEAU_DIRECT:
                             f_line = _formule_poules(nb_h)
                             if f_line: lignes.append(f_line)
-                    if nb_d:
+                    if fusion_vet and cat_base in VET_DAMES:
+                        groupe = VET_DAMES[cat_base]
+                        if groupe not in vet_traites:
+                            vet_traites.add(groupe)
+                            nb_grp = sum(
+                                v.get("D", 0)
+                                for c2, cl2 in cats_indiv.items()
+                                if VET_DAMES.get(c2.split("|")[0] if "|" in c2 else c2) == groupe
+                                for v in cl2.values())
+                            if nb_grp:
+                                lignes.append(f"  • {VET_DAMES_LBL[groupe]} D — {nb_grp} tireur(s)")
+                                if groupe not in _CATS_TABLEAU_DIRECT:
+                                    f_line = _formule_poules(nb_grp)
+                                    if f_line: lignes.append(f_line)
+                    elif nb_d:
                         lignes.append(f"  • {lbl} D — {nb_d} tireur(s)")
                         if cat_base not in _CATS_TABLEAU_DIRECT:
                             f_line = _formule_poules(nb_d)
@@ -1371,6 +1419,7 @@ def mail_body():
     corps_html, sujet, corps_txt_clean = _generer_corps_mail(
         titre_long=titre_long, lieu=lieu, comp_type=comp_type,
         fichiers_list=fichiers_list, arbitres_statuts=arbitres_statuts,
+        arbitres_excel=_lire_arbitres_excel(),
         programme_data=session.get("programme"),
         arbitres_manuels=get_manuels(),
     )
@@ -1426,7 +1475,8 @@ def generate_mail():
     else:
         excel_buf = comp.generer_excel(fichiers_list, titre_comp=titre,
                                        responsables_override=resp_override_m,
-                                       arbitres_manuels=get_manuels())
+                                       arbitres_manuels=get_manuels(),
+                                       arbitres_excel=_lire_arbitres_excel())
     safe = unicodedata.normalize("NFD", titre)
     safe = "".join(c for c in safe if unicodedata.category(c) != "Mn")
     safe = "".join(c for c in safe if c.isalnum() or c in " -_").strip()
@@ -1439,6 +1489,7 @@ def generate_mail():
         fichiers_list=fichiers_list,
         arbitres_statuts=session.get("arbitres_statuts"),
         arbitres_manuels=get_manuels(),
+        arbitres_excel=_lire_arbitres_excel(),
         programme_data=session.get("programme"),
     )
 

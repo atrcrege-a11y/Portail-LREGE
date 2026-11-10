@@ -278,8 +278,23 @@ def parse_arbitres_txt(content_bytes, filename=""):
 
 # ── Construction des données agrégées
 
+def appliquer_corrections_excel(arbitres_all, arbitres_excel):
+    """Applique l'Excel rechargé : club corrigé, arbitres « Libéré » retirés.
+    Rapprochement par jour et licence (zéros de tête ignorés)."""
+    def _lic(x):
+        return str(x or "").strip().lstrip("0")
+    corriges = []
+    for a in arbitres_all:
+        for e in arbitres_excel:
+            if (e["statut"] != "Libéré" and e["jour"] in str(a.get("date_source", ""))
+                    and _lic(e["licence"]) == _lic(a.get("licence"))):
+                corriges.append({**a, "club": e["club"]})
+                break
+    return corriges
+
+
 def construire_donnees(fichiers_list, cat_map_indiv, cat_map_equipe, par_arme=False,
-                       arbitres_manuels=None):
+                       arbitres_manuels=None, arbitres_excel=None):
     """
     Agrège les données de tous les fichiers XML.
 
@@ -392,6 +407,9 @@ def construire_donnees(fichiers_list, cat_map_indiv, cat_map_equipe, par_arme=Fa
             "cat_comp":    "",
             "type_comp":   "",
         })
+
+    if arbitres_excel is not None:
+        arbitres_all = appliquer_corrections_excel(arbitres_all, arbitres_excel)
 
     dates_ordonnees = sorted(toutes_dates, key=parse_date_key)
 

@@ -49,7 +49,7 @@ class CompetitionBase(ABC):
     # ── Pipeline principal
 
     def generer_excel(self, fichiers_list, titre_comp="", responsables_override=None,
-                       arbitres_manuels=None):
+                       arbitres_manuels=None, arbitres_excel=None):
         """
         Point d'entrée principal.
         Retourne un BytesIO contenant le fichier Excel.
@@ -61,6 +61,7 @@ class CompetitionBase(ABC):
             self.CAT_MAP_INDIV,
             self.CAT_MAP_EQUIPE,
             arbitres_manuels=arbitres_manuels,
+            arbitres_excel=arbitres_excel,
         )
 
         titre_comp  = titre_comp or titre_xml or "EGESC"
