@@ -971,8 +971,8 @@ tbody td:first-child {
             <div style="display:flex;gap:6px;margin-top:.6rem;flex-wrap:wrap;align-items:center;">
               <input class="input-field" id="sim-pistes" type="number" value="12" min="1" style="width:90px;">
               <span style="color:var(--muted);">pistes</span>
-              <input class="input-field" id="sim-arbitres" type="number" min="1" placeholder="arbitres" title="Arbitres disponibles pour les tableaux (vide = un par piste)" style="width:110px;">
-              <span style="color:var(--muted);">arbitres (tableaux)</span>
+              <input class="input-field" id="sim-arbitres" type="number" min="1" placeholder="auto" title="Arbitres disponibles au total (vide = nombre de pistes). Poules : 1 par poule ; le reste va aux tableaux." style="width:90px;">
+              <span style="color:var(--muted);">arbitres (total)</span>
               <button class="btn btn-primary" onclick="simCalculer()">Calculer</button>
               <button class="btn btn-secondary" onclick="simExcel()">Exporter Excel</button>
             </div>
