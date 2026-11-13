@@ -958,6 +958,26 @@ tbody td:first-child {
           <div id="am-liste" style="margin-top:.6rem;font-size:.8rem;"></div>
         </details>
 
+        <!-- Proposition de planification (simulation) -->
+        <details class="sim-panel" style="margin-top:.6rem;">
+          <summary class="section-label" style="cursor:pointer;">Proposition de planification</summary>
+          <div style="margin-top:.5rem;font-size:.85rem;">
+            <div style="display:flex;gap:6px;flex-wrap:wrap;">
+              <button class="btn btn-secondary" onclick="simChargerEffectifs()">Charger les effectifs</button>
+              <button class="btn btn-secondary" onclick="simAjouterLigne()">+ Épreuve</button>
+            </div>
+            <div id="sim-effectifs" style="margin-top:.5rem;"></div>
+            <div id="sim-epreuves" style="margin-top:.5rem;"></div>
+            <div style="display:flex;gap:6px;margin-top:.6rem;flex-wrap:wrap;align-items:center;">
+              <input class="input-field" id="sim-pistes" type="number" value="12" min="1" style="width:90px;">
+              <span style="color:var(--muted);">pistes</span>
+              <button class="btn btn-primary" onclick="simCalculer()">Calculer</button>
+              <button class="btn btn-secondary" onclick="simExcel()">Exporter Excel</button>
+            </div>
+            <div id="sim-resultat" style="margin-top:.6rem;overflow-x:auto;"></div>
+          </div>
+        </details>
+
         <div class="stats-row" style="margin-top:.6rem;">
           <div class="stat-card">
             <div class="stat-value" id="stat-files">0</div>
@@ -1530,6 +1550,113 @@ async function supprimerArbitreManuel(uid) {
 }
 
 // ── Synchronisation depuis le serveur
+// ── Proposition de planification (simulation), par journée
+let simEpreuves = [];
+let simJours = [];
+function _simEsc(s) {
+  return String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
+async function simChargerEffectifs() {
+  const res = await fetch('/api/simulation/effectifs', {method:'POST', headers:{'Content-Type':'application/json'},
+    body: JSON.stringify({comp_type: state.compType})});
+  const data = await res.json();
+  const eff = document.getElementById('sim-effectifs');
+  if (!res.ok) { eff.textContent = data.error || 'Erreur'; return; }
+  simJours = data.jours;
+  eff.innerHTML = data.jours.map(j =>
+    `<div class="section-label" style="margin-top:.4rem;">${_simEsc(j.label)}</div>
+     <table style="font-size:.8rem;width:100%;">` +
+     j.categories.map(c => `<tr><td>${_simEsc(c.cat)}</td><td>${_simEsc(c.label)}</td><td>H ${c.H}</td><td>D ${c.D}</td></tr>`).join('') +
+     '</table>').join('');
+  simEpreuves = [];
+  data.jours.forEach(j => j.categories.forEach(c => {
+    if (c.H > 0) simEpreuves.push({nom: `${c.cat} Hommes`, date: j.date, categories: [c.cat], sexes: ['H'], debut: '10:00', poules: ''});
+    if (c.D > 0) simEpreuves.push({nom: `${c.cat} Dames`, date: j.date, categories: [c.cat], sexes: ['D'], debut: '10:00', poules: ''});
+  }));
+  simRendreEpreuves();
+}
+function simAjouterLigne() {
+  simEpreuves.push({nom: 'Nouvelle épreuve', date: simJours[0] ? simJours[0].date : '', categories: [], sexes: ['H', 'D'], debut: '10:00', poules: ''});
+  simRendreEpreuves();
+}
+function simSupprimer(i) { simEpreuves.splice(i, 1); simRendreEpreuves(); }
+function simMaj(i, champ, valeur) {
+  const e = simEpreuves[i];
+  if (champ === 'categories') e.categories = valeur.split(',').map(x => x.trim()).filter(Boolean);
+  else if (champ === 'sexes') e.sexes = valeur === 'HD' ? ['H', 'D'] : [valeur];
+  else e[champ] = valeur;
+}
+function simRendreEpreuves() {
+  const box = document.getElementById('sim-epreuves');
+  if (!simEpreuves.length) { box.innerHTML = '<div class="empty-state">Charge les effectifs ou ajoute une épreuve</div>'; return; }
+  const cell = 'class="input-field" style="font-size:.8rem;padding:4px;"';
+  box.innerHTML = '<table style="width:100%;font-size:.8rem;border-collapse:collapse;">' +
+    '<tr><th align="left">Journée</th><th align="left">Épreuve</th><th align="left">Catégories</th><th>Sexe</th><th>Début</th><th>Poules</th><th></th></tr>' +
+    simEpreuves.map((e, i) => `<tr>
+      <td><select ${cell} onchange="simMaj(${i},'date',this.value)">${simJours.map(j =>
+        `<option value="${_simEsc(j.date)}" ${j.date === e.date ? 'selected' : ''}>${_simEsc(j.label)}</option>`).join('')}</select></td>
+      <td><input ${cell} value="${_simEsc(e.nom)}" oninput="simMaj(${i},'nom',this.value)"></td>
+      <td><input ${cell} value="${_simEsc(e.categories.join(', '))}" oninput="simMaj(${i},'categories',this.value)"></td>
+      <td><select ${cell} onchange="simMaj(${i},'sexes',this.value)">
+        <option value="H" ${e.sexes.join()==='H'?'selected':''}>H</option>
+        <option value="D" ${e.sexes.join()==='D'?'selected':''}>D</option>
+        <option value="HD" ${e.sexes.length===2?'selected':''}>H+D</option></select></td>
+      <td><input ${cell} type="time" value="${_simEsc(e.debut)}" oninput="simMaj(${i},'debut',this.value)"></td>
+      <td><input ${cell} type="number" min="1" size="3" value="${_simEsc(e.poules)}" placeholder="auto" oninput="simMaj(${i},'poules',this.value)"></td>
+      <td><button class="btn btn-ghost" onclick="simSupprimer(${i})">✕</button></td>
+    </tr>`).join('') + '</table>';
+}
+function simPayload() {
+  return {comp_type: state.compType,
+          pistes: parseInt(document.getElementById('sim-pistes').value, 10) || 12,
+          epreuves: simEpreuves};
+}
+function simRendreGrille(p) {
+  const slots = p.slots;
+  const coul = {Poule:'#93C47D',T64:'#DD7E6B',T32:'#F6B26B',T16:'#FFE599',T8:'#6D9EEB',T4:'#B4A7D6',T2:'#D5A6BD'};
+  let h = '<table style="border-collapse:collapse;font-size:11px;"><thead><tr><th align="left">Épreuve</th><th>Tireurs</th>' +
+    slots.map((s, i) => `<th style="min-width:30px;font-weight:400;color:var(--muted);">${i % 2 === 0 ? s : ''}</th>`).join('') + '</tr></thead><tbody>';
+  p.rows.forEach(r => {
+    h += `<tr><th align="left" style="white-space:nowrap;padding-right:8px;">${_simEsc(r.label)}</th><td align="center">${r.n}</td>`;
+    slots.forEach(s => {
+      const c = r.cells[s];
+      if (!c) { h += '<td style="border:1px solid var(--line);"></td>'; return; }
+      const ph = Object.entries(c).sort((a, b) => b[1] - a[1])[0][0];
+      const n = Object.values(c).reduce((a, b) => a + b, 0);
+      h += `<td align="center" style="border:1px solid var(--line);background:${coul[ph] || '#e6e6e0'};color:#1d1f1c;">${n}</td>`;
+    });
+    h += '</tr>';
+  });
+  h += '<tr><th align="left">Arbitres</th><td></td>' + slots.map(s => `<td align="center" style="font-weight:600;">${p.total[s] || ''}</td>`).join('') + '</tr></tbody></table>';
+  return h;
+}
+function simRendreResultat(data, pistes) {
+  return data.jours.map(j => {
+    const p = j.plan;
+    let h = `<div class="section-label" style="margin-top:.8rem;">${_simEsc(j.label)}</div>` + simRendreGrille(p);
+    h += '<div class="section-label" style="margin-top:.6rem;">Synthèse</div>';
+    h += '<table style="font-size:.8rem;border-collapse:collapse;"><tr><th align="left">Épreuve</th><th>Tireurs</th><th align="left">Poules</th><th>Tableau</th><th>Poules</th><th>Tableau</th><th>Fin</th></tr>' +
+      p.synthese.map(s => `<tr><td>${_simEsc(s.nom)}</td><td align="center">${s.n}</td><td>${s.poules.join(', ')}</td><td align="center">T${s.tableau}</td>
+        <td align="center">${s.debut_poules} → ${s.fin_poules}</td><td align="center">${s.debut_tableau} (+${s.ecart_min} min)</td><td align="center">${s.fin_tableau}</td></tr>`).join('') + '</table>';
+    h += `<div style="color:var(--muted);margin-top:.4rem;">Pic : ${p.pic ? p.pic.valeur : 0} arbitres à ${p.pic ? p.pic.creneau : '-'} (${p.pistes} pistes).</div>`;
+    return h;
+  }).join('');
+}
+async function simCalculer() {
+  const res = await fetch('/api/simulation/planifier', {method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(simPayload())});
+  const data = await res.json();
+  document.getElementById('sim-resultat').innerHTML = res.ok
+    ? simRendreResultat(data)
+    : `<div style="color:var(--warn);">${_simEsc(data.error)}</div>`;
+}
+async function simExcel() {
+  const res = await fetch('/api/simulation/excel', {method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(simPayload())});
+  if (!res.ok) { const d = await res.json(); alert(d.error || 'Erreur'); return; }
+  const url = URL.createObjectURL(await res.blob());
+  const a = document.createElement('a'); a.href = url; a.download = 'Planification.xlsx'; a.click();
+  URL.revokeObjectURL(url);
+}
+
 async function syncFromServer() {
   try {
     const res  = await fetch('/api/files');

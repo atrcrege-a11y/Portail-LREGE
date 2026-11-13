@@ -1520,6 +1520,108 @@ def generate_mail():
     )
 
 
+# ── Proposition de planification (simulation de compétition), une journée à la fois
+def _effectifs_par_jour(comp_type):
+    """({date: {cat: {"H": n, "D": n}}}, [dates triées], comp)."""
+    from core.parser import construire_donnees
+    comp = get_competition(comp_type)
+    gi, _, _, _, _, _, dates = construire_donnees(
+        get_store(), comp.CAT_MAP_INDIV, comp.CAT_MAP_EQUIPE,
+        par_arme=(comp_type in ("alsace", "lorraine")))
+    jours = {}
+    for d in dates:
+        tot = {}
+        for cat, clubs in gi.get(d, {}).items():
+            t = tot.setdefault(cat, {"H": 0, "D": 0})
+            for v in clubs.values():
+                t["H"] += v["H"]
+                t["D"] += v["D"]
+        jours[d] = tot
+    return jours, dates, comp
+
+
+def _epreuves_par_jour(data, jours, dates):
+    """{date: [épreuve, ...]} à partir de la requête. Sans date, la première journée est utilisée."""
+    from core.simulation import decouper_poules
+    par_jour = {d: [] for d in dates}
+    for e in data.get("epreuves", []):
+        d = e.get("date") or (dates[0] if dates else "")
+        tot = jours.get(d, {})
+        cats = [c for c in e.get("categories", []) if c in tot]
+        sexes = [s for s in e.get("sexes", ["H", "D"]) if s in ("H", "D")]
+        n = sum(tot[c][s] for c in cats for s in sexes)
+        if not cats or n <= 0 or d not in par_jour:
+            continue
+        item = {"nom": e.get("nom") or " + ".join(cats), "categorie": cats[0],
+                "n": n, "debut": e.get("debut") or "10:00"}
+        if e.get("poules"):
+            item["poules"] = decouper_poules(n, int(e["poules"]))
+        par_jour[d].append(item)
+    return par_jour
+
+
+@app.route("/api/simulation/effectifs", methods=["POST"])
+def simulation_effectifs():
+    if not get_store():
+        return jsonify({"error": "Aucun fichier chargé"}), 400
+    data = request.get_json() or {}
+    from core.parser import date_avec_jour
+    jours, dates, comp = _effectifs_par_jour(data.get("comp_type", "grand_est"))
+    res = []
+    for d in dates:
+        cats = [{"cat": c, "label": comp.CAT_LABEL_INDIV.get(c, c), "H": v["H"], "D": v["D"]}
+                for c, v in jours[d].items() if v["H"] + v["D"] > 0]
+        res.append({"date": d, "label": date_avec_jour(d), "categories": cats})
+    return jsonify({"jours": res})
+
+
+def _planifier_jours(data):
+    """Renvoie [(date, label, plan)] ; lève ValueError si une journée ne tient pas."""
+    from core.simulation import planifier
+    from core.parser import date_avec_jour
+    jours, dates, _ = _effectifs_par_jour(data.get("comp_type", "grand_est"))
+    par_jour = _epreuves_par_jour(data, jours, dates)
+    pistes = int(data.get("pistes") or 12)
+    sortie = []
+    for d in dates:
+        if not par_jour.get(d):
+            continue
+        try:
+            plan = planifier(par_jour[d], pistes=pistes)
+        except ValueError as ex:
+            raise ValueError(f"{date_avec_jour(d)} : {ex}")
+        sortie.append((d, date_avec_jour(d), plan))
+    return sortie
+
+
+@app.route("/api/simulation/planifier", methods=["POST"])
+def simulation_planifier():
+    if not get_store():
+        return jsonify({"error": "Aucun fichier chargé"}), 400
+    try:
+        sortie = _planifier_jours(request.get_json() or {})
+    except ValueError as ex:
+        return jsonify({"error": str(ex)}), 400
+    return jsonify({"jours": [{"date": d, "label": lbl, "plan": plan} for d, lbl, plan in sortie]})
+
+
+@app.route("/api/simulation/excel", methods=["POST"])
+def simulation_excel():
+    from core.simulation import grille_excel_jours
+    if not get_store():
+        return jsonify({"error": "Aucun fichier chargé"}), 400
+    try:
+        sortie = _planifier_jours(request.get_json() or {})
+    except ValueError as ex:
+        return jsonify({"error": str(ex)}), 400
+    if not sortie:
+        return jsonify({"error": "Aucune épreuve à planifier"}), 400
+    return send_file(
+        io.BytesIO(grille_excel_jours([{"label": lbl, "plan": plan} for _, lbl, plan in sortie])),
+        as_attachment=True, download_name="Planification.xlsx",
+        mimetype="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
+
+
 @app.route("/api/pdf_arbitres", methods=["POST"])
 def pdf_arbitres():
     """
