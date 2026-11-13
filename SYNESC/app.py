@@ -1638,6 +1638,8 @@ def _epreuves_par_jour(data, jours, dates):
                 "n": n, "debut": e.get("debut") or "10:00"}
         if e.get("poules"):
             item["poules"] = decouper_poules(n, int(e["poules"]))
+        if e.get("duree_poule"):
+            item["duree_poule_min"] = int(e["duree_poule"])
         par_jour[d].append(item)
     return par_jour
 

@@ -1593,7 +1593,7 @@ function simRendreEpreuves() {
   if (!simEpreuves.length) { box.innerHTML = '<div class="empty-state">Charge les effectifs ou ajoute une épreuve</div>'; return; }
   const cell = 'class="input-field" style="font-size:.8rem;padding:4px;"';
   box.innerHTML = '<table style="width:100%;font-size:.8rem;border-collapse:collapse;">' +
-    '<tr><th align="left">Journée</th><th align="left">Épreuve</th><th align="left">Catégories</th><th>Sexe</th><th>Début</th><th>Poules</th><th></th></tr>' +
+    '<tr><th align="left">Journée</th><th align="left">Épreuve</th><th align="left">Catégories</th><th>Sexe</th><th>Début</th><th>Poules</th><th>Durée poule (min)</th><th></th></tr>' +
     simEpreuves.map((e, i) => `<tr>
       <td><select ${cell} onchange="simMaj(${i},'date',this.value)">${simJours.map(j =>
         `<option value="${_simEsc(j.date)}" ${j.date === e.date ? 'selected' : ''}>${_simEsc(j.label)}</option>`).join('')}</select></td>
@@ -1605,13 +1605,14 @@ function simRendreEpreuves() {
         <option value="HD" ${e.sexes.length===2?'selected':''}>H+D</option></select></td>
       <td><input ${cell} type="time" value="${_simEsc(e.debut)}" title="${_simEsc(e.source || 'saisie manuelle')}" oninput="simMaj(${i},'debut',this.value)">${e.source ? '<div style="font-size:.7rem;color:var(--muted);">programme</div>' : ''}</td>
       <td><input ${cell} type="number" min="1" size="3" value="${_simEsc(e.poules)}" placeholder="auto" oninput="simMaj(${i},'poules',this.value)"></td>
+      <td><input ${cell} type="number" min="10" step="5" size="4" value="${_simEsc(e.duree_poule || '')}" placeholder="auto" oninput="simMaj(${i},'duree_poule',this.value)"></td>
       <td><button class="btn btn-ghost" onclick="simSupprimer(${i})">✕</button></td>
     </tr>`).join('') + '</table>';
 }
 function simPayload() {
   return {comp_type: state.compType,
           pistes: parseInt(document.getElementById('sim-pistes').value, 10) || 12,
-          epreuves: simEpreuves};
+          epreuves: simEpreuves};  // duree_poule : minutes, vide = durée automatique
 }
 function simRendreGrille(p) {
   const slots = p.slots;
