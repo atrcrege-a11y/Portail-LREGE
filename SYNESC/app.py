@@ -605,7 +605,7 @@ def upload_programme():
         # Cherche d'abord les mots clés forts (gymnase, complexe, palais, halle, centre sportif)
         # Puis en fallback les mots clés faibles (salle)
         for keywords in (
-            ["gymnase", "complexe sportif", "palais des sports", "halle", "centre sportif", "espace sportif"],
+            ["gymnase", "complexe sportif", "complexe multisports", "palais des sports", "halle", "centre sportif", "espace sportif"],
             ["salle d'armes", "salle des sports", "salle polyvalente"],
         ):
             for line in text.splitlines():
@@ -616,6 +616,82 @@ def upload_programme():
                        for k in keywords):
                     return l
         return ""
+
+    MOIS_NUM = {"janvier":"01","février":"02","fevrier":"02","mars":"03","avril":"04",
+                "mai":"05","juin":"06","juillet":"07","août":"08","aout":"08",
+                "septembre":"09","octobre":"10","novembre":"11","décembre":"12","decembre":"12"}
+
+    def date_du_jour(jour, texte):
+        """« Samedi 10 et Dimanche 11 Octobre 2026 » → samedi 10.10.2026 (mois et année communs)."""
+        jl = jour.lower()
+        mj = _re.search(rf'{jl}\s*(\d{{1,2}})', texte, _re.IGNORECASE)
+        if not mj:
+            return None
+        mois = _re.search(r'(' + "|".join(MOIS_NUM) + r')\s*(\d{4})', texte, _re.IGNORECASE)
+        if not mois:
+            return None
+        return f"{jl} {mj.group(1).zfill(2)}.{MOIS_NUM[mois.group(1).lower()]}.{mois.group(2)}"
+
+    def programme_par_ligne(table, texte):
+        """Tableau « une ligne par catégorie » : col0 = catégorie, colonnes Appel et Scratch.
+        Gère les horaires décalés d'une ligne (sans libellé) et les cellules à plusieurs lignes
+        (ex. « SENIORS H » / « SENIORS D » dans une même case)."""
+        if not table or len(table) < 3:
+            return []
+        entete = " ".join(str(c or "") for c in table[0]).lower()
+        if "appel" not in entete or "scratch" not in entete:
+            return []
+        jour = "samedi" if "samedi" in entete else ("dimanche" if "dimanche" in entete else None)
+        date_j = date_du_jour(jour, texte) if jour else None
+        if not date_j:
+            return []
+        ci_app = next(i for i, c in enumerate(table[0]) if "appel" in str(c or "").lower())
+        ci_scr = next(i for i, c in enumerate(table[0]) if "scratch" in str(c or "").lower())
+
+        def lignes(cell):
+            return [x.strip() for x in str(cell or "").split("\n") if x.strip()]
+
+        sortie = []
+        en_attente = []   # catégories sans horaires sur leur ligne
+        for row in table[1:]:
+            libelles = lignes(row[0])
+            apps = [extraire_heure(x) for x in lignes(row[ci_app])]
+            scrs = [extraire_heure(x) for x in lignes(row[ci_scr])]
+            if libelles:
+                en_attente = []
+                if len(libelles) > 1 and len(apps) == len(libelles):
+                    groupes = [([lib], [a], [sc]) for lib, a, sc in zip(libelles, apps, scrs)]
+                else:
+                    groupes = [(libelles, apps, scrs)]
+                for lib_l, app_l, scr_l in groupes:
+                    if not any(app_l):
+                        en_attente.extend(lib_l)
+                        continue
+                    for lib in lib_l:
+                        cat_norm = normaliser_cat(lib)
+                        if not cat_norm:
+                            continue
+                        if cat_norm.upper().startswith("SENIOR"):
+                            cat_norm = "Seniors"
+                        sortie.append({"cat": cat_norm, "date": date_j,
+                                       "appel": app_l[0], "scratch": (scr_l[0] if scr_l else None),
+                                       "debut": None, "equipe_appel": None,
+                                       "equipe_debut": None, "equipe_info": None})
+            elif any(apps) and en_attente:
+                # horaires sur la ligne suivant le libellé
+                for lib in en_attente:
+                    cat_norm = normaliser_cat(lib)
+                    if not cat_norm:
+                        continue
+                    if cat_norm.upper().startswith("SENIOR"):
+                        cat_norm = "Seniors"
+                    sortie.append({"cat": cat_norm, "date": date_j,
+                                   "appel": next((a for a in apps if a), None),
+                                   "scratch": next((c for c in scrs if c), None),
+                                   "debut": None, "equipe_appel": None,
+                                   "equipe_debut": None, "equipe_info": None})
+                en_attente = []
+        return [c for c in sortie if c["appel"]]
 
     try:
         f = request.files.get("pdf")
@@ -640,6 +716,12 @@ def upload_programme():
         # Date et lieu globaux
         date_globale = detecter_date(full_text)
         lieu = detecter_lieu(full_text)
+
+        # ── FORMAT 0a : une ligne par catégorie, un tableau par journée (Samedi / Dimanche)
+        with pdfplumber.open(io.BytesIO(pdf_bytes)) as pdf:
+            for page in pdf.pages[:2]:
+                for table in page.extract_tables():
+                    categories.extend(programme_par_ligne(table, full_text))
 
         # ── FORMAT 0 : catégories en colonnes (M15 | M20 | Vétérans | ...)
         # Tableau où une ligne contient plusieurs catégories en colonnes
