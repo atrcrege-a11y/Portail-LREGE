@@ -1706,12 +1706,13 @@ def _planifier_jours(data):
     jours, dates, _ = _effectifs_par_jour(data.get("comp_type", "grand_est"))
     par_jour = _epreuves_par_jour(data, jours, dates)
     pistes = int(data.get("pistes") or 12)
+    arbitres = int(data["arbitres"]) if data.get("arbitres") else None
     sortie = []
     for d in dates:
         if not par_jour.get(d):
             continue
         try:
-            plan = planifier(par_jour[d], pistes=pistes)
+            plan = planifier(par_jour[d], pistes=pistes, arbitres=arbitres)
         except ValueError as ex:
             raise ValueError(f"{date_avec_jour(d)} : {ex}")
         sortie.append((d, date_avec_jour(d), plan))
