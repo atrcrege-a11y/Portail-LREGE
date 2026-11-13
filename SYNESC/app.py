@@ -1649,12 +1649,52 @@ def simulation_effectifs():
     data = request.get_json() or {}
     from core.parser import date_avec_jour
     jours, dates, comp = _effectifs_par_jour(data.get("comp_type", "grand_est"))
+    progs = (session.get("programme") or {}).get("categories", [])
     res = []
     for d in dates:
-        cats = [{"cat": c, "label": comp.CAT_LABEL_INDIV.get(c, c), "H": v["H"], "D": v["D"]}
-                for c, v in jours[d].items() if v["H"] + v["D"] > 0]
+        cats = []
+        for c, v in jours[d].items():
+            if v["H"] + v["D"] <= 0:
+                continue
+            item = {"cat": c, "label": comp.CAT_LABEL_INDIV.get(c, c), "H": v["H"], "D": v["D"]}
+            suggestion = _debut_depuis_programme(c, d, progs)
+            if suggestion:
+                item["debut_suggere"], item["source"] = suggestion
+            cats.append(item)
         res.append({"date": d, "label": date_avec_jour(d), "categories": cats})
     return jsonify({"jours": res})
+
+
+def _debut_depuis_programme(cat, date_jour, progs):
+    """Heure de début suggérée = scratch + 30 min (règle relevée sur les programmes : appel, scratch, matchs).
+    Retourne (HH:MM, source) ou None si la catégorie n'est pas dans le programme."""
+    def base(x):
+        return str(x or "").split("|")[0].strip().upper()
+
+    def jour_normalise(x):
+        m = re.search(r"(\d{1,2})[./](\d{1,2})[./](\d{4})", str(x or ""))
+        return f"{int(m.group(1))}.{int(m.group(2))}.{m.group(3)}" if m else None
+
+    c = base(cat)
+    for p in progs:
+        pc = base(p.get("cat"))
+        if not pc:
+            continue
+        if pc == c:
+            pass
+        elif pc in ("VÉTÉRANS", "VETERANS") and c.startswith("V"):
+            pass
+        else:
+            continue
+        jp, jd = jour_normalise(p.get("date")), jour_normalise(date_jour)
+        if jp and jd and jp != jd:
+            continue
+        m = re.match(r"(\d{1,2})h(\d{2})", str(p.get("scratch") or ""), re.IGNORECASE)
+        if not m:
+            return None
+        minutes = int(m.group(1)) * 60 + int(m.group(2)) + 30
+        return (f"{minutes // 60:02d}:{minutes % 60:02d}", f"programme : scratch {p['scratch']} + 30 min")
+    return None
 
 
 def _planifier_jours(data):

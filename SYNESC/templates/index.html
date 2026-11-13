@@ -1570,8 +1570,10 @@ async function simChargerEffectifs() {
      '</table>').join('');
   simEpreuves = [];
   data.jours.forEach(j => j.categories.forEach(c => {
-    if (c.H > 0) simEpreuves.push({nom: `${c.cat} Hommes`, date: j.date, categories: [c.cat], sexes: ['H'], debut: '10:00', poules: ''});
-    if (c.D > 0) simEpreuves.push({nom: `${c.cat} Dames`, date: j.date, categories: [c.cat], sexes: ['D'], debut: '10:00', poules: ''});
+    const deb = c.debut_suggere || '10:00';
+    const src = c.source || '';
+    if (c.H > 0) simEpreuves.push({nom: `${c.cat} Hommes`, date: j.date, categories: [c.cat], sexes: ['H'], debut: deb, source: src, poules: ''});
+    if (c.D > 0) simEpreuves.push({nom: `${c.cat} Dames`, date: j.date, categories: [c.cat], sexes: ['D'], debut: deb, source: src, poules: ''});
   }));
   simRendreEpreuves();
 }
@@ -1601,7 +1603,7 @@ function simRendreEpreuves() {
         <option value="H" ${e.sexes.join()==='H'?'selected':''}>H</option>
         <option value="D" ${e.sexes.join()==='D'?'selected':''}>D</option>
         <option value="HD" ${e.sexes.length===2?'selected':''}>H+D</option></select></td>
-      <td><input ${cell} type="time" value="${_simEsc(e.debut)}" oninput="simMaj(${i},'debut',this.value)"></td>
+      <td><input ${cell} type="time" value="${_simEsc(e.debut)}" title="${_simEsc(e.source || 'saisie manuelle')}" oninput="simMaj(${i},'debut',this.value)">${e.source ? '<div style="font-size:.7rem;color:var(--muted);">programme</div>' : ''}</td>
       <td><input ${cell} type="number" min="1" size="3" value="${_simEsc(e.poules)}" placeholder="auto" oninput="simMaj(${i},'poules',this.value)"></td>
       <td><button class="btn btn-ghost" onclick="simSupprimer(${i})">✕</button></td>
     </tr>`).join('') + '</table>';
