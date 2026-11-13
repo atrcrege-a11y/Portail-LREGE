@@ -1572,10 +1572,11 @@ async function simChargerEffectifs() {
      '</table>').join('');
   simEpreuves = [];
   data.jours.forEach(j => j.categories.forEach(c => {
-    const deb = c.debut_suggere || '10:00';
-    const src = c.source || '';
-    if (c.H > 0) simEpreuves.push({nom: `${c.cat} Hommes`, date: j.date, categories: [c.cat], sexes: ['H'], debut: deb, source: src, poules: ''});
-    if (c.D > 0) simEpreuves.push({nom: `${c.cat} Dames`, date: j.date, categories: [c.cat], sexes: ['D'], debut: deb, source: src, poules: ''});
+    const sgH = (c.suggestion || {}).H, sgD = (c.suggestion || {}).D;
+    if (c.H > 0) simEpreuves.push({nom: `${c.cat} Hommes`, date: j.date, categories: [c.cat], sexes: ['H'],
+      debut: sgH ? sgH.debut : '10:00', source: sgH ? sgH.source : '', poules: ''});
+    if (c.D > 0) simEpreuves.push({nom: `${c.cat} Dames`, date: j.date, categories: [c.cat], sexes: ['D'],
+      debut: sgD ? sgD.debut : '10:00', source: sgD ? sgD.source : '', poules: ''});
   }));
   simRendreEpreuves();
 }

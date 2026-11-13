@@ -671,9 +671,18 @@ def upload_programme():
                         cat_norm = normaliser_cat(lib)
                         if not cat_norm:
                             continue
+                        sexe_v = None
+                        m_sx = re.search(r"\s([HD])$", lib.strip(), re.IGNORECASE)
+                        if m_sx:
+                            sexe_v = m_sx.group(1).upper()
+                        elif re.search(r"\bhommes?$", lib.strip(), re.IGNORECASE):
+                            sexe_v = "H"
+                        elif re.search(r"\b(dames?|femmes?)$", lib.strip(), re.IGNORECASE):
+                            sexe_v = "D"
                         if cat_norm.upper().startswith("SENIOR"):
                             cat_norm = "Seniors"
                         sortie.append({"cat": cat_norm, "date": date_j,
+                                       "sexe": sexe_v,
                                        "appel": app_l[0], "scratch": (scr_l[0] if scr_l else None),
                                        "debut": None, "equipe_appel": None,
                                        "equipe_debut": None, "equipe_info": None})
@@ -1014,7 +1023,7 @@ def upload_programme():
         seen = {}
         categories_uniq = []
         for entry in categories:
-            key = (entry["cat"], entry["date"])
+            key = (entry["cat"], entry["date"], entry.get("sexe"))
             if key not in seen:
                 seen[key] = True
                 categories_uniq.append(entry)
@@ -1658,16 +1667,18 @@ def simulation_effectifs():
         for c, v in jours[d].items():
             if v["H"] + v["D"] <= 0:
                 continue
-            item = {"cat": c, "label": comp.CAT_LABEL_INDIV.get(c, c), "H": v["H"], "D": v["D"]}
-            suggestion = _debut_depuis_programme(c, d, progs)
-            if suggestion:
-                item["debut_suggere"], item["source"] = suggestion
+            item = {"cat": c, "label": comp.CAT_LABEL_INDIV.get(c, c), "H": v["H"], "D": v["D"],
+                    "suggestion": {}}
+            for sx in ("H", "D"):
+                sg = _debut_depuis_programme(c, d, progs, sx)
+                if sg:
+                    item["suggestion"][sx] = {"debut": sg[0], "source": sg[1]}
             cats.append(item)
         res.append({"date": d, "label": date_avec_jour(d), "categories": cats})
     return jsonify({"jours": res})
 
 
-def _debut_depuis_programme(cat, date_jour, progs):
+def _debut_depuis_programme(cat, date_jour, progs, sexe=None):
     """Heure de début suggérée = scratch + 30 min (règle relevée sur les programmes : appel, scratch, matchs).
     Retourne (HH:MM, source) ou None si la catégorie n'est pas dans le programme."""
     def base(x):
@@ -1687,6 +1698,12 @@ def _debut_depuis_programme(cat, date_jour, progs):
         elif pc in ("VÉTÉRANS", "VETERANS") and c.startswith("V"):
             pass
         else:
+            continue
+        if sexe and p.get("sexe") and p["sexe"] != sexe:
+            continue
+        # Programme sans sexe (ancienne lecture) avec plusieurs lignes pour la même catégorie :
+        # impossible de savoir laquelle est la bonne -> pas de suggestion plutôt qu'une fausse.
+        if sexe and not p.get("sexe") and sum(1 for q in progs if base(q.get("cat")) == pc) > 1:
             continue
         jp, jd = jour_normalise(p.get("date")), jour_normalise(date_jour)
         if jp and jd and jp != jd:
