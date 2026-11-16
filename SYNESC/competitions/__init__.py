@@ -7,12 +7,14 @@ Ajouter une nouvelle compétition ici suffit pour la rendre disponible dans l'ap
 from .grand_est import GrandEst
 from .alsace    import Alsace
 from .lorraine  import Lorraine
+from .tournoi   import Tournoi
 
 # Registre : comp_type → classe
 COMPETITIONS = {
     "grand_est": GrandEst,
     "alsace":    Alsace,
     "lorraine":  Lorraine,
+    "tournoi":   Tournoi,
 }
 
 # Métadonnées affichées dans l'interface
@@ -30,6 +32,11 @@ COMPETITIONS_META = {
     "lorraine": {
         "label":  "Coupe de Lorraine",
         "icon":   "⚜",
+        "active": True,
+    },
+    "tournoi": {
+        "label":  "Tournoi",
+        "icon":   "🏆",
         "active": True,
     },
 }

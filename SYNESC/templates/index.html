@@ -926,6 +926,10 @@ tbody td:first-child {
           <span class="comp-type-icon">⚜</span>
           <span class="comp-type-label">Coupe de<br>Lorraine</span>
         </button>
+        <button class="comp-type-btn" data-type="tournoi" onclick="selectCompType(this)">
+          <span class="comp-type-icon">🏆</span>
+          <span class="comp-type-label">Tournoi</span>
+        </button>
       </div>
     </div>
 
@@ -1268,7 +1272,7 @@ function _updateResponsablesVisibility() {
   const rowCra      = document.getElementById('row-cra');
   const rowSupGe    = document.getElementById('row-sup-ge');
   const rowSupLorr  = document.getElementById('row-sup-lorraine');
-  if (rowCra)     rowCra.style.display     = (t === 'grand_est' || t === 'alsace') ? '' : 'none';
+  if (rowCra)     rowCra.style.display     = (t === 'grand_est' || t === 'alsace' || t === 'tournoi') ? '' : 'none';
   if (rowSupGe)   rowSupGe.style.display   = (t === 'grand_est') ? '' : 'none';
   if (rowSupLorr) rowSupLorr.style.display = (t === 'lorraine')  ? '' : 'none';
 }
@@ -1308,7 +1312,7 @@ function _getResponsables() {
       cra_nom:       document.getElementById('cra-nom-input')?.value.trim() || '',
       superviseur_ge: document.getElementById('superviseur-ge-input')?.value.trim() || '',
     };
-  } else if (t === 'alsace') {
+  } else if (t === 'alsace' || t === 'tournoi') {
     return { cra_nom: document.getElementById('cra-nom-input')?.value.trim() || '' };
   } else if (t === 'lorraine') {
     return {

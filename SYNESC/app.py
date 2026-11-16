@@ -470,7 +470,7 @@ def generate():
         resp_override = {"type": "cra",
                          "noms": [cra_nom] if cra_nom else [],
                          "noms_superviseur": [sup_ge] if sup_ge else []}
-    elif comp_type == "alsace" and cra_nom:
+    elif comp_type in ("alsace", "tournoi") and cra_nom:
         resp_override = {"type": "cra", "noms": [cra_nom]}
     elif comp_type == "lorraine" and sups_lorraine:
         resp_override = {"type": "superviseurs", "noms": sups_lorraine,
@@ -1104,7 +1104,7 @@ def _generer_corps_mail(titre_long, lieu, comp_type, fichiers_list,
     (groupes_indiv, groupes_equipe, arbitres_all,
      _, _, plage_dates, dates_ordonnees) = construire_donnees(
         fichiers_list, comp_obj.CAT_MAP_INDIV, comp_obj.CAT_MAP_EQUIPE,
-        par_arme=(comp_type in ("alsace", "lorraine")),
+        par_arme=(comp_type in ("alsace", "lorraine", "tournoi")),
         arbitres_manuels=arbitres_manuels, arbitres_excel=arbitres_excel)
 
     CAT_LBL_I = comp_obj.CAT_LABEL_INDIV
@@ -1618,7 +1618,7 @@ def _effectifs_par_jour(comp_type):
     comp = get_competition(comp_type)
     gi, _, _, _, _, _, dates = construire_donnees(
         get_store(), comp.CAT_MAP_INDIV, comp.CAT_MAP_EQUIPE,
-        par_arme=(comp_type in ("alsace", "lorraine")))
+        par_arme=(comp_type in ("alsace", "lorraine", "tournoi")))
     jours = {}
     for d in dates:
         tot = {}
