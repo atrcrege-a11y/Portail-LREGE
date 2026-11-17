@@ -78,17 +78,29 @@ class Alsace(GrandEst):
                  ("E", "Épée",    "DDFFEE", "1F7A4D"),
                  ("S", "Sabre",   "FFEECC", "C87020")]
 
+        avec_eq = self._a_des_donnees_equipe(groupes_equipe)
         col_lbl   = 1
-        col_nb_h  = 2
-        col_nb_d  = 3
-        col_nb_mx = 4
-        col_pu    = 5
-        col_rec_h = 6
-        col_rec_d = 7
-        col_total = 8
+        col_tir_h = 2
+        col_tir_d = 3
+        base      = 4
+        if avec_eq:
+            col_eq_h  = 4
+            col_eq_d  = 5
+            col_eq_mx = 6
+            base      = 7
+        col_pu    = base
+        col_rec_h = base + 1
+        col_rec_d = base + 2
+        col_total = base + 3
+        ncols     = col_total
+        _entetes = [(col_lbl, "Désignation"), (col_tir_h, "Tir. H"), (col_tir_d, "Tir. D")]
+        if avec_eq:
+            _entetes += [(col_eq_h, "Eq. H"), (col_eq_d, "Eq. D"), (col_eq_mx, "Eq. MX")]
+        _entetes += [(col_pu, "P.U. (€)"), (col_rec_h, "Rec.H (€)"),
+                     (col_rec_d, "Rec.D (€)"), (col_total, "Total (€)")]
 
         def style_row(r, bg=None):
-            for ci in range(1, 9):
+            for ci in range(1, ncols + 1):
                 cell = ws.cell(row=r, column=ci)
                 if bg: cell.fill = mk_fill(bg)
                 cell.border = border_all()
@@ -96,16 +108,7 @@ class Alsace(GrandEst):
                 cell.font = mk_font(size=10)
 
         def ecrire_entetes(r):
-            for ci, lbl in [
-                (col_lbl,   "Désignation"),
-                (col_nb_h,  "Eq.H"),
-                (col_nb_d,  "Eq.D"),
-                (col_nb_mx, "Eq.MX"),
-                (col_pu,    "P.U. (€)"),
-                (col_rec_h, "Rec.H (€)"),
-                (col_rec_d, "Rec.D (€)"),
-                (col_total, "Total (€)"),
-            ]:
+            for ci, lbl in _entetes:
                 cell = ws.cell(row=r, column=ci, value=lbl)
                 cell.font = mk_font(bold=True, size=9, color=C["white"])
                 cell.fill = mk_fill(C["navy"])
@@ -129,7 +132,7 @@ class Alsace(GrandEst):
         row = 1
 
         # Titre
-        ws.merge_cells(start_row=row, start_column=1, end_row=row, end_column=8)
+        ws.merge_cells(start_row=row, start_column=1, end_row=row, end_column=ncols)
         cell = ws.cell(row=row, column=1, value=f"Bilan Financier — {titre}")
         cell.font = mk_font(bold=True, size=13, color=C["white"])
         cell.fill = mk_fill(C["navy"]); cell.alignment = mk_align(h="center")
@@ -144,7 +147,7 @@ class Alsace(GrandEst):
             arb        = arb_par_date.get(date_str, {"nb": 0, "cout": 0})
 
             # Bandeau date
-            ws.merge_cells(start_row=row, start_column=1, end_row=row, end_column=8)
+            ws.merge_cells(start_row=row, start_column=1, end_row=row, end_column=ncols)
             cell = ws.cell(row=row, column=1, value=f"  {label_date}")
             cell.font = mk_font(bold=True, size=11, color=C["white"])
             cell.fill = mk_fill(C["blue"]); cell.alignment = mk_align(h="left")
@@ -162,7 +165,7 @@ class Alsace(GrandEst):
                 for v in clubs.values()
             )
             if has_indiv:
-                ws.merge_cells(start_row=row, start_column=1, end_row=row, end_column=8)
+                ws.merge_cells(start_row=row, start_column=1, end_row=row, end_column=ncols)
                 cell = ws.cell(row=row, column=1, value="Droits d'engagement — Individuels")
                 cell.font = mk_font(bold=True, size=10)
                 cell.fill = mk_fill(C["fin_indiv"]); cell.alignment = mk_align(h="left")
@@ -176,11 +179,11 @@ class Alsace(GrandEst):
                     lbl = self.CAT_LABEL_INDIV.get(cat, cat)
                     r   = row
                     ws.cell(row=r, column=col_lbl,   value=f"  {lbl}")
-                    ws.cell(row=r, column=col_nb_h,  value=nb_h or None)
-                    ws.cell(row=r, column=col_nb_d,  value=nb_d or None)
+                    ws.cell(row=r, column=col_tir_h,  value=nb_h or None)
+                    ws.cell(row=r, column=col_tir_d,  value=nb_d or None)
                     ws.cell(row=r, column=col_pu,    value=pu)
-                    ws.cell(row=r, column=col_rec_h, value=f"={gcl(col_nb_h)}{r}*{gcl(col_pu)}{r}")
-                    ws.cell(row=r, column=col_rec_d, value=f"={gcl(col_nb_d)}{r}*{gcl(col_pu)}{r}")
+                    ws.cell(row=r, column=col_rec_h, value=f"={gcl(col_tir_h)}{r}*{gcl(col_pu)}{r}")
+                    ws.cell(row=r, column=col_rec_d, value=f"={gcl(col_tir_d)}{r}*{gcl(col_pu)}{r}")
                     ws.cell(row=r, column=col_total, value=f"={gcl(col_rec_h)}{r}+{gcl(col_rec_d)}{r}")
                     style_row(r); indiv_rows.append(r); row += 1
                 if indiv_rows:
@@ -191,67 +194,68 @@ class Alsace(GrandEst):
                             value=f"={refs_i}").font = mk_font(bold=True, size=10)
                     style_row(row, bg=C["green_bg"]); row += 1
 
-            # ── Recettes Équipes par arme
-            ws.merge_cells(start_row=row, start_column=1, end_row=row, end_column=8)
-            cell = ws.cell(row=row, column=1, value="Droits d'engagement — Équipes")
-            cell.font = mk_font(bold=True, size=10)
-            cell.fill = mk_fill(C["fin_equipe"]); cell.alignment = mk_align(h="left")
-            row += 1
-
-            equipe_rows = []
-            cats_equipe = groupes_equipe.get(date_str, {})
-
-            for arme_code, arme_lbl, arme_bg, arme_hbg in ARMES:
-                cats_arme = {
-                    k[:-2]: v for k, v in cats_equipe.items()
-                    if k.endswith(f"|{arme_code}")
-                }
-                if not cats_arme: continue
-
-                ws.merge_cells(start_row=row, start_column=1, end_row=row, end_column=8)
-                cell = ws.cell(row=row, column=1, value=f"  {arme_lbl}")
-                cell.font = mk_font(bold=True, size=10, color=C["white"])
-                cell.fill = mk_fill(arme_hbg); cell.alignment = mk_align(h="left")
-                cell.border = border_all()
+            _sous_total_eq_row = None
+            if self._a_des_donnees_equipe(groupes_equipe):
+                # ── Recettes Équipes par arme
+                ws.merge_cells(start_row=row, start_column=1, end_row=row, end_column=ncols)
+                cell = ws.cell(row=row, column=1, value="Droits d'engagement — Équipes")
+                cell.font = mk_font(bold=True, size=10)
+                cell.fill = mk_fill(C["fin_equipe"]); cell.alignment = mk_align(h="left")
                 row += 1
 
-                for cat in self.CATS_EQUIPE:
-                    clubs = cats_arme.get(cat)
-                    if not clubs: continue
-                    is_mx    = any(v.get("mixte", False) for v in clubs.values())
-                    nb_eq_h  = sum(len(v.get("equipes", set()))
-                                   for v in clubs.values() if v.get("tireurs_H", 0) > 0) if not is_mx else 0
-                    nb_eq_d  = sum(len(v.get("equipes", set()))
-                                   for v in clubs.values() if v.get("tireurs_D", 0) > 0) if not is_mx else 0
-                    nb_eq_mx = sum(len(v.get("equipes", set()))
-                                   for v in clubs.values() if v.get("tireurs_MX", 0) > 0) if is_mx else 0
-                    if not nb_eq_h and not nb_eq_d and not nb_eq_mx: continue
-                    pu  = self.TARIF_EQUIPE.get(cat, 30)
-                    lbl = self.CAT_LABEL_EQUIPE.get(cat, cat)
-                    r   = row
-                    ws.cell(row=r, column=col_lbl,   value=f"    {lbl}")
-                    ws.cell(row=r, column=col_nb_h,  value=nb_eq_h or None)
-                    ws.cell(row=r, column=col_nb_d,  value=nb_eq_d or None)
-                    ws.cell(row=r, column=col_nb_mx, value=nb_eq_mx or None)
-                    ws.cell(row=r, column=col_pu,    value=pu)
-                    if is_mx:
-                        ws.cell(row=r, column=col_rec_h, value=None)
-                        ws.cell(row=r, column=col_rec_d, value=None)
-                        ws.cell(row=r, column=col_total, value=f"={gcl(col_nb_mx)}{r}*{gcl(col_pu)}{r}")
-                    else:
-                        ws.cell(row=r, column=col_rec_h, value=f"={gcl(col_nb_h)}{r}*{gcl(col_pu)}{r}")
-                        ws.cell(row=r, column=col_rec_d, value=f"={gcl(col_nb_d)}{r}*{gcl(col_pu)}{r}")
-                        ws.cell(row=r, column=col_total, value=f"={gcl(col_rec_h)}{r}+{gcl(col_rec_d)}{r}")
-                    style_row(r, bg=arme_bg); equipe_rows.append(r); row += 1
+                equipe_rows = []
+                cats_equipe = groupes_equipe.get(date_str, {})
 
-            _sous_total_eq_row = None
-            if equipe_rows:
-                _sous_total_eq_row = row
-                ws.cell(row=row, column=col_lbl, value="Sous-total Équipes").font = mk_font(bold=True, size=10)
-                refs_e = "+".join(f"{gcl(col_total)}{r}" for r in equipe_rows)
-                ws.cell(row=row, column=col_total,
-                        value=f"={refs_e}").font = mk_font(bold=True, size=10)
-                style_row(row, bg=C["green_bg"]); row += 1
+                for arme_code, arme_lbl, arme_bg, arme_hbg in ARMES:
+                    cats_arme = {
+                        k[:-2]: v for k, v in cats_equipe.items()
+                        if k.endswith(f"|{arme_code}")
+                    }
+                    if not cats_arme: continue
+
+                    ws.merge_cells(start_row=row, start_column=1, end_row=row, end_column=ncols)
+                    cell = ws.cell(row=row, column=1, value=f"  {arme_lbl}")
+                    cell.font = mk_font(bold=True, size=10, color=C["white"])
+                    cell.fill = mk_fill(arme_hbg); cell.alignment = mk_align(h="left")
+                    cell.border = border_all()
+                    row += 1
+
+                    for cat in self.CATS_EQUIPE:
+                        clubs = cats_arme.get(cat)
+                        if not clubs: continue
+                        is_mx    = any(v.get("mixte", False) for v in clubs.values())
+                        nb_eq_h  = sum(len(v.get("equipes", set()))
+                                       for v in clubs.values() if v.get("tireurs_H", 0) > 0) if not is_mx else 0
+                        nb_eq_d  = sum(len(v.get("equipes", set()))
+                                       for v in clubs.values() if v.get("tireurs_D", 0) > 0) if not is_mx else 0
+                        nb_eq_mx = sum(len(v.get("equipes", set()))
+                                       for v in clubs.values() if v.get("tireurs_MX", 0) > 0) if is_mx else 0
+                        if not nb_eq_h and not nb_eq_d and not nb_eq_mx: continue
+                        pu  = self.TARIF_EQUIPE.get(cat, 30)
+                        lbl = self.CAT_LABEL_EQUIPE.get(cat, cat)
+                        r   = row
+                        ws.cell(row=r, column=col_lbl,   value=f"    {lbl}")
+                        ws.cell(row=r, column=col_eq_h,  value=nb_eq_h or None)
+                        ws.cell(row=r, column=col_eq_d,  value=nb_eq_d or None)
+                        ws.cell(row=r, column=col_eq_mx, value=nb_eq_mx or None)
+                        ws.cell(row=r, column=col_pu,    value=pu)
+                        if is_mx:
+                            ws.cell(row=r, column=col_rec_h, value=None)
+                            ws.cell(row=r, column=col_rec_d, value=None)
+                            ws.cell(row=r, column=col_total, value=f"={gcl(col_eq_mx)}{r}*{gcl(col_pu)}{r}")
+                        else:
+                            ws.cell(row=r, column=col_rec_h, value=f"={gcl(col_eq_h)}{r}*{gcl(col_pu)}{r}")
+                            ws.cell(row=r, column=col_rec_d, value=f"={gcl(col_eq_d)}{r}*{gcl(col_pu)}{r}")
+                            ws.cell(row=r, column=col_total, value=f"={gcl(col_rec_h)}{r}+{gcl(col_rec_d)}{r}")
+                        style_row(r, bg=arme_bg); equipe_rows.append(r); row += 1
+
+                if equipe_rows:
+                    _sous_total_eq_row = row
+                    ws.cell(row=row, column=col_lbl, value="Sous-total Équipes").font = mk_font(bold=True, size=10)
+                    refs_e = "+".join(f"{gcl(col_total)}{r}" for r in equipe_rows)
+                    ws.cell(row=row, column=col_total,
+                            value=f"={refs_e}").font = mk_font(bold=True, size=10)
+                    style_row(row, bg=C["green_bg"]); row += 1
 
             # Total recettes — somme des sous-totaux uniquement (pas des lignes détail)
             rec_tot = row
@@ -265,7 +269,7 @@ class Alsace(GrandEst):
             else:
                 formula = "0"
             ws.cell(row=rec_tot, column=col_total, value=formula).font = mk_font(bold=True, size=11, color=C["white"])
-            for ci in range(1, 9):
+            for ci in range(1, ncols + 1):
                 cell = ws.cell(row=rec_tot, column=ci)
                 cell.fill = mk_fill(C["accent"]); cell.border = border_all()
                 cell.alignment = mk_align(h="left" if ci == col_lbl else "center")
@@ -274,7 +278,7 @@ class Alsace(GrandEst):
             recette_rows.append(rec_tot); row += 1
 
             # ── Dépenses arbitres
-            ws.merge_cells(start_row=row, start_column=1, end_row=row, end_column=8)
+            ws.merge_cells(start_row=row, start_column=1, end_row=row, end_column=ncols)
             cell = ws.cell(row=row, column=1, value="Dépenses — Arbitres")
             cell.font = mk_font(bold=True, size=10)
             cell.fill = mk_fill(C["fin_depense"]); cell.alignment = mk_align(h="left")
@@ -289,20 +293,20 @@ class Alsace(GrandEst):
                 # Nb retenus : COUNTIF sur colonne G
                 nb_formula   = f'=COUNTIF(Arbitres!G{r1}:G{r2},"Retenu")'
                 cout_formula = f'=SUMIFS(Arbitres!F{r1}:F{r2},Arbitres!G{r1}:G{r2},"Retenu")'
-                ws.cell(row=dep_row, column=col_nb_h, value=nb_formula)
+                ws.cell(row=dep_row, column=col_tir_h, value=nb_formula)
                 ws.cell(row=dep_row, column=col_total, value=cout_formula)
-                ws.cell(row=dep_row, column=9, value="barème LREGE — mis à jour auto")
+                ws.cell(row=dep_row, column=ncols + 1, value="barème LREGE — mis à jour auto")
             else:
-                ws.cell(row=dep_row, column=col_nb_h, value=arb["nb"] or None)
+                ws.cell(row=dep_row, column=col_tir_h, value=arb["nb"] or None)
                 ws.cell(row=dep_row, column=col_total, value=arb["cout"] or None)
-                ws.cell(row=dep_row, column=9, value="barème LREGE")
+                ws.cell(row=dep_row, column=ncols + 1, value="barème LREGE")
 
             style_row(dep_row)
             depense_rows.append(dep_row); row += 1
 
             # ── Solde du jour
             solde_row = row
-            ws.merge_cells(start_row=solde_row, start_column=1, end_row=solde_row, end_column=7)
+            ws.merge_cells(start_row=solde_row, start_column=1, end_row=solde_row, end_column=ncols - 1)
             ws.cell(row=solde_row, column=col_lbl,
                     value=f"SOLDE — {label_date}").font = mk_font(bold=True, size=11)
             ws.cell(row=solde_row, column=col_lbl).alignment = mk_align(h="left")
@@ -311,7 +315,7 @@ class Alsace(GrandEst):
             c_solde.font = mk_font(bold=True, size=12)
             c_solde.alignment = mk_align(h="center")
             c_solde.border = border_all()
-            for ci in range(1, 9):
+            for ci in range(1, ncols + 1):
                 ws.cell(row=solde_row, column=ci).border = border_all()
 
             ref = f"{gcl(col_total)}{solde_row}"
@@ -325,7 +329,7 @@ class Alsace(GrandEst):
 
         # ── Solde global
         if len(dates_ordonnees) > 1:
-            ws.merge_cells(start_row=row, start_column=1, end_row=row, end_column=7)
+            ws.merge_cells(start_row=row, start_column=1, end_row=row, end_column=ncols - 1)
             ws.cell(row=row, column=col_lbl, value="SOLDE GLOBAL").font = mk_font(bold=True, size=13, color=C["white"])
             ws.cell(row=row, column=col_lbl).fill = mk_fill(C["navy"])
             ws.cell(row=row, column=col_lbl).alignment = mk_align(h="left")
@@ -334,7 +338,7 @@ class Alsace(GrandEst):
             c_g   = ws.cell(row=row, column=col_total, value=f"=({rec_g})-({dep_g})")
             c_g.font = mk_font(bold=True, size=13, color=C["white"])
             c_g.fill = mk_fill(C["navy"]); c_g.alignment = mk_align(h="center")
-            for ci in range(1, 9):
+            for ci in range(1, ncols + 1):
                 ws.cell(row=row, column=ci).border = border_all()
             ref_g = f"{gcl(col_total)}{row}"
             ws.conditional_formatting.add(ref_g, CellIsRule(
@@ -344,7 +348,11 @@ class Alsace(GrandEst):
                 operator="lessThan", formula=["0"],
                 fill=_PF("solid", fgColor=C["solde_neg"])))
 
-        for ci, w in [(1,32),(2,7),(3,7),(4,7),(5,9),(6,12),(7,12),(8,12)]:
+        _largeurs = [(col_lbl, 32), (col_tir_h, 7), (col_tir_d, 7)]
+        if avec_eq:
+            _largeurs += [(col_eq_h, 7), (col_eq_d, 7), (col_eq_mx, 7)]
+        _largeurs += [(col_pu, 9), (col_rec_h, 12), (col_rec_d, 12), (col_total, 12)]
+        for ci, w in _largeurs:
             ws.column_dimensions[get_column_letter(ci)].width = w
         ws.sheet_view.showGridLines = False
 

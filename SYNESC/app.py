@@ -876,12 +876,19 @@ def upload_programme():
                         if not cat_raw or "arbitre" in cat_raw.lower(): continue
                         cat_norm = normaliser_cat(cat_raw)
                         if not cat_norm: continue
+                        scr_txt = str(row[ci_scr] or "") if ci_scr is not None else ""
+                        deb_txt = str(row[ci_deb] or "") if ci_deb is not None else ""
+                        # Heure coupée en deux cellules par le PDF : « 9H45 1 » + « 0H00 » = 10H00
+                        mq = _re.search(r'(\d)\s*$', scr_txt)
+                        md = _re.match(r'^\s*(\d)H(\d{2})\s*$', deb_txt)
+                        if mq and md and mq.group(1) == "1":
+                            deb_txt = f"1{md.group(1)}H{md.group(2)}"
                         categories.append({
                             "cat":          cat_norm,
                             "date":         date_tableau,
                             "appel":        extraire_heure(str(row[ci_app] or "")) if ci_app is not None else None,
-                            "scratch":      extraire_heure(str(row[ci_scr] or "")) if ci_scr is not None else None,
-                            "debut":        extraire_heure(str(row[ci_deb] or "")) if ci_deb is not None else None,
+                            "scratch":      extraire_heure(scr_txt) if ci_scr is not None else None,
+                            "debut":        extraire_heure(deb_txt) if ci_deb is not None else None,
                             "equipe_appel": None,
                             "equipe_debut": None,
                             "equipe_info":  "à l'issue des épreuves individuelles",
